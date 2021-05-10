@@ -1,0 +1,8 @@
+{
+"id":"jvEdAlarms",
+"name":"Edit Alarms",
+"src":"alarmCRUD.app.js",
+"sortorder":-9,
+"version":"0.1",
+"files":"alarmCRUD.info,alarmCRUD.app.js"
+}
