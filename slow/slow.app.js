@@ -3,7 +3,7 @@ const v = require('m_vatch');
 
 const p = Math.PI / 2;
 const pRad = Math.PI / 180;
-const faceWidth = 220; // watch face radius (240/2 - 24px for widget area)
+const faceWidth = 222; // watch face radius (240/2 - 24px for widget area)
 
 var img = {
   width : 16, height : 480, bpp : 8,
