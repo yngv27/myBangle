@@ -24,7 +24,7 @@ let _List = '';
 
 function reload() {
   try {
-    _List = _Storage.readJSON('yngv27.list.json');
+    _List = _Storage.readJSON('yngv27.notes.json');
   } catch (err) {
     _List = ['Nothing to see here...'];
   }
@@ -84,11 +84,18 @@ function showMsg(title, msg) {
   */
   g.setColor('#FFFFFF');
   
-  g.drawString('___'+title+'___', 120, 30);
-  g.drawString('___'+title+'___', 121, 30);
+  let y = 30;
+  if(title) {
+    g.drawString('___'+title+'___', 120, y);
+    g.drawString('___'+title+'___', 121, y);
+    y += g.getFontHeight();
+  }
   let lines = msg.split("|");
-  for(let l = 0; l < lines.length; l++) 
-    g.drawString(lines[l], 120, 50+g.getFontHeight()*l);
+  for(let l = 0; l < lines.length; l++) {
+    g.drawString(lines[l], 120, y);
+    y += g.getFontHeight();
+  }
+  if(! title) return;
 
   setTimeout(notify, 800);
   setTimeout(notify, 1600);
@@ -245,7 +252,7 @@ function setNightMode() {
 function btn2Func() {
   reload();
   scheduleAlarms();
-  showMsg('ACK!',_List);
+  showMsg('',_List);
 }
 
 // Show launcher when middle button pressed
