@@ -18,7 +18,7 @@ let centerX = 0;
 let centerY = 0;
 let quadrant = -1; // 0 = 00-05, 1 = 06-11, 2 = 12-17, 3 = 18-23
 let faceColours = [
-  '#000000','#200040','#404080','#000040'
+  '#808080','#408080','#404080','#400040'
   ];
 
 const CLOCK_24 = "24";
@@ -27,20 +27,70 @@ let clockType = CLOCK_24;  /* make it "24" for 'Slow' hour-only hand */
 require("m_knxt").add(Graphics);
 g.setFont('KNXT', 1);
 
+function drawPoints(points, x0, y0) {
+  let xs = 0.5;
+  let ys = 0.625;
+  let x = points[0]*xs+x0, y = points[1]*ys+y0;
+  g.moveTo(x, y);
+  for(let idx=1; idx*2 < points.length; idx ++) {
+    let x = points[idx*2]*xs+x0;
+    let y = points[idx*2+1]*ys+y0;
+    g.lineTo(x, y);
+  }
+}
+function drawBtyIcon(x, y) {
+  const btyPoints = [
+    2,24,
+    2,4,
+    6,4,
+    6,0,
+    14,0,
+    14,4,
+    18,4,
+    18,24,
+    2,24
+    ];
+  drawPoints(btyPoints, x, y);
+}
+
+function drawStepIcon(x, y) {
+   const stepPoints2 = [
+    11, 8,
+     12,7,
+     13,8,
+     12, 9
+    ];
+  const stepPoints = [
+    12, 21,
+    1, 11,
+    1, 6,
+    7, 1,
+    16, 1,
+    21, 6,
+    21, 11,
+    12, 21
+    ];
+  drawPoints(stepPoints, x, y);
+  drawPoints(stepPoints2, x, y);
+}
+
 const drawTics = () => {
   const numTics =  96;
-  g.setColor(0, 0.5, 0.5);
+  
   g.setFontAlign(0,0);
   for (let i = 0; i < numTics; i++) {
     angle = (360 * i) / numTics;
     const a = angle * pRad;
     const x = centerX + Math.sin(a) * faceWidth;
     const y = centerY - Math.cos(a) * faceWidth;
-
+    g.setColor('#cccccc');
     g.drawLine(centerX, centerY, x, y);
     // if ?? degrees, make hour marker larger
     if ( i % 4 === 0) {
-      /* put hour at rotated point (0, faceWidth - 5) */
+      g.setColor('#ffffff');
+      g.drawLine(centerX, centerY, x, y);
+
+      /* put hour at rotated point (0, faceWidth - n) */
       g.drawString(Math.floor(i/4), 
         centerX +  Math.sin(a+Math.PI)*(faceWidth + 8),
         centerY - Math.cos(a+Math.PI)*(faceWidth + 8),
@@ -52,8 +102,9 @@ const drawTics = () => {
 };
 
 const clearFace = () => {
-  if(quadrant >= 0) g.setColor(faceColours[quadrant]);
-  g.fillCircle(centerX, centerY, faceWidth - 6);
+  //if(quadrant >= 0) g.setColor(faceColours[quadrant]);
+  g.setColor('#000000');
+  g.fillCircle(centerX, centerY, faceWidth - 7);
 };
 
 const hand = (angle, length, erase) => {
@@ -110,58 +161,15 @@ const setQuadrant = (hNow) => {
   }
 };
 
-function drawPoints(points, x0, y0) {
-  let xs = 0.5;
-  let ys = 0.625;
-  let x = points[0]*xs+x0, y = points[1]*ys+y0;
-  g.moveTo(x, y);
-  for(let idx=1; idx*2 < points.length; idx ++) {
-    let x = points[idx*2]*xs+x0;
-    let y = points[idx*2+1]*ys+y0;
-    g.lineTo(x, y);
-  }
-}
-function drawBtyIcon(x, y) {
-  const btyPoints = [
-    2,24,
-    2,4,
-    6,4,
-    6,0,
-    14,0,
-    14,4,
-    18,4,
-    18,24,
-    2,24
-    ];
-  drawPoints(btyPoints, x, y);
-}
 
-function drawStepIcon(x, y) {
-   const stepPoints2 = [
-    11, 8,
-     12,7,
-     13,8,
-     12, 9
-    ];
-  const stepPoints = [
-    12, 21,
-    1, 11,
-    1, 6,
-    7, 1,
-    16, 1,
-    21, 6,
-    21, 11,
-    12, 21
-    ];
-  drawPoints(stepPoints, x, y);
-  drawPoints(stepPoints2, x, y);
-}
 
 const drawBkgd = () => {
   g.setBgColor('#000000');
   g.clear();
   drawTics();
-  //onMinute();
+  g.setColor(faceColours[quadrant]);
+  g.drawCircle(centerX, centerY, faceWidth);
+  g.drawCircle(centerX, centerY, faceWidth - 6);
 };
 
 const drawData = (data) => {
@@ -224,5 +232,3 @@ currentDate = new Date();
 setQuadrant(currentDate.getHours());
 
 v.begin();
-
-
