@@ -1,9 +1,15 @@
-let v = require('m_vatch');
-require("m_knxt").add(Graphics);
-g.setFont('KNXT', 1);
+let EMULATOR = 0;
 
-let xs = 0.5;
-let ys = 0.625;
+if(! EMULATOR) {
+  let v = require('m_vatch');
+  require("m_knxt").add(Graphics);
+  g.setFont('KNXT', 1);
+} else {
+  g.setFontVector('18');
+}
+
+let xs = 0.625;
+let ys = 0.8;
 
 let  prevH1 = -1;
 let  prevH2 = -1;
@@ -14,170 +20,31 @@ let nightMode = false;
 
 let logD = (msg) => { console.log(msg); };
 
-let points0 = [
-  0, 40,
-  1, 35,
-  7, 20, 
-  16, 8,
-  28, 2,
-  40, 0,
-  
-  51, 2,
-  63, 10,
-  72, 20,
-  77, 35,
-  78, 40,
-  
-  78, 59,
-  77, 64,
-  72, 79,
-  63, 89,
-  51, 97,
-  
-  40, 99,
-  28, 97,
-  16, 91,
-  7, 79,
-  1, 64,
-  0, 59,
-  0, 40
-];
 
-let points1 = [ 40, 99, 40, 0];
+function rebuild2DArray(arr) {
+  let Arr2D = [];
+  let outerArrIdx = 0;
+  //console.log('max='+arr.length);
+  while(outerArrIdx < arr.length) {
+    let innerArrLength = arr[outerArrIdx++];
+    //console.log('len: '+innerArrLength);
+    let innerArr = [];
+    while( innerArrLength-- > 0) {
+      innerArr.push(arr[outerArrIdx]);
+      //console.log('pushing '+arr[outerArrIdx]);
+      outerArrIdx++;
+    }
+    Arr2D.push(innerArr);
+    //console.log('idx='+outerArrIdx);
+  }
+  return Arr2D;
+}
 
-let points2 = [ 0, 25,
-               2, 22,
-              6, 13, 
-              17, 5,
-              28, 2,
-              40, 0,
-              52, 2,
-              63, 5,
-              74, 13,
-              79, 23,
-              79, 28,
-              74, 38,
-               63, 46,
-              51, 54,
-              40, 58,
-              29, 62,
-              17, 68,
-              8, 80,
-              0, 99,
-              79, 99
-              ];
+let pts = 'l0AlEBkcHikQhEcgUogEzgU/hVIilNkdOlFOndNoFIp8/rMzsMosccsMQrcHp8BoEAnYrBggOBEwIBBjMCi0GhsRgozDmgzBgtKhtPi9PjlKk0/l0zm0onUdn0RokIqEAsdPscggNNg1XiNeIAI1Bmlhn9epVXp9Np9Cpc4oEumkqk8op8AgMAhE8sc8QYNLp9LkwpHk1jlQrOm0qlEojUqh8ujcAGIMomUAgk4gNCKzIqFEYMGKoItBj1jpgPHGZJgVmknn0iosdpEXpETosMn0GaYLXBbYMSg0LhkIicIi8LjsSkUcV4IABjtjpcrp0hp0WpIiBgszgUngEbgUQgsFhkAi0AkMElcPmsbnMnnc1nNAmojB';
+//console.log(rebuild2DArray(require('heatshrink').decompress(atob(pts))));
+pointsArray = rebuild2DArray(require('heatshrink').decompress(atob(pts)));
 
-let points4 = [ 60, 99, 60, 0, 0, 75, 79, 75 ];
 
-let points8 = [
-  40, 40,
-  26, 42,
-  15, 46,
-  4, 56,
-  1, 66,
-  1, 77,
-  6, 87,
-  17, 94,
-  28, 97,
-  38, 99,
-  42, 99,
-  52, 97,
-  63, 94,
-  74, 87,
-  79, 77,
-  79, 66,
-  75, 56,
-  64, 46,
-  54, 42,
-  40, 40,
-  
-  52, 39,
-  62, 34,
-  69, 29,
-  72, 23,
-  72, 19,
-  69, 12,
-  62, 6,
-  52, 2,
-  40, 0,
-  
-  28, 2,
-  18, 6,
-  11, 12,
-  8, 19,
-  8, 23,
-  11, 29,
-  18, 34,
-  28, 39,
-  40, 40,
-  ];
-
-let points6 = [
-  50, 0,
-  4, 56,
-  1, 66,
-  1, 77,
-  6, 87,
-  17, 94,
-  28, 97,
-  40, 99,
-  52, 97,
-  63, 94,
-  74, 87,
-  79, 77,
-  79, 66,
-  75, 56,
-  64, 46,
-  52, 42,
-  40, 40,
-  26, 42,
-  15, 46,
-  4, 56,
-  ];
-
-let points3 = [
-  1, 77,
-  6, 87,
-  17, 94,
-  28, 97,
-  40, 99,
-  52, 97,
-  63, 94,
-  74, 87,
-  79, 77,
-  79, 66,
-  75, 56,
-  64, 46,
-  52, 42,
-  39, 40,
-  79, 0,
-  1, 0
-  ];
-
-let points7 = [ 0, 0, 79, 0, 30, 99 ];
-
-let points9 = [];
-let points5 = [
-  1, 77,
-  6, 87,
-  17, 94,
-  28, 97,
-  38, 99,
-  42, 99,
-  52, 97,
-  63, 94,
-  74, 87,
-  79, 77,
-  79, 66,
-  75, 56,
-  64, 46,
-  54, 42,
-  40, 40,
-  26, 42,
-  15, 46,
-  27,  0,
-  79,  0,
-];
 
 function drawPoints(points, x0, y0) {
   let x = points[0]*xs+x0, y = points[1]*ys+y0;
@@ -191,20 +58,7 @@ function drawPoints(points, x0, y0) {
   }
 }
 
-/* create 5 from 2  */
-/* uncomment if you want the 5 to look more authentic (but uglier)
-for (let idx=0; idx*2 < points2.length; idx++) {
-   points5[idx*2] = points2[idx*2];
-   points5[idx*2+1] = 99-points2[idx*2+1];
-}
-*/
-/* create 9 from 6 */
-for (let idx=0; idx*2 < points6.length; idx++) {
-   points9[idx*2] = 79-points6[idx*2];
-   points9[idx*2+1] = 99-points6[idx*2+1];
-}
 
-pointsArray = [points0, points1, points2, points3, points4, points5, points6, points7, points8, points9];
 
 function eraseDigit(d, x, y) {
   if(d < 0) return;
@@ -221,16 +75,16 @@ function eraseDigit(d, x, y) {
 }
 
 function drawDigit(d, x, y) {
-  console.log('in drawDigit');
-  let halo = "#808080"; /* #FF6000 */
-  let colour = "#F0F0F0"; /* #FFC000 */
+  //console.log('in drawDigit');
+  let halo = 1 ? "#808080" : '#FF6000' ;
+  let colour = 1 ? "#F0F0F0" : '#FFC000' ;
   if(nightMode) {
     g.setColor("#206040");
     drawPoints(pointsArray[d], x, y);
     return;
   }
 
-  console.log('setting color to ' + halo);
+  //console.log('setting color to ' + halo);
   g.setColor(halo);
   drawPoints(pointsArray[d], x-1, y-1);
   drawPoints(pointsArray[d], x+1, y-1);
@@ -269,6 +123,15 @@ function drawBtyIcon(x, y, pct) {
 }
 
 function drawStepIcon(x, y) {
+  let r = 8;
+  let c = g.getColor();
+  g.fillCircle(x+r, y+r, r);
+  g.fillPoly([x, y+r, x+r+r, y+r, x+r, y+3*r], true);
+  g.setColor('#202020');
+  g.fillCircle(x+r, y+r, r/2);
+  g.setColor(c);
+}
+function drawStepIcon2(x, y) {
    const stepPoints2 = [
     10, 7,
      11,6,
@@ -290,24 +153,29 @@ function drawStepIcon(x, y) {
 }
 
 function drawRealTime(d, nmode) {
-  logD('in drawRealTIme');
+  //logD('in drawRealTIme');
   nightMode = nmode;
   
+  let x1 = 12, x2 = 70, y1 = 28, y2 = 130;
+  if(nmode) {
+    x1 += 60; x2 += 60;
+  }
+  
   if(d.h1 != prevH1) {
-    eraseDigit(prevH1, 20, 60);
-    drawDigit(d.h1, 20, 60);
+    eraseDigit(prevH1, x1, y1);
+    drawDigit(d.h1, x1, y1);
   }
   if(d.h2 != prevH2) {
-    eraseDigit(prevH2, 70, 60);
-    drawDigit(d.h2, 70, 60);
+    eraseDigit(prevH2, x2, y1);
+    drawDigit(d.h2, x2, y1);
   }
   if(d.m1 != prevM1) {
-    eraseDigit(prevM1, 130, 60);
-    drawDigit(d.m1, 130, 60);
+    eraseDigit(prevM1, x1, y2);
+    drawDigit(d.m1, x1, y2);
   }
   if(d.m2 != prevM2) {
-    eraseDigit(prevM2, 180, 60);
-    drawDigit(d.m2, 180, 60);
+    eraseDigit(prevM2, x2, y2);
+    drawDigit(d.m2, x2, y2);
   }
 
   prevH1 = d.h1;
@@ -318,7 +186,7 @@ function drawRealTime(d, nmode) {
 }
 
 let  drawBackground = (nmode) => {
-  logD('in drawBkgd');
+  //logD('in drawBkgd');
   g.clear();
   prevH1 = -1;
   prevH2 = -1;
@@ -327,46 +195,55 @@ let  drawBackground = (nmode) => {
 
   if(nmode) return;
   
-  g.setColor("#C0C0C0");
-    //g.drawLine(20, 140, 219, 140);
-    //g.drawLine(20, 226, 219, 226);
-  for(let x=0; x < 120; x++) {
-       g.setColor(x/120, x/120, x/120);
-       g.setPixel(x, 140);
-       g.setPixel(239-x, 140);
+  for(let x=0; x < 100; x++) {
+    g.setColor(x/120, x/240, 0);
+    g.setPixel(140+x, 92);
+    g.setPixel(140+x, 146);
   }
-
+  
+  for(let x=0; x < 12; x++) {
+    let c = (240-x*20)/256;
+    g.setColor(0,c/2,c);
+    g.drawCircle(x*2-20, 120, 180);
+  }
+  
   g.setColor("#00C0C0");
-  drawStepIcon(44, 160);
-  drawBtyIcon(190, 160);
+  drawStepIcon(203, 198);
+  drawBtyIcon(200, 30);
 
 };
 
 
 let drawRealData = (d, nmode)=> {
-  logD('in drawRealData');
   if (nmode) return;
-  g.setColor("#000000");
-  g.fillRect(0, 175, 239, 200);
-  g.setColor('#00C0C0');
+  g.setColor('#C0C0C0');
 
-  g.setFontAlign(0, -1);
-  g.drawString(d.dow, 120, 160);
-  g.drawString(d.date, 120, 175);
-  g.drawString(d.steps, 50, 175);
-  g.drawString(d.batt, 200, 175);
-  drawBtyIcon(190, 160, d.battery);
+  g.setFontAlign(0, 0);
+  let dt = ' '+d.dow.toUpperCase() + ' ' + d.date;
+  g.drawString(dt, 212, 120, true);
+  g.drawString(dt, 213, 120, false);
 
+  g.drawString(' '+d.batt+' ', 212, 64, true);
+  g.drawString(' '+d.steps+' ', 212, 185, true);
+  drawBtyIcon(200, 30, d.batt);
 };
 
-let orientationSwitch = (nmode) => {
-  prevH1 = -1;
-  prevH2 = -1;
-  prevM1 = -1;
-  prevM2 = -1;
-};
-
-v.setDrawBackground(drawBackground);
-v.setDrawTime(drawRealTime);
-v.setDrawData(drawRealData);
-v.begin();
+if(!EMULATOR) {
+  v.setDrawBackground(drawBackground);
+  v.setDrawTime(drawRealTime);
+  v.setDrawData(drawRealData);
+  v.begin();
+} else {
+  let dt = new Date();
+  let d = { hour:dt.getHours(), min:dt.getMinutes(),
+    steps: 12345, batt: 47,
+          dow: 'Thu', date: 29,
+          h1: Math.floor(dt.getHours() / 10),
+          h2: Math.floor(dt.getHours() % 10),
+          m1: Math.floor(dt.getMinutes() / 10),
+          m2: Math.floor(dt.getMinutes() % 10),
+          };
+  drawBackground(false);
+  drawRealTime(d, false);
+  drawRealData(d, false);
+}
