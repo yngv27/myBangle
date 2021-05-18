@@ -18,6 +18,7 @@ let fgColor1 = "#FFFFFF";
 let fgColor2 = "#FFFFFF";
 
 let stepFile = 'yngv27.steps.json';
+let stepArchiveFile = 'yngv27.steps.json';
 
 let _Alarms = [], _StepData = {};
 let _List = '';
@@ -26,7 +27,7 @@ function reload() {
   try {
     _List = _Storage.readJSON('yngv27.notes.json');
   } catch (err) {
-    _List = ['Nothing to see here...'];
+    _List = 'No notes...';
   }
   try {
     _Alarms =  _Storage.readJSON('yngv27.alarms.json');
@@ -184,16 +185,20 @@ function timeCheck() {
   if(!nightMode && !inAlarm) {
     logD("drawing data...");
     const mstr="JanFebMarAprMayJunJulAugSepOctNovDec";
+    const dowstr = "SunMonTueWedThuFriSat";
 
     let month = d.getMonth();
+    let dow = d.getDay();
     data.month = month;
     data.date = d.getDate();
 
     data.mon3 = mstr.slice(month*3,month*3+3);
-    data.dow = _Locale.dow(d, true);
+    data.dow = dowstr.substr(dow*3,3);
+    //data.dow = _Locale.dow(d, true);
     data.dateStr = data.dow + " " + data.mon3 + " " + data.date;
     data.steps = _StepData.stepCache + _StepData.lastStepCount;
     data.batt = E.getBattery() + (Bangle.isCharging() ? "+" : "");
+    data.charging = Bangle.isCharging();
 
     drawData(data);
   }
@@ -260,8 +265,16 @@ setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
 setWatch(setNightMode, BTN1, {repeat:true,edge:"falling"});
 setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
 
+/*
+** on every "step", if the date has changed, save steps and reset
+** then cache the count from Bangle
+*/
 Bangle.on('step', function(cnt) { 
   if(_StepData.lastDate !== getToday()) {
+    // save previous day's step count
+    _Storage.write(getToday()+'.steps', JSON.stringify(
+      _StepData.stepCache +_StepData.lastStepCount
+    ));
     _StepData.stepCache = 0 - cnt;
     _StepData.lastDate = getToday();
   }
@@ -269,6 +282,12 @@ Bangle.on('step', function(cnt) {
   _StepData.updated = true;
 });
 
+/*
+** Advertise a writeable characteristic. Accepts text (in 20 char
+** chunks) terminated with __EOM__ by itself. If there's text, show
+** it (as an alarm), otherwise reload the alarm & msg files (empty
+** string signals another BLE process updated those files)
+*/
 var BLEMessage = "";
 NRF.setServices({
   "feb10001-f00d-ea75-7192-abbadabadebb": {
