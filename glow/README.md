@@ -1,4 +1,4 @@
-![screenshot.png]
+![](screenshot.png)
 ## Glow watch face
 
 This is a numeric-free analog watch. Hands and tiks are images that have a glow effect.
