@@ -1,5 +1,7 @@
-
-let EMULATOR = true;
+/*
+** DIGITAL2
+*/
+let EMULATOR = false;
 
 if(! EMULATOR) {
   let v = require('m_vatch');
@@ -145,7 +147,7 @@ function drawDigits(num, x0, y0, places) {
   for(let x=places-1; x >= 0 ; x--) {
     let col = Math.pow(10,x);
     let val = Math.floor(num / col);
-    console.log('col=' + col+' ; val='+val);
+    //console.log('col=' + col+' ; val='+val);
     drawSegments(x0, y0, 0.22, 1, digit[val]);
     x0 += 24;
     num -= val*col;
@@ -168,13 +170,13 @@ function drawRealData(d, nmode) {
   g.setFontAlign(1, -1);
   g.drawString(d.batt, 238, 218, 1);
   */
-  let x = 0;
-  fgColor = '#c0b080';
+  let x = 1;
+  fgColor = '#e0d080';
   drawDigits(d.steps, x, 213, 5);
-  fgColor = '#c020c0';
+  fgColor = '#c080c0';
   x += 120;
   drawDigits(d.date, x, 213, 2);
-  fgColor = '#80b080';
+  fgColor = '#c0e0c0';
   x += 48;
   drawDigits(d.batt, x, 213, 3);
 }
