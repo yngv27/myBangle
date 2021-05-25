@@ -3,6 +3,7 @@
 ** WORD WATCH
 ** Yeh, been done before...
 */
+let EMULATOR = false;
 let lf = require('m_lfont');
 let v = require('m_vatch');
 
@@ -18,7 +19,7 @@ let minWords = [
   { str: 'quarter', x: 0, y: 2 },
   { str: 'twenty', x: 0, y: 1 },
   { str: 'half', x: 6, y: 0 },
-  /* dummies //
+  /* dummies */
   { str: 'x  m    e', x:2, y:0 },
   { str: 'm', x:10, y:1 },
   { str: 's', x:7, y:2 },
@@ -27,7 +28,7 @@ let minWords = [
   { str: 'g', x:4, y:6 },
   { str: 'm    s', x:5, y:8 },
   { str: 'f', x:4, y:9 },
-*/
+/**/
   ];
 let hrWords = [
   { str: 'twelve', x: 5, y: 4 },
@@ -79,25 +80,30 @@ let drawTime = (d) => {
 
   g.setColor('#ffffff');
   //console.log(h,m);
-  m = Math.floor(m / 5);
-  if (m === 0) {
+  m = Math.round(m / 5) % 12;
+  //console.log('m is now '+m);
+  if (m == 0) {
     drawWord(litWords[3]); //OCLOCK
-  } else if (m === 6) {
-    drawWord(litWords[3]); //HALF
+  } else if (m == 6) {
+    drawWord(minWords[5]); //HALF
     drawWord(litWords[1]); //PAST
   } else if(m > 5) {
     drawWord(litWords[0]); //TO
-    drawWord(litWords[2]); //MIN
+    if(m != 9) drawWord(litWords[2]); //MIN
     h++;
-
   } else {
     drawWord(litWords[1]); //PAST
-    drawWord(litWords[2]);//MIN
+    if(m != 3) drawWord(litWords[2]);//MIN
   }
   h %= 12;
   drawWord(hrWords[h]);
-  m %= 6;
-  if(m == 5) {
+  if(m === 0 || m === 6) return;
+
+  if(m > 6) m = 12-m;
+  //console.log('and now m is '+m);
+  //m %= 6;
+  
+  if(m === 5) {
     drawWord(minWords[4]); //TWENTY
     drawWord(minWords[1]); //FIVE
   } else {
@@ -108,6 +114,7 @@ let drawTime = (d) => {
 
 
 let drawData = (d) => {
+
   return;
 };
 
