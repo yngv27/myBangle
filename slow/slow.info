@@ -1,0 +1,9 @@
+{
+"id":"jvSlow",
+"name":"Slow(TM) Clock",
+"type":"clock",
+"src":"slow.app.js",
+"sortorder":-5,
+"version":"0.1",
+"files":"slow.info,slow.app.js"
+}
