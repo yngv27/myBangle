@@ -1,5 +1,8 @@
 /*
 ** DIGITAL2
+** Squared numerals with rounded ends
+** non-military time presentation
+** all data (steps, date, power) on bottom row, small square numerals
 */
 let EMULATOR = false;
 
