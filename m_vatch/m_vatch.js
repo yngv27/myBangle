@@ -1,40 +1,34 @@
 const _Locale = require('locale');
 const _Storage = require('Storage');
 
+let interval = null;
+let inAlarm = false;
+
+let nightMode = false;
+
+let stepFile = 'v.steps.json';
+let stepArchiveFile = 'v.stephist.json';
+
+let _Alarms = [], _StepData = {};
+let _List = '';
+let _Options = {};
+
 const pad0 = (n) => (n > 9) ? n : ("0"+n); 
 
 const getToday = () => {
   let d = new Date();
   return d.getFullYear()+'-'+ pad0(d.getMonth()+1) + '-' + pad0(d.getDate());
 };
-let interval = null;
-let inAlarm = false;
-
-
-//let vOption = 2;
-let nightMode = false;
-let bgColor = "#202020";
-let fgColor1 = "#FFFFFF";
-let fgColor2 = "#FFFFFF";
-
-let stepFile = 'yngv27.steps.json';
-let stepArchiveFile = 'yngv27.steps.json';
-
-let _Alarms = [], _StepData = {};
-let _List = '';
 
 function reload() {
-  try {
-    _List = _Storage.readJSON('yngv27.notes.json');
-  } catch (err) {
-    _List = 'No notes...';
-  }
-  try {
-    _Alarms =  _Storage.readJSON('yngv27.alarms.json');
-  } catch (err) {_Alarms = [];}
-  try {
-    _StepData =  _Storage.readJSON(stepFile);
-  } catch (err) {
+  _List = _Storage.readJSON('v.notes.json');
+  if(!_List) _List = 'No notes...';
+
+  _Alarms =  _Storage.readJSON('v.alarms.json');
+  if(!_Alarms)_Alarms = [];
+
+  _StepData =  _Storage.readJSON(stepFile);
+  if(!_StepData) {
     _StepData = {
       lastDate: '1999-09-09',
       stepCache: 0,
@@ -265,14 +259,21 @@ setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
 setWatch(setNightMode, BTN1, {repeat:true,edge:"falling"});
 setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
 
-/*
-** on every "step", if the date has changed, save steps and reset
-** then cache the count from Bangle
-*/
 Bangle.on('step', function(cnt) { 
   if(_StepData.lastDate !== getToday()) {
     // save previous day's step count
-    _Storage.write(getToday()+'.steps', JSON.stringify(
+    try {
+      let sf = _Storage.readJSON(stepArchiveFile);
+      // trim to 30
+      if(sf.length == 30 ) sf.shift();
+      let steps = _StepData.stepCache +_StepData.lastStepCount;
+      let sd = `${_StepData.lastDate},${steps}`;
+      sf.push(sd);
+      _Storage.writeJSON(stepArchiveFile, sd);
+    } catch (err) {
+      _Storage.write('err.txt',err);
+    }
+    _Storage.write(_StepData.lastDate +'.steps', JSON.stringify(
       _StepData.stepCache +_StepData.lastStepCount
     ));
     _StepData.stepCache = 0 - cnt;
@@ -323,7 +324,8 @@ exports.setDrawTime = function(dTime) {
 exports.setDrawData = function( dData) {
   drawData = dData;
 };
-exports.begin = function() {
+exports.begin = function(opts) {
+  _Options = opts;
   drawBackground(nightMode);
   start();
 };
