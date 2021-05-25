@@ -5,9 +5,8 @@ let newAlarm = {
   msg: "None",
 };
 
-let alarmFile = 'yngv27.alarms.json';
+let alarmFile = 'v.alarms.json';
 
-//let msgs = require("Storage").readJSON('yngv27.msgs.json');
 let alarms = require("Storage").readJSON(alarmFile);
 if( ! alarms ) alarms = [];
 
