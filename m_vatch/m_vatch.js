@@ -1,4 +1,3 @@
-const _Locale = require('locale');
 const _Storage = require('Storage');
 
 let interval = null;
@@ -20,12 +19,13 @@ const getToday = () => {
   return d.getFullYear()+'-'+ pad0(d.getMonth()+1) + '-' + pad0(d.getDate());
 };
 
+
 function reload() {
   _List = _Storage.readJSON('v.notes.json');
   if(!_List) _List = 'No notes...';
 
   _Alarms =  _Storage.readJSON('v.alarms.json');
-  if(!_Alarms)_Alarms = [];
+  if(!_Alarms) _Alarms = [{"msg":"9:00|PSS town hall","time":"2021-05-26T17:02:00"}];
 
   _StepData =  _Storage.readJSON(stepFile);
   if(!_StepData) {
@@ -37,7 +37,6 @@ function reload() {
     };
   }
 }
-reload();
 
 if(getToday() === _StepData.lastDate) {
   _StepData.stepCache += _StepData.lastStepCount;
@@ -99,7 +98,8 @@ function showMsg(title, msg) {
   setTimeout(notify, 4000);
 }
 
-function checkMsgs() {
+/*
+function checkMsgs2() {
   for(let idx=0; idx < _Alarms.length; idx++) {
     let tdiff = Date.now() - Date.parse(_Alarms[idx].time);
     // 10 sec margin of error
@@ -108,6 +108,7 @@ function checkMsgs() {
     }
   }
 }
+*/
 
 let alarmTOs = [];
 function scheduleAlarms() {
@@ -118,12 +119,15 @@ function scheduleAlarms() {
     let tdiff = Date.parse(_Alarms[idx].time) - Date.now();
     let msg = _Alarms[idx].msg;
     if(tdiff > 0) {
-      /*console.log(`will alarm ${msg} in ${tdiff}`);*/
-      alarmTOs.push(setTimeout(checkMsgs, tdiff));
+      console.log(`will alarm ${msg} in ${tdiff}`);
+      let str = _Alarms[idx].msg;
+      alarmTOs.push(setTimeout(function () {
+        showMsg('ALARM', str);
+      }, tdiff));
     }
   }
 }
-scheduleAlarms();
+
 
 function logD(str) {
   //console.log(str);
@@ -263,9 +267,9 @@ Bangle.on('step', function(cnt) {
   if(_StepData.lastDate !== getToday()) {
     // save previous day's step count
     try {
-      let sf = _Storage.readJSON(stepArchiveFile);
+      let sf = _Storage.readJSON(stepArchiveFile) || [];
       // trim to 30
-      if(sf.length == 30 ) sf.shift();
+      if(sf.length >= 30 ) sf.shift();
       let steps = _StepData.stepCache +_StepData.lastStepCount;
       let sd = `${_StepData.lastDate},${steps}`;
       sf.push(sd);
@@ -326,6 +330,8 @@ exports.setDrawData = function( dData) {
 };
 exports.begin = function(opts) {
   _Options = opts;
+  reload();
+  scheduleAlarms();
   drawBackground(nightMode);
   start();
 };
