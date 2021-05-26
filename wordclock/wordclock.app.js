@@ -6,7 +6,7 @@
 let EMULATOR = false;
 let lf = require('m_lfont');
 let v = require('m_vatch');
-
+//g.setFont('6x8',3);
 
 let drawBkgd = (nm) => {
   g.clear();
@@ -20,14 +20,14 @@ let minWords = [
   { str: 'twenty', x: 0, y: 1 },
   { str: 'half', x: 6, y: 0 },
   /* dummies */
-  { str: 'x  m    e', x:2, y:0 },
+  { str: 'c  m    a', x:2, y:0 },
   { str: 'm', x:10, y:1 },
   { str: 's', x:7, y:2 },
   { str: 'd  v', x:7, y:3 },
   { str: 'r', x:4, y:4 },
   { str: 'g', x:4, y:6 },
-  { str: 'm    s', x:5, y:8 },
-  { str: 'f', x:4, y:9 },
+  { str: 'o    t', x:5, y:8 },
+  { str: 't', x:4, y:9 },
 /**/
   ];
 let hrWords = [
@@ -55,19 +55,19 @@ let litWords = [
   ];
 
 function drawWord(s) {
-  let sp = 18;
-  lf.drawString(s.str, 22+s.x * sp, 22+s.y * sp);
+  let sp = 19; 
+  lf.drawString(s.str.toUpperCase(), 12+s.x * sp, 12+s.y * (sp+2));
 }
 
 let drawTime = (d) => {
-  lf.setScale(15,15);
-  lf.setSpacing(3);
+  lf.setScale(15,18);
+  lf.setSpacing(4);
   let s = {};
   let h = d.hour;
   let m = d.min;
 
 
-  g.setColor('#808080');
+  g.setColor('#505050');
   for(let i = 0; i < minWords.length; i++) {
     drawWord(minWords[i]);
   }
@@ -78,9 +78,17 @@ let drawTime = (d) => {
     drawWord(litWords[i]);
   }
 
-  g.setColor('#ffffff');
+  //h = 8; 
+  //m = 3;
+  
+  g.setColor(E.getBattery() < 30 ? '#e0e0b0' : '#ffffff');
+  drawWord(minWords[0]);
+  
+  // custom round
+  m += 2;
+  if (m > 59 ) { m -= 60; h++; }
   //console.log(h,m);
-  m = Math.round(m / 5) % 12;
+  m = Math.floor(m / 5) % 12;
   //console.log('m is now '+m);
   if (m == 0) {
     drawWord(litWords[3]); //OCLOCK
