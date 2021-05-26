@@ -9,6 +9,7 @@ let v = require('m_vatch');
 //g.setFont('6x8',3);
 
 let drawBkgd = (nm) => {
+  g.setBgColor(nm ? '#000000' : '#202020');
   g.clear();
 };
 
@@ -59,29 +60,31 @@ function drawWord(s) {
   lf.drawString(s.str.toUpperCase(), 12+s.x * sp, 12+s.y * (sp+2));
 }
 
-let drawTime = (d) => {
-  lf.setScale(15,18);
-  lf.setSpacing(4);
+let drawTime = (d, nm) => {
+  setScale(15,18);
+  setSpacing(4);
   let s = {};
   let h = d.hour;
   let m = d.min;
 
-
-  g.setColor('#505050');
-  for(let i = 0; i < minWords.length; i++) {
-    drawWord(minWords[i]);
-  }
-  for(let i = 0; i < hrWords.length; i++) {
-    drawWord(hrWords[i]);
-  }
-  for(let i = 0; i < litWords.length; i++) {
-    drawWord(litWords[i]);
+  if(!nm) {
+    g.setColor('#101010');
+    for(let i = 0; i < minWords.length; i++) {
+      drawWord(minWords[i]);
+    }
+    for(let i = 0; i < hrWords.length; i++) {
+      drawWord(hrWords[i]);
+    }
+    for(let i = 0; i < litWords.length; i++) {
+      drawWord(litWords[i]);
+    }
   }
 
   //h = 8; 
   //m = 3;
   
-  g.setColor(E.getBattery() < 30 ? '#e0e0b0' : '#ffffff');
+  g.setColor(E.getBattery() < 30 ? '#e0e0b0' : '#808080');
+  if(nm) g.setColor('#203040');
   drawWord(minWords[0]);
   
   // custom round
