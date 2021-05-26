@@ -1,4 +1,3 @@
-
 /*
 ** WORD WATCH
 ** Yeh, been done before...
@@ -7,11 +6,6 @@ let EMULATOR = false;
 let lf = require('m_lfont');
 let v = require('m_vatch');
 //g.setFont('6x8',3);
-
-let drawBkgd = (nm) => {
-  g.setBgColor(nm ? '#000000' : '#202020');
-  g.clear();
-};
 
 let minWords = [
   { str: 'it is', x: 0, y: 0 },
@@ -47,6 +41,7 @@ let hrWords = [
 
   ];
 
+/*
 let litWords = [
   { str: 'to' , x: 8, y: 3} ,
   { str: 'past', x: 0, y: 4 },
@@ -54,15 +49,30 @@ let litWords = [
   { str: 'oclock', x: 5, y: 9 },
 
   ];
+*/
 
+let litWords = ['83to','04past','03minutes','59oclock'];
+
+function _drawWord(s) {
+  let x = s.charCodeAt(0) - 48;
+  let y = s.charCodeAt(1) - 48;
+  let str = s.slice(2);
+  let sp = 19; 
+  lf.drawString(str.toUpperCase(), 16+x * sp, 16+y * (sp+2));
+}
 function drawWord(s) {
   let sp = 19; 
-  lf.drawString(s.str.toUpperCase(), 12+s.x * sp, 12+s.y * (sp+2));
+  lf.drawString(s.str.toUpperCase(), 16+s.x * sp, 16+s.y * (sp+2));
 }
 
+let drawBkgd = (nm) => {
+  g.setBgColor(nm ? '#000000' : '#404040');
+  g.clear();
+};
+
 let drawTime = (d, nm) => {
-  setScale(15,18);
-  setSpacing(4);
+  lf.setScale(15,18);
+  lf.setSpacing(4);
   let s = {};
   let h = d.hour;
   let m = d.min;
@@ -76,14 +86,14 @@ let drawTime = (d, nm) => {
       drawWord(hrWords[i]);
     }
     for(let i = 0; i < litWords.length; i++) {
-      drawWord(litWords[i]);
+      _drawWord(litWords[i]);
     }
   }
 
   //h = 8; 
   //m = 3;
   
-  g.setColor(E.getBattery() < 30 ? '#e0e0b0' : '#808080');
+  g.setColor(E.getBattery() < 30 ? '#e0e0b0' : '#a0a0a0');
   if(nm) g.setColor('#203040');
   drawWord(minWords[0]);
   
@@ -94,17 +104,17 @@ let drawTime = (d, nm) => {
   m = Math.floor(m / 5) % 12;
   //console.log('m is now '+m);
   if (m == 0) {
-    drawWord(litWords[3]); //OCLOCK
+    _drawWord(litWords[3]); //OCLOCK
   } else if (m == 6) {
     drawWord(minWords[5]); //HALF
-    drawWord(litWords[1]); //PAST
+    _drawWord(litWords[1]); //PAST
   } else if(m > 5) {
-    drawWord(litWords[0]); //TO
-    if(m != 9) drawWord(litWords[2]); //MIN
+    _drawWord(litWords[0]); //TO
+    if(m != 9) _drawWord(litWords[2]); //MIN
     h++;
   } else {
-    drawWord(litWords[1]); //PAST
-    if(m != 3) drawWord(litWords[2]);//MIN
+    _drawWord(litWords[1]); //PAST
+    if(m != 3) _drawWord(litWords[2]);//MIN
   }
   h %= 12;
   drawWord(hrWords[h]);
