@@ -1,3 +1,4 @@
+const _Locale = require('locale');
 const _Storage = require('Storage');
 
 let interval = null;
@@ -10,7 +11,9 @@ let stepArchiveFile = 'v.stephist.json';
 
 let _Alarms = [], _StepData = {};
 let _List = '';
-let _Options = {};
+let _Options = {
+  autoNightMode: true
+};
 
 const pad0 = (n) => (n > 9) ? n : ("0"+n); 
 
@@ -18,6 +21,7 @@ const getToday = () => {
   let d = new Date();
   return d.getFullYear()+'-'+ pad0(d.getMonth()+1) + '-' + pad0(d.getDate());
 };
+
 
 
 function reload() {
@@ -149,6 +153,22 @@ function timeCheck() {
   
   if(inAlarm) return;
   
+  logD('opt.nm = '+_Options.autoNightMode);
+  if(_Options.autoNightMode) {
+    let a = Bangle.getAccel();
+    a.x = Math.floor(a.x * 100);
+    logD('a.x = ' + a.x);
+    if(a.x === 100) {
+      if(!nightMode) {
+        setNightMode();
+      }
+    } else {
+      if(nightMode) {
+        setNightMode();
+      }
+    }
+  }
+  
   let d = new Date();
 
   let hour = d.getHours();
@@ -233,6 +253,10 @@ Bangle.on('lcdPower', function (on) {
 
 function setNightMode() {
   logD("setNightMode");
+  if(_Options.autoNightMode) {
+    Bangle.buzz(400);
+  }
+
   if(inAlarm ) {
     inAlarm = false;
   } else {
@@ -267,7 +291,8 @@ Bangle.on('step', function(cnt) {
   if(_StepData.lastDate !== getToday()) {
     // save previous day's step count
     try {
-      let sf = _Storage.readJSON(stepArchiveFile) || [];
+      let sf = _Storage.readJSON(stepArchiveFile);
+      if(!sf) sf = [];
       // trim to 30
       if(sf.length >= 30 ) sf.shift();
       let steps = _StepData.stepCache +_StepData.lastStepCount;
@@ -329,9 +354,10 @@ exports.setDrawData = function( dData) {
   drawData = dData;
 };
 exports.begin = function(opts) {
-  _Options = opts;
+  if(opts) _Options = opts;
   reload();
   scheduleAlarms();
   drawBackground(nightMode);
   start();
 };
+
