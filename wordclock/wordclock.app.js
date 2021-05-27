@@ -2,71 +2,46 @@
 ** WORD WATCH
 ** Yeh, been done before...
 */
-let EMULATOR = false;
-let lf = require('m_lfont');
-let v = require('m_vatch');
-//g.setFont('6x8',3);
-
+let EMULATOR = true;
+if(EMULATOR) {
+  g.setFont('6x8',3);
+  let lf = {
+    setScale: function(x,y) {},
+    setSpacing: function(x) {},
+    drawString: function(s,x,y) { g.drawString(s,x,y); },
+  };
+} else {
+  let lf = require('m_lfont');
+  let v = require('m_vatch');
+}
+/* words are XYword, where X is column, Y is row */
 let minWords = [
-  { str: 'it is', x: 0, y: 0 },
-  { str: 'five', x: 6, y: 1 },
-  { str: 'ten', x: 8, y: 2 },
-  { str: 'quarter', x: 0, y: 2 },
-  { str: 'twenty', x: 0, y: 1 },
-  { str: 'half', x: 6, y: 0 },
-  /* dummies */
-  { str: 'c  m    a', x:2, y:0 },
-  { str: 'm', x:10, y:1 },
-  { str: 's', x:7, y:2 },
-  { str: 'd  v', x:7, y:3 },
-  { str: 'r', x:4, y:4 },
-  { str: 'g', x:4, y:6 },
-  { str: 'o    t', x:5, y:8 },
-  { str: 't', x:4, y:9 },
-/**/
+  '00it is', '61five', '82ten', 
+  '02quarter', '01twenty','60half', 
   ];
 let hrWords = [
-  { str: 'twelve', x: 5, y: 4 },
-  { str: 'one', x: 0, y: 5 },
-  { str: 'two', x: 8, y: 6 },
-  { str: 'three', x: 6, y: 5 },
-  { str: 'four', x: 0, y: 6 },
-  { str: 'five', x: 0, y: 9 },
-  { str: 'six', x: 3, y: 5 },
-  { str: 'seven', x: 0, y: 8 },
-  { str: 'eight', x: 0, y: 7 },
-  { str: 'nine', x: 6, y: 8 },
-  { str: 'ten', x: 5, y: 6 },
-  { str: 'eleven', x: 5, y: 7 },
-
+  '54twelve',   '05one',   '86two', 
+  '65three', '06four', '09five', 
+  '35six', '08seven', '07eight', 
+  '68nine', '56ten', '57eleven', 
   ];
-
-/*
-let litWords = [
-  { str: 'to' , x: 8, y: 3} ,
-  { str: 'past', x: 0, y: 4 },
-  { str: 'minutes', x: 0, y: 3 },
-  { str: 'oclock', x: 5, y: 9 },
-
-  ];
-*/
-
 let litWords = ['83to','04past','03minutes','59oclock'];
+let dmyWords = [
+  '20c  m    a', ':1m', '72s', 
+  '73d  v', '44r', '46g', 
+  '58o    t', '49t', 
+  ];
 
-function _drawWord(s) {
+function drawWord(s) {
   let x = s.charCodeAt(0) - 48;
   let y = s.charCodeAt(1) - 48;
   let str = s.slice(2);
   let sp = 19; 
   lf.drawString(str.toUpperCase(), 16+x * sp, 16+y * (sp+2));
 }
-function drawWord(s) {
-  let sp = 19; 
-  lf.drawString(s.str.toUpperCase(), 16+s.x * sp, 16+s.y * (sp+2));
-}
 
 let drawBkgd = (nm) => {
-  g.setBgColor(nm ? '#000000' : '#404040');
+  g.setBgColor(nm ? '#000000' : '#403020');
   g.clear();
 };
 
@@ -78,7 +53,7 @@ let drawTime = (d, nm) => {
   let m = d.min;
 
   if(!nm) {
-    g.setColor('#101010');
+    g.setColor('#201810');
     for(let i = 0; i < minWords.length; i++) {
       drawWord(minWords[i]);
     }
@@ -86,8 +61,12 @@ let drawTime = (d, nm) => {
       drawWord(hrWords[i]);
     }
     for(let i = 0; i < litWords.length; i++) {
-      _drawWord(litWords[i]);
+      drawWord(litWords[i]);
     }
+    for(let i = 0; i < dmyWords.length; i++) {
+      drawWord(dmyWords[i]);
+    }
+
   }
 
   //h = 8; 
@@ -104,17 +83,17 @@ let drawTime = (d, nm) => {
   m = Math.floor(m / 5) % 12;
   //console.log('m is now '+m);
   if (m == 0) {
-    _drawWord(litWords[3]); //OCLOCK
+    drawWord(litWords[3]); //OCLOCK
   } else if (m == 6) {
     drawWord(minWords[5]); //HALF
-    _drawWord(litWords[1]); //PAST
+    drawWord(litWords[1]); //PAST
   } else if(m > 5) {
-    _drawWord(litWords[0]); //TO
-    if(m != 9) _drawWord(litWords[2]); //MIN
+    drawWord(litWords[0]); //TO
+    if(m != 9) drawWord(litWords[2]); //MIN
     h++;
   } else {
-    _drawWord(litWords[1]); //PAST
-    if(m != 3) _drawWord(litWords[2]);//MIN
+    drawWord(litWords[1]); //PAST
+    if(m != 3) drawWord(litWords[2]);//MIN
   }
   h %= 12;
   drawWord(hrWords[h]);
@@ -135,12 +114,20 @@ let drawTime = (d, nm) => {
 
 
 let drawData = (d) => {
-
   return;
 };
 
-
-v.setDrawBackground(drawBkgd);
-v.setDrawTime(drawTime);
-v.setDrawData(drawData);
-v.begin();
+if (EMULATOR ) {
+  let dt = new Date();
+  let d = { hour: dt.getHours(), min: dt.getMinutes() ,
+          date: 27, batt: 99, steps: 8000, dow: 'Fri'
+          };
+  drawBkgd(false);
+  drawTime(d, false);
+  drawData(d, false);
+} else {
+  v.setDrawBackground(drawBkgd);
+  v.setDrawTime(drawTime);
+  v.setDrawData(drawData);
+  v.begin();
+}
