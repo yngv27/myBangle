@@ -1,11 +1,14 @@
-
-const _Locale = require('locale');
 const _Storage = require('Storage');
-//require("FontHaxorNarrow7x17").add(Graphics);
-//g.setFont("HaxorNarrow7x17", 1); // bitmap font, 1x magnified
-//g.setFont("Vector", 18);
-require("m_knxt").add(Graphics);
-g.setFont("KNXT", 1); // bitmap font, 1x magnified
+
+let EMULATOR = false;
+if(EMULATOR) {
+  g.setFont('6x8',3);
+} else {
+  let v = require('m_vatch');
+  require("m_knxt").add(Graphics);
+  g.setFont("KNXT", 1); // bitmap font, 1x magnified
+
+}
 
 const pad0 = (n) => (n > 9) ? n : ("0"+n); 
 
@@ -14,73 +17,12 @@ const getToday = () => {
   return d.getFullYear()+'-'+ pad0(d.getMonth()+1) + '-' + pad0(d.getDate());
 };
 let interval = null;
-let inAlarm = false;
 
-
-//let vOption = 2;
 let nightMode = false;
 let bgColor = "#202020";
 let fgColor1 = "#FFFFFF";
-let fgColor2 = "#FFFFFF";
+let fgColor2 = "#80FFFF";
 
-let stepFile = 'yngv27.steps.json';
-
-let _Msgs = [], _Alarms = [], _StepData = {};
-try {
-  _Msgs = _Storage.readJSON('yngv27.msgs.json');
-} catch (err) {_Msgs = [];}
-try {
-  _Alarms =  _Storage.readJSON('yngv27.alarms.json');
-} catch (err) {_Alarms = [];}
-try {
-  _StepData =  _Storage.readJSON(stepFile);
-} catch (err) {
-  _StepData = {
-    lastDate: '1999-09-09',
-    stepCache: 0,
-    lastStepCount: 0,
-    updated: true,
-  };
-}
-
-if(getToday() === _StepData.lastDate) {
-  _StepData.stepCache += _StepData.lastStepCount;
-  _StepData.lastStepCount = 0;
-}
-
-
-function showMsg(msg) {
-  g.clearRect(60, 160, 200, 232);
-  g.setFontAlign(0,-1);
-  g.setColor(1,1,1);
-  g.drawString("__ ALARM __", 120, 180, true);
-  g.drawString(msg, 120, 200, true);
-  Bangle.buzz();
-  setTimeout(Bangle.buzz, 800);
-  setTimeout(Bangle.buzz, 1600);
-  setTimeout(Bangle.buzz, 2400);
-  setTimeout(Bangle.buzz, 3200);
-  inAlarm = true;
-}
-
-function checkMsgs() {
-  for(let idx=0; idx < _Alarms.length; idx++) {
-    let tdiff = Date.now() - Date.parse(_Alarms[idx].time);
-    // 10 sec margin of error
-    if(tdiff > 0 && tdiff < 10000) {
-      showMsg(_Alarms[idx].msg);
-    }
-  }
-}
-
-for(let idx=0; idx < _Alarms.length; idx++) {
-  let tdiff = Date.parse(_Alarms[idx].time) - Date.now();
-  let msg = _Alarms[idx].msg;
-  if(tdiff > 0) {
-    /*console.log(`will alarm ${msg} in ${tdiff}`);*/
-    setTimeout(checkMsgs, tdiff);
-  }
-}
 
 function logD(str) {
   //console.log(str);
@@ -182,18 +124,35 @@ function drawSegments(xOff, yOff, val) {
 function drawScrew(x, y) {
   let d = 24;
   g.setColor("#888888");
-  g.fillEllipse(x, y, x+d, y+d);
+  g.drawEllipse(x, y, x+d, y+d);
   d -= 8;x+=4; y+=4;
-  g.setColor("#222222");
+  //g.setColor("#222222");
   g.drawLine(x+1,y,x+1+d,y+d);
   g.drawLine(x,y,x+d,y+d);
   g.drawLine(x,y+1,x+d,y+1+d);
 }
 
-function drawBackground() {
+function drawBkgd(nmode) {
   g.clear();
+  lastH1 = -1;
+  lastH2 = -1;
+  lastM1 = -1;
+  lastM2 = -1;
+
+  bgColor = "#000000";
+  fgColor1 = "#404040";
+  fgColor2 = "#404040";
+
+  if(nmode) return;
+
+  bgColor = "#202020";
+  fgColor1 = "#FFFFFF";
+  fgColor2 = "#80FFFF";
+
+
   g.setColor("#524f69");
   g.drawPoly([
+    10, 140,
     10,  60, 
     20,  50,
     220, 50,
@@ -201,97 +160,82 @@ function drawBackground() {
     230, 140,
     220, 150,
      20, 150,
-     10, 140
-  ], true);
+     10, 140,
+    
+     10, 180,
+     20, 190,
+    220, 190,
+    230, 180,
+    230, 140
+  ], false);
+  
   g.setColor("#CCCCCC");
   g.fillEllipse(116,  90, 123, 96);
   g.fillEllipse(116, 108, 123, 114);
   
   drawScrew(8, 8);
   drawScrew(208, 8);
-  drawScrew(8, 168);
-  drawScrew(208, 168);
+  drawScrew(8, 208);
+  drawScrew(208, 208);
 }
 
 
-function drawTime() {
-  let d = new Date();
+function drawTime(d, nmode) {
 
-  let hour = d.getHours();
-  let minute = d.getMinutes();
-
-  let h1 = Math.floor(hour / 10);
-  let h2 = hour % 10;
-  let m1 = Math.floor(minute / 10);
-  let m2 = minute % 10;
-  
-  logD("lastH1 = "+lastH1+": lastM2 = "+lastM2);
-  if(h1 == lastH1 && h2 == lastH2 && m1 == lastM1 && m2 == lastM2) {
-    return;
-  }
-  
   logD("drawing!");
   setScale(1.25, 1.25);
   
+  if(d.hour > 12) {
+    d.hour -= 12;
+    if(d.hour == 0) d.hour = 12;
+    d.h1 = Math.floor(d.hour/12);
+    d.h2 = d.hour%12;
+  }
   g.setColor(bgColor);
-  if(h1 != lastH1) {
+  if(d.h1 != lastH1) {
     g.setColor(bgColor);
     drawSegments(startX[0], startY[0], 8);
     g.setColor(fgColor1);
-    drawSegments(startX[0], startY[0], h1);
+    drawSegments(startX[0], startY[0], d.h1);
   }
-  if(h2 != lastH2) {
+  if(d.h2 != lastH2) {
     g.setColor(bgColor);
     drawSegments(startX[1], startY[1], 8);
     g.setColor(fgColor1);
-    drawSegments(startX[1], startY[1], h2);
+    drawSegments(startX[1], startY[1], d.h2);
   }
-  if(m1 != lastM1) {
+  if(d.m1 != lastM1) {
     g.setColor(bgColor);
     drawSegments(startX[2], startY[2], 8);
     g.setColor(fgColor2);
-    drawSegments(startX[2], startY[2], m1);
+    drawSegments(startX[2], startY[2], d.m1);
   }  
-  if(m2 != lastM2) {
+  if(d.m2 != lastM2) {
     g.setColor(bgColor);
     drawSegments(startX[3], startY[3], 8);
     g.setColor(fgColor2);
-    drawSegments(startX[3], startY[3], m2);
+    drawSegments(startX[3], startY[3], d.m2);
   }
   
-  lastH1 = h1;
-  lastH2 = h2;
-  lastM1 = m1;
-  lastM2 = m2;
+  lastH1 = d.h1;
+  lastH2 = d.h2;
+  lastM1 = d.m1;
+  lastM2 = d.m2;
+}
 
-  if(!nightMode && !inAlarm) {
+function drawData(d, nmode) {
+  if(!nmode) {
     setScale(0.25, 0.25);
     g.clearRect(70, 0, 200, 29);
     g.setColor("#80C080");
-    /*
-    let mon = pad0(d.getMonth() + 1);
-    let dt = pad0(d.getDate());
-    drawSegments(92, 8, Math.floor((mon / 10) % 10));
-    drawSegments(104, 8, Math.floor((mon) % 10));
-    drawSegments(124, 8, Math.floor((dt / 10) % 10));
-    drawSegments(136, 8, Math.floor((dt) % 10));
-    */
-    const mstr="JanFebMarAprMayJunJulAugSepOctNovDec";
-    //JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
-
-    let month = d.getMonth();
-    let date = d.getDate();
-
+    
     g.setFontAlign(0, -1);
-    let month3 = mstr.slice(month*3,month*3+3);
-    let dayString = _Locale.dow(d, true);
-    g.drawString(dayString + " " + month3 + " " + date, 120, 8);
+    g.drawString(d.dateStr, 120, 8);
 
     setScale(0.375, 0.375);
-    g.clearRect(0, 200, 239, 239);
+    //g.clearRect(20, 162, 219, 190);
     // steps
     g.setColor("#4080C0");
-    let stepCounter = _StepData.stepCache + _StepData.lastStepCount;
     /*
     drawSegments(20, 158, Math.floor((stepCounter / 10000) % 10));
     drawSegments(35, 158, Math.floor((stepCounter / 1000) % 10));
@@ -300,97 +244,34 @@ function drawTime() {
     drawSegments(80, 158, Math.floor((stepCounter) % 10));
     */
     g.setFontAlign(-1, 1);
-    g.drawString(Math.floor(stepCounter), 10, 239);
+    g.drawString(d.steps, 28, 182, true);
     // battery
     g.setColor("#20C060");
-    let batt = E.getBattery();
-    if(batt < 20) g.setColor('#C0C040');
+    if(d.batt < 20) g.setColor('#C0C040');
     /*
     drawSegments(168, 158, Math.floor((batt / 100) % 10));
     drawSegments(184, 158, Math.floor((batt / 10) % 10));
     drawSegments(200, 158, Math.floor((batt) % 10));
     */
     g.setFontAlign(1, 1);
-    g.drawString(Math.floor(batt), 230, 239);
+    g.drawString(d.batt, 214, 182, true);
   }
 
-  if(_StepData.updated) {
-     _Storage.writeJSON(stepFile, _StepData);
-     logD(JSON.stringify(_StepData));
-    _StepData.updated = false;
-  }
 }
 
-function stop () {
-  if (interval) {
-    clearInterval(interval);
-  }
+
+if (EMULATOR ) {
+  let dt = new Date();
+  let d = { hour: dt.getHours(), min: dt.getMinutes() ,
+           dateStr: 'Sun Jan 1',
+          date: 27, batt: 99, steps: 8000, dow: 'Fri'
+          };
+  drawBkgd(false);
+  drawTime(d, false);
+  drawData(d, false);
+} else {
+  v.setDrawBackground(drawBkgd);
+  v.setDrawTime(drawTime);
+  v.setDrawData(drawData);
+  v.begin();
 }
-
-function start () {
-  if (interval) {
-    clearInterval(interval);
-  }
-  // first time init
-  interval = setInterval(drawTime, 10000);
-  drawTime();
-}
-
-drawBackground();
-start();
-
-Bangle.on('lcdPower', function (on) {
-  if (on) {
-    start();
-  } else {
-    stop();
-  }
-});
-
-function setNightMode() {
-  logD("setNightMode");
-  if(inAlarm ) {
-    inAlarm = false;
-  } else {
-    nightMode = ! nightMode;
-  }
-  g.clear();
-
-  if(nightMode) {
-    g.setRotation(1,0);
-    bgColor = "#000000";
-    fgColor1 = "#202050";
-    fgColor2 = fgColor1;
-  } else {
-    g.setRotation(0,0);
-    bgColor = "#202020";
-    fgColor1 = "#7FFFFF";
-    fgColor2 = "#FFFFFF";
-    drawBackground();
-  }
-  lastM1 = -1;
-  lastM2 = -1;
-  lastH1 = -1;
-  lastH2 = -1;
-  drawTime();
-}
-
-function btn2Func() {
-  showMsg("You pressed button 2");
-}
-
-// Show launcher when middle button pressed
-setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
-
-setWatch(setNightMode, BTN1, {repeat:true,edge:"falling"});
-setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
-
-Bangle.on('step', function(cnt) { 
-  if(_StepData.lastDate !== getToday()) {
-    _StepData.stepCache = 0 - cnt;
-    _StepData.lastDate = getToday();
-  }
-  _StepData.lastStepCount = cnt;
-  _StepData.updated = true;
-});
-
