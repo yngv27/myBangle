@@ -1,18 +1,29 @@
-const _Locale = require('locale');
+
+
 const _Storage = require('Storage');
 
 let interval = null;
-let inAlarm = false;
 
 let nightMode = false;
 
 let stepFile = 'v.steps.json';
 let stepArchiveFile = 'v.stephist.json';
 
-let _Alarms = [], _StepData = {};
 let _List = '';
+let _Alarm = {
+  inAlarm: true,
+  reload: () => {},
+  scheduleAlarms: () => {},
+  showMsg: (title, msg) => {},
+  showNotes: () => {},
+};
+
+let _StepData = {};
+
 let _Options = {
-  autoNightMode: true
+  autoNightMode: true,
+  useAlarms: true,
+  stepManager: true,
 };
 
 const pad0 = (n) => (n > 9) ? n : ("0"+n); 
@@ -22,15 +33,7 @@ const getToday = () => {
   return d.getFullYear()+'-'+ pad0(d.getMonth()+1) + '-' + pad0(d.getDate());
 };
 
-
-
 function reload() {
-  _List = _Storage.readJSON('v.notes.json');
-  if(!_List) _List = 'No notes...';
-
-  _Alarms =  _Storage.readJSON('v.alarms.json');
-  if(!_Alarms) _Alarms = [{"msg":"9:00|PSS town hall","time":"2021-05-26T17:02:00"}];
-
   _StepData =  _Storage.readJSON(stepFile);
   if(!_StepData) {
     _StepData = {
@@ -40,12 +43,13 @@ function reload() {
       updated: true,
     };
   }
+  if(getToday() === _StepData.lastDate) {
+    _StepData.stepCache += _StepData.lastStepCount;
+    _StepData.lastStepCount = 0;
+  }
 }
 
-if(getToday() === _StepData.lastDate) {
-  _StepData.stepCache += _StepData.lastStepCount;
-  _StepData.lastStepCount = 0;
-}
+
 
 function stringFromArray(data)
 {
@@ -56,69 +60,6 @@ function stringFromArray(data)
     str += String.fromCharCode(data[index]);
 
   return str;
-}
-
-function notify() {
-  Bangle.buzz(200);
-}
-
-function showMsg(title, msg) {
-  inAlarm = true;
-  Bangle.setLCDPower(true);
-  g.setFontAlign(0,-1);
-  g.setColor('#FFFF00');
-  g.fillRect(18, 18, 222, 222);
-  /*
-  g.fillPoly([
-    18, 30,30, 18,210, 18,222, 30,222, 210,210, 222,30, 222,18, 210,18, 30
-  ], true);
-  */
-  g.setColor('#202020');
-  g.fillRect(20, 20, 220, 220);
-  /*
-  g.fillPoly([
-    20, 30,30, 20,210, 20,220, 30,220, 210,210, 220,30, 220,20, 210,20, 30
-  ], true);
-  */
-  g.setColor('#FFFFFF');
-  
-  let y = 30;
-  if(title) {
-    g.drawString('___'+title+'___', 120, y);
-    g.drawString('___'+title+'___', 121, y);
-    y += g.getFontHeight();
-  }
-  let lines = msg.split("|");
-  for(let l = 0; l < lines.length; l++) {
-    g.drawString(lines[l], 120, y);
-    y += g.getFontHeight();
-  }
-  if(! title) return;
-
-  setTimeout(notify, 800);
-  setTimeout(notify, 1600);
-  setTimeout(notify, 2400);
-  setTimeout(notify, 3200);
-  setTimeout(notify, 4000);
-}
-
-
-let alarmTOs = [];
-function scheduleAlarms() {
-  for(let idx=0; idx < alarmTOs.length; idx++) {
-    clearTimeout(alarmTOs[idx]);
-  }
-  for(let idx=0; idx < _Alarms.length; idx++) {
-    let tdiff = Date.parse(_Alarms[idx].time) - Date.now();
-    let msg = _Alarms[idx].msg;
-    if(tdiff > 0) {
-      console.log(`will alarm ${msg} in ${tdiff}`);
-      let str = _Alarms[idx].msg;
-      alarmTOs.push(setTimeout(function () {
-        showMsg('ALARM', str);
-      }, tdiff));
-    }
-  }
 }
 
 
@@ -140,7 +81,7 @@ let drawData = () => {};
 
 function timeCheck() {
   
-  if(inAlarm) return;
+  if(_Alarm.inAlarm) return;
   
   logD('opt.nm = '+_Options.autoNightMode);
   if(_Options.autoNightMode) {
@@ -189,7 +130,7 @@ function timeCheck() {
   lastM1 = m1;
   lastM2 = m2;
 
-  if(!nightMode && !inAlarm) {
+  if(!nightMode && !_Alarm.inAlarm) {
     logD("drawing data...");
     const mstr="JanFebMarAprMayJunJulAugSepOctNovDec";
     const dowstr = "SunMonTueWedThuFriSat";
@@ -201,7 +142,6 @@ function timeCheck() {
 
     data.mon3 = mstr.slice(month*3,month*3+3);
     data.dow = dowstr.substr(dow*3,3);
-    //data.dow = _Locale.dow(d, true);
     data.dateStr = data.dow + " " + data.mon3 + " " + data.date;
     data.steps = _StepData.stepCache + _StepData.lastStepCount;
     data.batt = E.getBattery() + (Bangle.isCharging() ? "+" : "");
@@ -246,12 +186,13 @@ function setNightMode() {
     //Bangle.buzz(400);
   }
 
-  if(inAlarm ) {
-    inAlarm = false;
+  if(_Alarm.inAlarm ) {
+    _Alarm.inAlarm = false;
   } else {
     nightMode = ! nightMode;
   }
-
+  logD('nm is '+nightMode);
+  
   if(nightMode) {
     g.setRotation(1,0);
   } else {
@@ -266,9 +207,9 @@ function setNightMode() {
 }
 
 function btn2Func() {
-  reload();
-  scheduleAlarms();
-  showMsg('',_List);
+  _Alarm.reload();
+  _Alarm.scheduleAlarms();
+  _Alarm.showNotes();
 }
 
 // Show launcher when middle button pressed
@@ -309,6 +250,7 @@ Bangle.on('step', function(cnt) {
 ** it (as an alarm), otherwise reload the alarm & msg files (empty
 ** string signals another BLE process updated those files)
 */
+/*
 var BLEMessage = "";
 NRF.setServices({
   "feb10001-f00d-ea75-7192-abbadabadebb": {
@@ -334,6 +276,7 @@ NRF.setServices({
     }
   }
 }, { });
+*/
 
 exports.setDrawBackground = function(dBkgd) {
   drawBackground = dBkgd;
@@ -346,8 +289,17 @@ exports.setDrawData = function( dData) {
 };
 exports.begin = function(opts) {
   if(opts) _Options = opts;
+  if(_Options.useAlarms) {
+    _Alarm = require('m_alarms');
+    _Alarm.reload();
+    _Alarm.scheduleAlarms();
+    setTimeout(alarmUp, 2000);
+  }
   reload();
-  scheduleAlarms();
   drawBackground(nightMode);
   start();
 };
+
+function alarmUp() {
+  _Alarm.showMsg('Congrats!','Alarms are up');
+}
