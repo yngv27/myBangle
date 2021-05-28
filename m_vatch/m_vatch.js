@@ -102,17 +102,6 @@ function showMsg(title, msg) {
   setTimeout(notify, 4000);
 }
 
-/*
-function checkMsgs2() {
-  for(let idx=0; idx < _Alarms.length; idx++) {
-    let tdiff = Date.now() - Date.parse(_Alarms[idx].time);
-    // 10 sec margin of error
-    if(tdiff > 0 && tdiff < 10000) {
-      showMsg('ALARM',_Alarms[idx].msg);
-    }
-  }
-}
-*/
 
 let alarmTOs = [];
 function scheduleAlarms() {
@@ -134,7 +123,7 @@ function scheduleAlarms() {
 
 
 function logD(str) {
-  //console.log(str);
+  console.log(str);
 }
 
 
@@ -158,7 +147,7 @@ function timeCheck() {
     let a = Bangle.getAccel();
     a.x = Math.floor(a.x * 100);
     logD('a.x = ' + a.x);
-    if(a.x === 100) {
+    if(a.x === 100 || a.x === 99) {
       if(!nightMode) {
         setNightMode();
       }
@@ -254,7 +243,7 @@ Bangle.on('lcdPower', function (on) {
 function setNightMode() {
   logD("setNightMode");
   if(_Options.autoNightMode) {
-    Bangle.buzz(400);
+    //Bangle.buzz(400);
   }
 
   if(inAlarm ) {
@@ -288,17 +277,19 @@ setWatch(setNightMode, BTN1, {repeat:true,edge:"falling"});
 setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
 
 Bangle.on('step', function(cnt) { 
+  if(!_StepData.lastDate) return;
   if(_StepData.lastDate !== getToday()) {
     // save previous day's step count
     try {
       let sf = _Storage.readJSON(stepArchiveFile);
       if(!sf) sf = [];
+      logD('sf is '+ (typeof sf) +':'+sf);
       // trim to 30
       if(sf.length >= 30 ) sf.shift();
       let steps = _StepData.stepCache +_StepData.lastStepCount;
       let sd = `${_StepData.lastDate},${steps}`;
       sf.push(sd);
-      _Storage.writeJSON(stepArchiveFile, sd);
+      _Storage.writeJSON(stepArchiveFile, sf);
     } catch (err) {
       _Storage.write('err.txt',err);
     }
@@ -360,4 +351,3 @@ exports.begin = function(opts) {
   drawBackground(nightMode);
   start();
 };
-
