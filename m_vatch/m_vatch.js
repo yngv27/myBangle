@@ -1,5 +1,6 @@
 
 
+
 const _Storage = require('Storage');
 
 let interval = null;
@@ -9,9 +10,11 @@ let nightMode = false;
 let stepFile = 'v.steps.json';
 let stepArchiveFile = 'v.stephist.json';
 
-let _List = '';
+let _Options = {};
+let optsFile = 'm_vatch.opts.json';
+
 let _Alarm = {
-  inAlarm: true,
+  inAlarm: false,
   reload: () => {},
   scheduleAlarms: () => {},
   showMsg: (title, msg) => {},
@@ -19,12 +22,6 @@ let _Alarm = {
 };
 
 let _StepData = {};
-
-let _Options = {
-  autoNightMode: true,
-  useAlarms: true,
-  stepManager: true,
-};
 
 const pad0 = (n) => (n > 9) ? n : ("0"+n); 
 
@@ -64,7 +61,8 @@ function stringFromArray(data)
 
 
 function logD(str) {
-  console.log(str);
+  //if(_Options.debug) 
+    console.log(str);
 }
 
 
@@ -83,6 +81,7 @@ function timeCheck() {
   
   if(_Alarm.inAlarm) return;
   
+  logD('Again, ' + JSON.stringify(_Options));
   logD('opt.nm = '+_Options.autoNightMode);
   if(_Options.autoNightMode) {
     let a = Bangle.getAccel();
@@ -212,10 +211,7 @@ function btn2Func() {
   _Alarm.showNotes();
 }
 
-// Show launcher when middle button pressed
-setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
-setWatch(setNightMode, BTN1, {repeat:true,edge:"falling"});
-setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
+
 
 Bangle.on('step', function(cnt) { 
   if(!_StepData.lastDate) return;
@@ -287,19 +283,32 @@ exports.setDrawTime = function(dTime) {
 exports.setDrawData = function( dData) {
   drawData = dData;
 };
-exports.begin = function(opts) {
-  if(opts) _Options = opts;
+exports.begin = function() {
+  _Options = _Storage.readJSON(optsFile);
+  if(!_Options) _Options = {
+    autoNightMode: true,
+    useAlarms: true,
+    stepManager: true,
+    debug: true,
+  };
+  console.log(JSON.stringify(_Options));
+
   if(_Options.useAlarms) {
     _Alarm = require('m_alarms');
     _Alarm.reload();
     _Alarm.scheduleAlarms();
-    setTimeout(alarmUp, 2000);
   }
+  if(! _Options.autoNightMode) {
+    setWatch(setNightMode, BTN1, {repeat:true,edge:"falling"});
+  }
+  if(_Options.useAlarms) {
+    setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
+  }
+  setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
+
   reload();
   drawBackground(nightMode);
   start();
 };
 
-function alarmUp() {
-  _Alarm.showMsg('Congrats!','Alarms are up');
-}
+
