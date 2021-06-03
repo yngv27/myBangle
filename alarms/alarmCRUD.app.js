@@ -37,6 +37,11 @@ function addAlarm() {
   //console.log(aTime);
   //console.log("In "+newAlarm.days+" days, at "+newAlarm.hour +":"+newAlarm.minute+", "+ newAlarm.msg);
   alarms.push( {'time': aTime, 'msg': newAlarm.msg});
+  alarms.sort((a,b) => { 
+    if(a.time > b.time) return 1; 
+    if(a.time < b.time) return -1;
+    return 0;
+  });
   return;
 }
 
