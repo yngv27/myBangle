@@ -1,7 +1,7 @@
 /*
 ** "Swoop" version of the gXX series
 ** Actually similar layout to the original G26, but the swoop is dynamic
-** This version uses wireframe numerals, not the original G26 polygons
+** This version uses the original G26 polygons
 */
 g.clear();
 

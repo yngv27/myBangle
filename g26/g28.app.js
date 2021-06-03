@@ -1,3 +1,6 @@
+/*
+** G28: Using line drawn numerals and colored flyouts
+*/
 let v = require('m_vatch');
 require("m_knxt").add(Graphics);
 g.setFont("KNXT", 1);
@@ -23,7 +26,7 @@ let prevH2 = -1;
 let prevM1 = -1;
 let prevM2 = -1;
 
-
+let xS = 0.4, yS = 0.4;
 
 function Poly(arr, fill) {
   if (fill) g.fillPoly(arr, true);
@@ -367,9 +370,8 @@ function drawDigit(pos, dig) {
   const dFuncs = [ draw0, draw1, draw2, draw3, draw4, draw5, draw6, draw7, draw8, draw9];
   setBG();
   rect(x, y, x+60, y+120, true);
-  //dFuncs[dig](x,y);
+  dFuncs[dig](x,y);
   setFG();
-  lf.drawString(dig+'', x, y);
 
 }
 
@@ -407,42 +409,40 @@ function drawRealData(d, nmode) {
   if(nmode) return;
 	
   clearDataAreas();
-  
+  g.setFontAlign(1, 0);
+  g.setColor(1,1,1);
   g.drawString("STEP " + d.steps, 230, 122);
 
-  g.drawString("BTY " + d.battery, 230, 212);
+  g.drawString("BTY " + d.batt, 230, 212);
 
-  g.drawString(dow + " " + mon + " " + date, 230, 32);
+  g.drawString(d.dateStr, 230, 32);
 
 }
 
 function drawRealTime(d, nmode) {
   logD('in drawRealTIme');  
     
-  //logD("drawing!");
-  lf.setScale(5, 5);
-
 
   fgColor = nmode ? "#404040" : "#FFFFFF";
-  if(d[0] != prevH1) {
-     drawDigit(0, d[0]);
+  if(d.h1 != prevH1) {
+     drawDigit(0, d.h1);
   }
-  if(d[1] != prevH2) {
-    drawDigit(1, d[1]);
+  if(d.h2 != prevH2) {
+    drawDigit(1, d.h2);
   }
   
   fgColor = nmode ? "#004040" : "#00FFFF";
-  if(d[2] != prevM1) {
-    drawDigit(2, d[2]);
+  if(d.m1 != prevM1) {
+    drawDigit(2, d.m1);
   }
-  if(d[3] != prevM2) {
-     drawDigit(3, d[3]);
+  if(d.m2 != prevM2) {
+     drawDigit(3, d.m2);
   }
 
-  prevH1 = d[0];
-  prevH2 = d[1];
-  prevM1 = d[2];
-  prevM2 = d[3];
+  prevH1 = d.h1;
+  prevH2 = d.h2;
+  prevM1 = d.m1;
+  prevM2 = d.m2;
 
 }
 
@@ -456,6 +456,6 @@ let orientationSwitch = (nmode) => {
 v.setDrawBackground(drawBackground);
 v.setDrawTime(drawRealTime);
 v.setDrawData(drawRealData);
-v.setOrientationChange(orientationSwitch);
-v.start();
+
+v.begin();
 
