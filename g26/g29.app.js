@@ -1,3 +1,7 @@
+/*
+** G## series using LineFont
+** has the coloured flyout bars
+*/
 let v = require('m_vatch');
 let lf = require('m_lfont');
 
@@ -414,9 +418,9 @@ function drawRealData(d, nmode) {
   lf.setScale(8,12);
   lf.drawString("STEP " + d.steps, 140, 204);
 
-  lf.drawString("BTY " + d.battery, 140, 114);
+  lf.drawString("BTY " + d.batt, 140, 114);
 
-  lf.drawString(d.dow + " " + d.month + " " + d.date, 140, 24);
+  lf.drawString(d.dateStr, 140, 24);
 
 }
 
@@ -427,19 +431,19 @@ function drawRealTime(d, nmode) {
 
 
   fgColor = nmode ? "#404040" : "#FFFFFF";
-  if(d[0] != prevH1) {
-     drawDigit(0, d[0]);
+  if(d.h1 != prevH1) {
+     drawDigit(0, d.h1);
   }
-  if(d[1] != prevH2) {
-    drawDigit(1, d[1]);
+  if(d.h2 != prevH2) {
+    drawDigit(1, d.h2);
   }
   
   fgColor = nmode ? "#004040" : "#00FFFF";
-  if(d[2] != prevM1) {
-    drawDigit(2, d[2]);
+  if(d.m1 != prevM1) {
+    drawDigit(2, d.m1);
   }
-  if(d[3] != prevM2) {
-     drawDigit(3, d[3]);
+  if(d.m2 != prevM2) {
+     drawDigit(3, d.m2);
   }
 
   prevH1 = d[0];
@@ -459,6 +463,6 @@ let orientationSwitch = (nmode) => {
 v.setDrawBackground(drawBackground);
 v.setDrawTime(drawRealTime);
 v.setDrawData(drawRealData);
-v.setOrientationChange(orientationSwitch);
-v.start();
+
+v.begin();
 
