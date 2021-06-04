@@ -1,0 +1,8 @@
+{
+"id":"jvEdOpts",
+"name":"V Options",
+"src":"editOpts.app.js",
+"version":"0.1",
+"sortorder":"-1",
+"files":"editOpts.info,editOpts.app.js"
+}
