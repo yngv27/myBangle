@@ -1,6 +1,3 @@
-
-
-
 const _Storage = require('Storage');
 
 let interval = null;
@@ -46,8 +43,6 @@ function reload() {
   }
 }
 
-
-
 function stringFromArray(data)
 {
   var count = data.length;
@@ -59,10 +54,8 @@ function stringFromArray(data)
   return str;
 }
 
-
 function logD(str) {
-  //if(_Options.debug) 
-    console.log(str);
+  if(_Options.debug) console.log(str);
 }
 
 
@@ -87,13 +80,15 @@ function timeCheck() {
     let a = Bangle.getAccel();
     a.x = Math.floor(a.x * 100);
     logD('a.x = ' + a.x);
-    if(a.x === 100 || a.x === 99) {
+    if(a.x <= 101 && a.x >= 99) {
       if(!nightMode) {
-        setNightMode();
+        nightMode = ! nightMode;
+        redrawScreen();
       }
     } else {
       if(nightMode) {
-        setNightMode();
+        nightMode = ! nightMode;
+        redrawScreen();
       }
     }
   }
@@ -179,18 +174,22 @@ Bangle.on('lcdPower', function (on) {
   }
 });
 
-function setNightMode() {
-  logD("setNightMode");
-  if(_Options.autoNightMode) {
-    //Bangle.buzz(400);
-  }
+function btn1Func() {
+  logD("btn1Func");
 
   if(_Alarm.inAlarm ) {
     _Alarm.inAlarm = false;
   } else {
-    nightMode = ! nightMode;
+    if( ! _Options.autoNightMode) {
+      nightMode = ! nightMode;
+      logD('nm is '+nightMode);
+    }
   }
-  logD('nm is '+nightMode);
+  redrawScreen();
+}
+
+function redrawScreen() {
+  logD("redrawScreen");
   
   if(nightMode) {
     g.setRotation(1,0);
@@ -210,8 +209,6 @@ function btn2Func() {
   _Alarm.scheduleAlarms();
   _Alarm.showNotes();
 }
-
-
 
 Bangle.on('step', function(cnt) { 
   if(!_StepData.lastDate) return;
@@ -291,6 +288,7 @@ exports.begin = function() {
     stepManager: true,
     debug: true,
   };
+    
   console.log(JSON.stringify(_Options));
 
   if(_Options.useAlarms) {
@@ -298,9 +296,8 @@ exports.begin = function() {
     _Alarm.reload();
     _Alarm.scheduleAlarms();
   }
-  if(! _Options.autoNightMode) {
-    setWatch(setNightMode, BTN1, {repeat:true,edge:"falling"});
-  }
+  setWatch(btn1Func, BTN1, {repeat:true,edge:"falling"});
+  
   if(_Options.useAlarms) {
     setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
   }
