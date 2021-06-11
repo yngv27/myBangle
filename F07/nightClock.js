@@ -263,16 +263,14 @@ function drawScaledPoly(arr, x, y) {
   for(let i=0; i< arr.length; i+=2) {
     newArr[i] = Math.floor(arr[i]*xS) + x;
     newArr[i+1] =Math.floor(arr[i+1]*yS) + y;
-  }
-  if(rotate) {
-    let y = arr[i];
-    arr[i] = arr[i+1];
-    arr[i+1] = y;
-    setScale(0.25,0.125);
-  } else {
-    setScale(0.25,0.25);
-  }
 
+    if(rotate) {
+      let y = newArr[i];
+      newArr[i] = newArr[i+1];
+      newArr[i+1] = y;
+    }
+  }
+  console.log(JSON.stringify(newArr));
   g.fillPoly(newArr, true);
 }
 
@@ -653,6 +651,7 @@ function drawClock(){
   g.setFontVector(50);
   g.setColor(8+7);
   if(nm) {
+    setScale(0.25,0.25);
     rotate = true;
     drawDigit(0,Math.floor(hr/10));
     drawDigit(1,Math.floor(hr%10));
@@ -660,6 +659,7 @@ function drawClock(){
     drawDigit(3,Math.floor(min%10));
     g.flip();
   } else {
+    setScale(0.25,0.25);
     rotate = false;
     drawDigit(0,Math.floor(hr/10));
     drawDigit(1,Math.floor(hr%10));
