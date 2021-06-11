@@ -233,9 +233,6 @@ function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)
 let ogf = atob("AAAAAAAAB/QAAcAAAHAAAAKAPgCgD4AoAAAZgWQf8E0DMAAAQwUwKwC0A1AygwgAAM4LmE5BnAGwAAcAAAB8DjhAQAAQEOOB8AAAqAOAHAFQAAAQAIAfACABAAAABoA4AACABAAgAQAAAAYAMAAAHAeB4AAAP4MWERDRg/gAAIAP+AAAAAhwxoRkNiDhAAAggwYRENmDeAAAHAOgMQP+AEAAB4gkYSEJmEeAAA/g2YSEJmAeAABAAg4RwLgHAAAA3g2YRENmDeAAA8AzIQkM2D+AAAAAMwGYAAAAAzQZwAAAAAgA4A2AxgQQAABQAoAUAKAAAIIGMBsAcAEAAAIAMAEdDYA4AAAHwGMGDCchbQooXkEYDEA8AAAB4HwOIB0AOABwAAf8IiERCYg8wDwAAH8GDCAhAQwYIIAAH/CAhAQwIMMD8AAD/hEQiIREICAAD/hEAiARAIAAAB/BgwgIREMmCeAAB/wCABAAgAQD/gAAAAf8AAAAABAAwAIf4AAH/AYAeAZgYYIGAAD/gAQAIAEACAAD/gwAGABwBgDAD/gAA/4MABgAYADB/wAAP4MGEBCAhgwfwAAP+EICEBCAzAPAAAD+DBhBQg4YMH+AAAAB/wjARwIsGzBwgAAYQWMJiGbBHAAAgAQAP+EACAAAA/wAMACADADB/wAAeAB4AHAOAcA4AAAPAA4AHgeADAAcB4HgAABgwYwDgBwDGDBgAA4AHAA+AwBwBgAAAQcIaEZCYhYQ4IAAP+EBAAB4AHAA8AAEBD/gAAIAMAMAGABgAQAAAAEACABAAgAQAIAAMADAAAADgLYFEDiA/AAB/wEIGEDGA+AAAPgMYEEDGAiAAAPgMYGEBCH/AAAPgNYEkDSA4AAAIAf4aAIAAAAfAY0ISEbD/AAD/gMAMAGAB+AAC/gAAACADL/AAD/gGAHgGYCGAAD/gAAP4GACAA/AwAQAH4AAD+AgAwAYAH4AAB8BjAggYwHwAAD/hCAhgYwHwAAB8BjAhgQgP+AAD+AwAwAAAGIFkCaBGAAAQA/wEMAAB+ABgAwAQH8AABwAOABwDgHAAABwAOABwDgAcA4BwAAAYwGwBwBsBjAAAfgAaAJANh/gAARwJoFkDiAAAIA7ggIAAP+AACAg7gCAAACACABAAQAIAIAAAAAAAAAAAA==");
 let ogw = atob("AwIEBgYIBgIEBAUGAwUDBAYEBgYGBgYGBgYEBQYFBgYLBwcHBwcGBwcEBQcGCAcHBwcHBgYHBwkHBwcDBAMHBwMGBgYGBgUGBgIEBgIIBgYGBgQFBAYGCAYGBQQCBAc=");
 
-
-
-
 let to;
 function goDark(s) {
   if(to) clearTimeout(to);
@@ -244,8 +241,8 @@ function goDark(s) {
 
 const startX = [ 10,  45,  10,  45 ];
 const startY = [ 16,  16,  78,  78 ];
-const nmX = [ 60, 60, 20, 20];
-const nmY = [40, 60, 80, 100];
+const nmX = [ 4, 42, 88, 126];
+const nmY = [ 12, 12, 12, 12];
 let rotate = false;
 
 let xS = 0.25;
@@ -265,12 +262,12 @@ function drawScaledPoly(arr, x, y) {
     newArr[i+1] =Math.floor(arr[i+1]*yS) + y;
 
     if(rotate) {
-      let y = newArr[i];
-      newArr[i] = newArr[i+1];
-      newArr[i+1] = y;
+      let z = newArr[i];
+      newArr[i] = 80 - newArr[i+1];
+      newArr[i+1] = z;
     }
   }
-  console.log(JSON.stringify(newArr));
+  //console.log(JSON.stringify(newArr));
   g.fillPoly(newArr, true);
 }
 
@@ -573,11 +570,12 @@ function draw9(xOrig, yOrig) {
 /** END DIGITS **/
 
 function drawDigit(pos, dig, nm) {
-  let x = startX[pos];
-  let y = startY[pos];
-  if(nm) {
-    x= nmX[pos]; y = nmY[pos];
-  }
+  let x = nm ? nmX[pos] : startX[pos];
+  let y = nm ? nmY[pos] : startY[pos];
+  /*if(nm) {
+    x = nmX[pos]; 
+    y = nmY[pos];
+  }*/
   const dFuncs = [ draw0, draw1, draw2, draw3, draw4, draw5, draw6, draw7, draw8, draw9];
   dFuncs[dig](x,y);
 }
@@ -641,30 +639,29 @@ function drawClock(){
   if (lastsec%10==0){
     batt=battInfo(volts);volts=0;
   }
-  
-  nm = false;
-  
+
   if(!nm) {
     g.setFont("6x8",1);g.setColor(15);
     g.drawString(batt,40-g.stringWidth(batt)/2,0);
   }
-  g.setFontVector(50);
-  g.setColor(8+7);
+  //g.setFontVector(50);
   if(nm) {
-    setScale(0.25,0.25);
     rotate = true;
-    drawDigit(0,Math.floor(hr/10));
-    drawDigit(1,Math.floor(hr%10));
-    drawDigit(2,Math.floor(min/10));
-    drawDigit(3,Math.floor(min%10));
+    g.setColor(4);
+    if (hr>9) drawDigit(0,Math.floor(hr/10), nm);
+    drawDigit(1,Math.floor(hr%10), nm);
+    drawDigit(2,Math.floor(min/10), nm);
+    drawDigit(3,Math.floor(min%10), nm);
+    g.fillCircle(40, 80,2);
+    g.fillCircle(24, 80,2);
     g.flip();
   } else {
-    setScale(0.25,0.25);
     rotate = false;
-    drawDigit(0,Math.floor(hr/10));
-    drawDigit(1,Math.floor(hr%10));
-    drawDigit(2,Math.floor(min/10));
-    drawDigit(3,Math.floor(min%10));
+    g.setColor(8+7);
+    drawDigit(0,Math.floor(hr/10), nm);
+    drawDigit(1,Math.floor(hr%10), nm);
+    drawDigit(2,Math.floor(min/10), nm);
+    drawDigit(3,Math.floor(min%10), nm);
 
     g.setFont('6x8',2); 
     g.setColor(8+2);
@@ -706,27 +703,7 @@ var currscr= -1;
 var currint=0;
 setWatch(runScreen, BTN1,{ repeat:true, edge:'rising',debounce:25 }
 );
-/* uncomment to allow connection only when button is held while connecting
-NRF.whitelist=[];
-NRF.on('connect',function(addr) {
-  if (!NRF.whitelist.includes(addr)){
-    if (BTN1.read()){ // add to whitelist when button is held while connecting
-      NRF.whitelist.push(addr);
-      vibrate(1,1,100,0);
-    } else
-        NRF.disconnect();
-  }
-  NRF.connection = {};
-  NRF.connection.addr = addr;
-  NRF.connected=true;
-  NRF.setRSSIHandler((rssi)=>{NRF.connection.RSSI=rssi;});
-});
-NRF.on('disconnect',function(reason) {
-  NRF.connected=false;
-  NRF.connection = {};
-  NRF.lastReason=reason;
-});
-*/
+
 var fc=new SPI(); // font chip - 2MB SPI flash
 D23.write(1);
 fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
