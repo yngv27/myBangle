@@ -1,4 +1,4 @@
-const EMULATOR = 0;
+const EMULATOR = Bangle;
 if(EMULATOR) {
   g.on = () => console.log('g.on()');
   g.off = () => console.log('g.off()');
@@ -11,11 +11,13 @@ const logD = (msg) => { console.log(msg); };
 
 var VIB=D25;
 function vibon(vib){
- if(vib.i>=1)VIB.set();else analogWrite(VIB,vib.i);
- setTimeout(viboff,vib.on,vib);
+  if(EMULATOR) { LED1.set(); } else
+  if(vib.i>=1)VIB.set();else analogWrite(VIB,vib.i);
+  setTimeout(viboff,vib.on,vib);
 }
 function viboff(vib){
- VIB.reset();
+ if(EMULATOR) { LED1.reset(); } else
+   VIB.reset();
  if (vib.c>1){vib.c--;setTimeout(vibon,vib.off,vib);}
 }
 
@@ -41,7 +43,6 @@ function battLevel(v){
 function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
 
 /************ ALARMS ***********/
-let _Alarms = [];
 let _Notes = "";
 let alarmTOs = [];
 let _alarmMsgs = [];
@@ -76,7 +77,7 @@ let reloadMsgs = () => {
     }
   }
 };
-reloadMsgs();
+//reloadMsgs();
 
 let ogf = atob("AAAAAAAAB/QAAcAAAHAAAAKAPgCgD4AoAAAZgWQf8E0DMAAAQwUwKwC0A1AygwgAAM4LmE5BnAGwAAcAAAB8DjhAQAAQEOOB8AAAqAOAHAFQAAAQAIAfACABAAAABoA4AACABAAgAQAAAAYAMAAAHAeB4AAAP4MWERDRg/gAAIAP+AAAAAhwxoRkNiDhAAAggwYRENmDeAAAHAOgMQP+AEAAB4gkYSEJmEeAAA/g2YSEJmAeAABAAg4RwLgHAAAA3g2YRENmDeAAA8AzIQkM2D+AAAAAMwGYAAAAAzQZwAAAAAgA4A2AxgQQAABQAoAUAKAAAIIGMBsAcAEAAAIAMAEdDYA4AAAHwGMGDCchbQooXkEYDEA8AAAB4HwOIB0AOABwAAf8IiERCYg8wDwAAH8GDCAhAQwYIIAAH/CAhAQwIMMD8AAD/hEQiIREICAAD/hEAiARAIAAAB/BgwgIREMmCeAAB/wCABAAgAQD/gAAAAf8AAAAABAAwAIf4AAH/AYAeAZgYYIGAAD/gAQAIAEACAAD/gwAGABwBgDAD/gAA/4MABgAYADB/wAAP4MGEBCAhgwfwAAP+EICEBCAzAPAAAD+DBhBQg4YMH+AAAAB/wjARwIsGzBwgAAYQWMJiGbBHAAAgAQAP+EACAAAA/wAMACADADB/wAAeAB4AHAOAcA4AAAPAA4AHgeADAAcB4HgAABgwYwDgBwDGDBgAA4AHAA+AwBwBgAAAQcIaEZCYhYQ4IAAP+EBAAB4AHAA8AAEBD/gAAIAMAMAGABgAQAAAAEACABAAgAQAIAAMADAAAADgLYFEDiA/AAB/wEIGEDGA+AAAPgMYEEDGAiAAAPgMYGEBCH/AAAPgNYEkDSA4AAAIAf4aAIAAAAfAY0ISEbD/AAD/gMAMAGAB+AAC/gAAACADL/AAD/gGAHgGYCGAAD/gAAP4GACAA/AwAQAH4AAD+AgAwAYAH4AAB8BjAggYwHwAAD/hCAhgYwHwAAB8BjAhgQgP+AAD+AwAwAAAGIFkCaBGAAAQA/wEMAAB+ABgAwAQH8AABwAOABwDgHAAABwAOABwDgAcA4BwAAAYwGwBwBsBjAAAfgAaAJANh/gAARwJoFkDiAAAIA7ggIAAP+AACAg7gCAAACACABAAQAIAIAAAAAAAAAAAA==");
 let ogw = atob("AwIEBgYIBgIEBAUGAwUDBAYEBgYGBgYGBgYEBQYFBgYLBwcHBwcGBwcEBQcGCAcHBwcHBgYHBwkHBwcDBAMHBwMGBgYGBgUGBgIEBgIIBgYGBgQFBAYGCAYGBQQCBAc=");
@@ -420,8 +421,6 @@ function drawDigit(pos, dig, nm) {
 //require("Font8x8").add(Graphics);
 //require("Font8x16").add(Graphics);
 
-
-
 function showNotes() {
   info(_Notes);
 }
@@ -443,13 +442,8 @@ function info(msg){
   goDark(30);
 }
 
-var lastsec=-1;
-var volts;
-var batt=battInfo();
-
 function drawClock(){
   var d=Date();
-  lastsec=d.getSeconds();
   d=d.toString().split(' ');
   var sec=d[4].substr(-2);
   //var tm=d[4].substring(0,5);
@@ -465,16 +459,13 @@ function drawClock(){
   xmid = 40;
   if(EMULATOR) xmid=120;
   
-  volts= volts ? (volts+battVolts())/2:battVolts(); // average until shown
   g.clear();
-  if (lastsec%10==0){
-    batt=battInfo(volts);volts=0;
-  }
 
   if(!nm) {
     //g.setFont(myFont,1);g.setColor(15);
     g.setColor(8+2);
     if(EMULATOR) g.setColor(0,1,0);
+    let batt = battInfo();
     g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
   }
   //g.setFontVector(50);
