@@ -1,6 +1,7 @@
 E.kickWatchdog();
 function KickWd(){
-  if( (typeof(BTN1)=='undefined')||(!BTN1.read()) )                     E.kickWatchdog();
+  if( (typeof(BTN1)=='undefined')||(!BTN1.read()) )                     
+  E.kickWatchdog();
 }
 var wdint=setInterval(KickWd,2000);
 E.enableWatchdog(15, false);
@@ -208,4 +209,7 @@ D23.write(1);
 fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
 fc.send([0xb9],D23); //put to deep sleep
 
-exports.getGraphics = () => {return g;};
+
+/*
+** minimize at https://javascript-minifier.com/
+*/
