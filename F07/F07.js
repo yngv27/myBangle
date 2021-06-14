@@ -209,6 +209,7 @@ D23.write(1);
 fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
 fc.send([0xb9],D23); //put to deep sleep
 
+exports.getGraphics = () => {return g;};
 
 /*
 ** minimize at https://javascript-minifier.com/
