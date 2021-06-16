@@ -210,7 +210,10 @@ fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
 fc.send([0xb9],D23); //put to deep sleep
 
 exports.getGraphics = () => {return g;};
+exports.setHRMPower(turnon) = () => { if (turnon) digitalWrite(D27,0); else digitalWrite(D27,1);}
+exports.getHRMValue() = () => { return analogRead(D28); };
 
 /*
 ** minimize at https://javascript-minifier.com/
+** or maybe https://jscompress.com/ 
 */
