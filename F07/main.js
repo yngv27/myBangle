@@ -34,11 +34,11 @@ function battVolts(){
 }
 
 function battLevel(v){
-  var l=3.26,h=4.19;
-  //v=v?v:battVolts();
+  var l=3.23,h=4.19;
+  v=v?v:battVolts();
   if(v>=h)return 100;
   if(v<=l)return 0;
-  return 100*(v-l)/(h-l);
+  return Math.floor(100*(v-l)/(h-l));
 }
 function battInfo(){v=battVolts();return `${battLevel(v)}% ${v.toFixed(2)}V`;}
 
@@ -89,312 +89,13 @@ function goDark(s) {
   to = setTimeout(sleep, s*1000);
 }
 
-const startX = [ 10,  45,  10,  45 ];
-const startY = [ 16,  16,  78,  78 ];
-const nmX = [ 4, 42, 88, 126];
-const nmY = [ 12, 12, 12, 12];
-let rotate = false;
-
-let xS = 0.25;
-let yS = 0.25;
-
-function setScale(x, y) {
-  xS = x; yS = y;
-}
-
-function drawScaledPoly(arr, x, y) {
-  let newArr = [];
-  for(let i=0; i< arr.length; i+=2) {
-    newArr[i] = Math.floor(arr[i]*xS) + x;
-    newArr[i+1] =Math.floor(arr[i+1]*yS) + y;
-
-    if(rotate) {
-      let z = newArr[i];
-      newArr[i] = 80 - newArr[i+1];
-      newArr[i+1] = z;
-    }
-  }
-  //console.log(JSON.stringify(newArr));
-  g.fillPoly(newArr, false);
-}
-
-/** DIGITS **/
-
-/* zero */
-let draw0=new Uint8Array([
-  1,20 ,
-  20,1 ,
-  100,1 ,
-  119,20 ,
-  119,220 ,
-  100,239 ,
-  20,239 ,
-  1,220,
-  1,20 ,
-       
-  10,22 , 
-  10,218 ,
-  22,230 ,
-  98,230 ,
-  110,218, 
-  110,22,
-  98,10 ,
-  22,10 ,
-  10,22, 22, 10
-  ]);
-
-/* one */
-let draw1=new Uint8Array([
-  30,239, 
-  90,239, 
-  90,230, 
-  65,230, 
-  65,1, 
-  55,1 ,
-  35,21, 
-  35,31, 
-  55,11,   
-  55,230, 
-  30,230,
-  ]);
-
-/* two */
-let draw2=new Uint8Array([1,20, 
-               20,1,
-               100,1,
-               119,20 ,
-               119,100, 
-               100,120, 
-               22,120 ,
-               10,132 ,
-               10,218, 
-               22,230 ,
-               119,230, 
-               119,239,
-
-               20,239 ,
-               1,220,
-               1,130 ,
-               22,110 ,
-               98,110 ,
-               110,98 ,
-               110,22 ,
-               98,10 ,
-               22,10 ,
-              12,20 ,
-               1,20]);
-/* three */
-
-let draw3=new Uint8Array([
-   1,20 ,
-   20,1 ,
-   100,1 ,
-   119,20 ,
-   119,100 ,
-   105,115 ,
-
-   119,130 ,
-   119,220 ,
-   100,239 ,
-   20,239 ,
-   1,220,
-
-   1,220 ,
-   12,220 ,
-   22,230 ,
-   98,230 ,
-   110,218 ,
-   110,132 ,
-   99,120   ,
-   45,120  ,
-   45,110 ,
-   98,110 ,
-   110,98,
-   110,22, 
-   98,10 ,
-   22,10 ,
-   12,20 ,
-   1,20]);
-
-/* four */
-let draw4=new Uint8Array([
-  119,239 , 
-  119,1,
-  110,1,
-110,110, 
-  22,110 ,
-  10,98 ,
-  10,10 ,
-  1,10 ,
-  1,102 ,
-  20,120 ,
-  110,120,
-110,239]);
-
-let draw5= new Uint8Array([
-  1,220 ,
-  20,239 ,
-  100,239 ,
-  119,220 ,
-  119,130 ,
-  100,110 ,
-  16,110 ,
-  10,104 ,
-  10,10 ,
-  100,10 ,
-  100,1,
-
-  1,1 ,
-  1,110, 
-  12,120, 
-  98,120 ,
-  110,132 ,
-  110,218 ,
-  98,230 ,
-  22,230 ,
-  10,220 ,
-  1,220,
-  ]);
-               
-/* six */
-let draw6 = new Uint8Array(
-[
-100,10 ,
-  100,1 ,
-  20,1 ,
-  1,20 ,
-  1,220 ,
-
-  20,239 ,
-  100,239 ,
-  119,220 ,
-  119,130 ,
-  100,110 ,
-  12,110,
-
-  12,120 ,
-  98,120 ,
-  110,132 ,
-  110,218 ,
-  98,230 ,
-  22,230 ,
-  10,218 ,
-
-  10,22 ,
-  22,10 ,
-  100,10,
-]);
-
-/* seven */
-let draw7 = new Uint8Array([
-  65,239, 
-  65,155 ,
-  100,120 , 
-  119,100 ,
-  119,1 ,
-
-  100,1 ,
-  20,1 ,
-  1,1 ,
-  1,22 , 
-
-  10,22 ,
-  10,10 ,
-  22,10 ,
-  98,10 ,
-  110,10 ,
-  110,22 ,
-
-  110,98 ,
-  98,110 ,
-  55,153 ,
-  55,239,
-  ]);
-
-let draw8 = new Uint8Array( [
-  
-   22,110,
-  
-   98,110 ,
-   110,98 ,
-  
-   110,22,
-   98, 10,
-   22, 10, 
-   10,22 ,
-   10,98 ,
-      22,110 ,
-      22,120 ,
-   1,99 ,
-   1,20 ,
-
-   20,1 ,
-   100,1 ,
-   119,20 ,
-   119,100 ,
-  /* top meets bottom */
-   104,115 ,
-   119,130 ,
-   119,220 ,
-   100,239 ,
-
-   20,239 ,
-   1,220 ,
-   1,130 ,
-  16,115 ,
-  21,120,
-   10,131 ,
-   10,218 ,
-
-   22,230 ,
-   98,230 ,
-   110,218 ,
-   110,132  , 
-   98,120 ,
-   22,120 ,
-  22, 110
-   ]);
-                
-let draw9 = new Uint8Array(
-  [ 
-  20,230 ,
-  20,239, 
-  100,239, 
-  119,220 ,
-  119,20 ,
-
-  100,1 ,
-  20,1 ,
-  1,20 ,
-  1,110 ,
-  20,130 ,
-  108,130,
-
-  108,120 ,
-  22,120 ,
-  10,108 ,
-  10,22 ,
-  22,10 ,
-  98,10 ,
-  110,22 ,
-
-  110,218 ,
-  98,230
-  ]);
-
-
-
-/** END DIGITS **/
-
-function drawDigit(pos, dig, nm) {
-  let x = nm ? nmX[pos] : startX[pos];
-  let y = nm ? nmY[pos] : startY[pos];
-
-  if(EMULATOR) x+= 80;
-  const digStrs = [ draw0, draw1, draw2, draw3, draw4, draw5, draw6, draw7, draw8, draw9];
-  drawScaledPoly(digStrs[dig],x,y);
-
-}
+/*
+** BEGIN WATCH FACE
+*/
+const startX=[6,43,6,43],startY=[14,14,82,82],nmX=[4,42,88,126],nmY=[12,12,12,12];let xS=1,yS=1,rotate=!1;function drawScaledPoly(l,e,o){let d=[];for(let t=0;t<l.length;t+=2){var a;d[t]=Math.floor(l[t]*xS)+e,d[t+1]=Math.floor(l[t+1]*yS)+o,rotate&&(a=d[t],d[t]=80-d[t+1],d[t+1]=a)}g.fillPoly(d,!0)}let lcdTopSeg=Uint8Array([3,1,5,0,26,0,22,8,10,8]),lcdTopLeftSeg=Uint8Array([1,3,8,10,8,24,3,29,0,29,0,5]),lcdTopRightSeg=Uint8Array([24,11,29,1,30,1,32,3,32,29,29,29,24,24]),lcdMiddleSeg=Uint8Array([9,27,23,27,27,31,23,35,9,35,5,31]),lcdBottomLeftSeg=Uint8Array([1,59,8,52,8,38,3,33,0,33,0,57]),lcdBottomRightSeg=new Uint8Array([24,51,29,61,30,61,32,59,32,33,29,33,24,38]),lcdBottomSeg=new Uint8Array([3,61,5,62,26,62,22,54,10,54]);function drawDigit(t,l,e){let o=(e?nmX:startX)[t];t=(e?nmY:startY)[t];EMULATOR&&(o+=80),1!=l&&4!=l&&drawScaledPoly(lcdTopSeg,o,t),1!=l&&2!=l&&3!=l&&7!=l&&drawScaledPoly(lcdTopLeftSeg,o,t),5!=l&&6!=l&&drawScaledPoly(lcdTopRightSeg,o,t),0!=l&&1!=l&&7!=l&&drawScaledPoly(lcdMiddleSeg,o,t),0!=l&&2!=l&&6!=l&&8!=l||drawScaledPoly(lcdBottomLeftSeg,o,t),2!=l&&drawScaledPoly(lcdBottomRightSeg,o,t),1!=l&&4!=l&&7!=l&&drawScaledPoly(lcdBottomSeg,o,t)}
+/*
+** END WATCH FACE
+*/
 
 //require("Font6x8").add(Graphics);
 //require("Font6x12").add(Graphics);
@@ -439,18 +140,30 @@ function drawClock(){
   if(EMULATOR) xmid=120;
 
   g.clear();
-
+/*
+  nm  = true;
+  g.setColor(15);
+  //g.drawRect(0,0,79,159);
+*/
   if(!nm) {
     //g.setFont(myFont,1);g.setColor(15);
     g.setColor(8+2);
     if(EMULATOR) g.setColor(0,1,0);
     let batt = battInfo();
     g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
+  } else {
+    g.setColor(4);
+    let b = battLevel();
+    for(let c=0; c<5; c++) {
+      if(b > c*20) g.fillCircle(24+8*c, 8, 2);
+      else g.drawCircle(24+8*c,8,2);
+    }
   }
   //g.setFontVector(50);
   if(nm) {
     rotate = true;
     g.setColor(4);
+    if(EMULATOR) g.setColor(0.5,0.5,0.5);
     if (hr>9) drawDigit(0,Math.floor(hr/10), nm);
     drawDigit(1,Math.floor(hr%10), nm);
     drawDigit(2,Math.floor(min/10), nm);
@@ -471,7 +184,7 @@ function drawClock(){
     g.setColor(8+2);
     if(EMULATOR) g.setColor(0,1,0);
     var dt=/*d[0]+" "+*/d[1]+" "+d[2];//+" "+d[3];
-    g.drawString(dt,xmid-g.stringWidth(dt)/2,140);
+    g.drawString(dt,xmid-g.stringWidth(dt)/2,146);
     g.flip();
     vibrate(1,1,100,0);
     goDark(30);
