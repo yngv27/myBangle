@@ -30,7 +30,7 @@ function drawScaledPoly(arr, x, y) {
 /** DIGITS **/
 
 /* zero */
-let draw0=new Uint8Array([
+let d0=new Uint8Array([
   1,20 ,
   20,1 ,
   100,1 ,
@@ -53,7 +53,7 @@ let draw0=new Uint8Array([
   ]);
 
 /* one */
-let draw1=new Uint8Array([
+let d1=new Uint8Array([
   30,239, 
   90,239, 
   90,230, 
@@ -68,7 +68,7 @@ let draw1=new Uint8Array([
   ]);
 
 /* two */
-let draw2=new Uint8Array([1,20, 
+let d2=new Uint8Array([1,20, 
                20,1,
                100,1,
                119,20 ,
@@ -94,7 +94,7 @@ let draw2=new Uint8Array([1,20,
                1,20]);
 /* three */
 
-let draw3=new Uint8Array([
+let d3=new Uint8Array([
    1,20 ,
    20,1 ,
    100,1 ,
@@ -126,7 +126,7 @@ let draw3=new Uint8Array([
    1,20]);
 
 /* four */
-let draw4=new Uint8Array([
+let d4=new Uint8Array([
   119,239 , 
   119,1,
   110,1,
@@ -140,7 +140,7 @@ let draw4=new Uint8Array([
   110,120,
 110,239]);
 
-let draw5= new Uint8Array([
+let d5= new Uint8Array([
   1,220 ,
   20,239 ,
   100,239 ,
@@ -166,7 +166,7 @@ let draw5= new Uint8Array([
   ]);
                
 /* six */
-let draw6 = new Uint8Array(
+let d6 = new Uint8Array(
 [
 100,10 ,
   100,1 ,
@@ -195,7 +195,7 @@ let draw6 = new Uint8Array(
 ]);
 
 /* seven */
-let draw7 = new Uint8Array([
+let d7 = new Uint8Array([
   65,239, 
   65,155 ,
   100,120 , 
@@ -220,7 +220,7 @@ let draw7 = new Uint8Array([
   55,239,
   ]);
 
-let draw8 = new Uint8Array( [
+let d8 = new Uint8Array( [
   
    22,110,
   
@@ -264,7 +264,7 @@ let draw8 = new Uint8Array( [
   22, 110
    ]);
                 
-let draw9 = new Uint8Array(
+let d9 = new Uint8Array(
   [ 
   20,230 ,
   20,239, 
@@ -300,7 +300,7 @@ function drawDigit(pos, dig, nm) {
   let y = nm ? nmY[pos] : startY[pos];
 
   if(EMULATOR) x+= 80;
-  const digStrs = [ draw0, draw1, draw2, draw3, draw4, draw5, draw6, draw7, draw8, draw9];
+  const digStrs = [ d0,d1,d2,d3,d4,d5,d6,d7,d8,d9];
   drawScaledPoly(digStrs[dig],x,y);
 
 }
