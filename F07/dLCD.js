@@ -19,7 +19,15 @@ function drawScaledPoly(arr, x, y) {
   }
   g.fillPoly(newArr, true);
 }
+let lcdTopSeg=Uint8Array([3,1,5,0,27,0,23,8,10,8]);
+let    lcdTopLeftSeg=Uint8Array([2,3,9,10,9,24,4,29,1,29,1,5]);
+let    lcdTopRightSeg=Uint8Array([23,11,28,1,29,1,31,3,31,29,28,29,23,24]);
+let    lcdMiddleSeg=Uint8Array([9,26,23,26,27,30,23,34,9,34,5,30]);
+let    lcdBottomLeftSeg=Uint8Array([2,57,9,50,9,36,4,31,1,31,1,55]);
+let    lcdBottomRightSeg=new Uint8Array([23,49,28,59,29,59,31,57,31,31,28,31,23,36]);
+let    lcdBottomSeg=new Uint8Array([3,58,5,59,26,59,22,51,10,51]);
 
+/* orig
 let lcdTopSeg = Uint8Array([3 , 1,5 , 0,26 , 0,22 , 8,10 , 8]);
 let lcdTopLeftSeg=Uint8Array([1 , 3,8 , 10,8 , 24,3 , 29,0 , 29,0 , 5]);
 let lcdTopRightSeg= Uint8Array([24 , 11,29 , 1,30 , 1,32 , 3,32 , 29,29 , 29,24 , 24]);
@@ -27,6 +35,7 @@ let lcdMiddleSeg = Uint8Array([9 , 27,23 , 27,27 , 31,23 , 35,9 , 35,5 , 31]);
 let lcdBottomLeftSeg = Uint8Array([1 , 59,8 , 52,8 , 38,3 , 33,0 , 33,0 , 57]);
 let lcdBottomRightSeg = new Uint8Array([24 , 51,29 , 61,30 , 61,32 , 59,32 , 33,29 , 33,24 , 38]);
 let lcdBottomSeg = new Uint8Array([3 , 61,5 , 62,26 , 62,22 , 54,10 , 54]);
+*/
 
 function drawDigit(pos, val, nm) {
   let xOff = nm ? nmX[pos] : startX[pos];
