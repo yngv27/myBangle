@@ -209,9 +209,47 @@ D23.write(1);
 fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
 fc.send([0xb9],D23); //put to deep sleep
 
+exports.setAccelPower = (on) =>{ D31.write(on?1:0);};
+exports.getAccel = () => {
+  function readreg(r){
+    return fc.send([0x80|r,0x00],D18)[1];
+  }
+  function conv(i){
+    return (i & 0x7F)-(i & 0x80);
+  }
+  return {
+    x:conv(readreg(3)),
+    y:conv(readreg(5)),
+    z:conv(readreg(7))
+  };
+
+};
 exports.getGraphics = () => {return g;};
-exports.setHRMPower(turnon) = () => { if (turnon) digitalWrite(D27,0); else digitalWrite(D27,1);}
-exports.getHRMValue() = () => { return analogRead(D28); };
+exports.setHRMPower = (on) => { digitalWrite(D27,on?0:1);}
+exports.getHRMValue = () => { return analogRead(D28); };
+
+var VIB=D25;
+function vibon(vib){
+  if(vib.i>=1)VIB.set();else analogWrite(VIB,vib.i);
+  setTimeout(viboff,vib.on,vib);
+}
+function viboff(vib){
+ VIB.reset();
+ if (vib.c>1){vib.c--;setTimeout(vibon,vib.off,vib);}
+}
+
+exports.vibrate=function(intensity,count,onms,offms){
+ vibon({i:intensity,c:count,on:onms,off:offms});
+};
+
+exports.battVolts = () => { return 4.20/0.18*analogRead(D5); }
+exports.battLevel = (v) => {
+  var l=3.23,h=4.19;
+  v=v?v:exports.battVolts();
+  if(v>=h)return 100;
+  if(v<=l)return 0;
+  return Math.floor(100*(v-l)/(h-l));
+}
 
 /*
 ** minimize at https://javascript-minifier.com/
