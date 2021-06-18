@@ -3,43 +3,17 @@ if(EMULATOR) {
   g.on = () => console.log('g.on()');
   g.off = () => console.log('g.off()');
 } else {
-  let g = require('F07.min.js').getGraphics();
+  let F07 = require('F07.min.js');
+  let g = F07.getGraphics();
 }
 let _Storage = require("Storage");
 
 const logD = (msg) => { console.log(msg); };
 
-var VIB=D25;
-function vibon(vib){
-  if(EMULATOR) { LED1.set(); } else
-  if(vib.i>=1)VIB.set();else analogWrite(VIB,vib.i);
-  setTimeout(viboff,vib.on,vib);
-}
-function viboff(vib){
- if(EMULATOR) { LED1.reset(); } else
-   VIB.reset();
- if (vib.c>1){vib.c--;setTimeout(vibon,vib.off,vib);}
-}
 
-vibrate=function(intensity,count,onms,offms){
- vibon({i:intensity,c:count,on:onms,off:offms});
-};
 
-function battVolts(){
-  if(EMULATOR) {
-    return 4.0;
-    } else {
-    return 4.20/0.18*analogRead(D5);
-    }
-}
-
-function battLevel(v){
-  var l=3.23,h=4.19;
-  v=v?v:battVolts();
-  if(v>=h)return 100;
-  if(v<=l)return 0;
-  return Math.floor(100*(v-l)/(h-l));
-}
+let battVolts = ()=> { return EMULATOR?4.0:F07.battVolts();};
+let battLevel = ()=> { return EMULATOR?90:F07.battLevel();};
 function battInfo(){v=battVolts();return `${battLevel(v)}% ${v.toFixed(2)}V`;}
 
 /************ ALARMS ***********/
@@ -49,16 +23,17 @@ let _alarmMsgs = [];
 
 
 function showAlarm() {
-  info(_alarmMsgs.shift());
+  //setTimeout(F07.vibrate, 3000, 1, 1,200,0);
+  info("ALARM",_alarmMsgs.shift());
 }
 
 let reloadMsgs = () => {
   _Notes = _Storage.readJSON('v.notes.json');
-  if(!_Notes) _Notes = 'No notes...|Not today';
+  if(!_Notes) _Notes = 'Do training!';
   logD('notes= '+_Notes);
 
   let _Alarms =  _Storage.readJSON('v.alarms.json');
-  if(!_Alarms) _Alarms = [{"msg":"You did it!","time":"2021-06-11T16:03:00"}];
+  if(!_Alarms) _Alarms = [{"msg":"Weigh MORE","time":"2021-06-18T16:34:00"}];
   // schedule
   for(let idx=0; idx < alarmTOs.length; idx++) {
     clearTimeout(alarmTOs[idx]);
@@ -81,13 +56,10 @@ let reloadMsgs = () => {
 
 let ogf = atob("AAAAAAAAB/QAAcAAAHAAAAKAPgCgD4AoAAAZgWQf8E0DMAAAQwUwKwC0A1AygwgAAM4LmE5BnAGwAAcAAAB8DjhAQAAQEOOB8AAAqAOAHAFQAAAQAIAfACABAAAABoA4AACABAAgAQAAAAYAMAAAHAeB4AAAP4MWERDRg/gAAIAP+AAAAAhwxoRkNiDhAAAggwYRENmDeAAAHAOgMQP+AEAAB4gkYSEJmEeAAA/g2YSEJmAeAABAAg4RwLgHAAAA3g2YRENmDeAAA8AzIQkM2D+AAAAAMwGYAAAAAzQZwAAAAAgA4A2AxgQQAABQAoAUAKAAAIIGMBsAcAEAAAIAMAEdDYA4AAAHwGMGDCchbQooXkEYDEA8AAAB4HwOIB0AOABwAAf8IiERCYg8wDwAAH8GDCAhAQwYIIAAH/CAhAQwIMMD8AAD/hEQiIREICAAD/hEAiARAIAAAB/BgwgIREMmCeAAB/wCABAAgAQD/gAAAAf8AAAAABAAwAIf4AAH/AYAeAZgYYIGAAD/gAQAIAEACAAD/gwAGABwBgDAD/gAA/4MABgAYADB/wAAP4MGEBCAhgwfwAAP+EICEBCAzAPAAAD+DBhBQg4YMH+AAAAB/wjARwIsGzBwgAAYQWMJiGbBHAAAgAQAP+EACAAAA/wAMACADADB/wAAeAB4AHAOAcA4AAAPAA4AHgeADAAcB4HgAABgwYwDgBwDGDBgAA4AHAA+AwBwBgAAAQcIaEZCYhYQ4IAAP+EBAAB4AHAA8AAEBD/gAAIAMAMAGABgAQAAAAEACABAAgAQAIAAMADAAAADgLYFEDiA/AAB/wEIGEDGA+AAAPgMYEEDGAiAAAPgMYGEBCH/AAAPgNYEkDSA4AAAIAf4aAIAAAAfAY0ISEbD/AAD/gMAMAGAB+AAC/gAAACADL/AAD/gGAHgGYCGAAD/gAAP4GACAA/AwAQAH4AAD+AgAwAYAH4AAB8BjAggYwHwAAD/hCAhgYwHwAAB8BjAhgQgP+AAD+AwAwAAAGIFkCaBGAAAQA/wEMAAB+ABgAwAQH8AABwAOABwDgHAAABwAOABwDgAcA4BwAAAYwGwBwBsBjAAAfgAaAJANh/gAARwJoFkDiAAAIA7ggIAAP+AACAg7gCAAACACABAAQAIAIAAAAAAAAAAAA==");
 let ogw = atob("AwIEBgYIBgIEBAUGAwUDBAYEBgYGBgYGBgYEBQYFBgYLBwcHBwcGBwcEBQcGCAcHBwcHBgYHBwkHBwcDBAMHBwMGBgYGBgUGBgIEBgIIBgYGBgQFBAYGCAYGBQQCBAc=");
-g.setFontCustom(ogf, 32, ogw, 256 + 13);
-
-let to;
-function goDark(s) {
-  if(to) clearTimeout(to);
-  to = setTimeout(sleep, s*1000);
-}
+Graphics.prototype.setFontOmnigo = function() {
+  this.setFontCustom(ogf, 32, ogw, 256 + 13);
+};
+let myFont = "Omnigo";
 
 /*
 ** BEGIN WATCH FACE
@@ -102,24 +74,46 @@ const startX=[6,43,6,43],startY=[14,14,82,82],nmX=[4,42,88,126],nmY=[12,12,12,12
 //require("Font8x8").add(Graphics);
 //require("Font8x16").add(Graphics);
 
-function showNotes() {
-  info(_Notes);
+let to;
+function goDark(s) {
+  if(to) clearTimeout(to);
+  to = setTimeout(sleep, s*1000);
 }
 
-function info(msg){
+function showNotes() {
+  info("Notes",_Notes);
+}
+
+function info(t,msg){
   g.clear();
-  //g.setFont(myFont,1);
+  g.setFont(myFont,1);
   g.setColor(10);
-  g.drawString("Espruino "+process.version, 0,0);
+  g.drawString(t, 0,0);
   g.setColor(14);
 
   let lines = msg.split('|');
   for(let q=0; q < lines.length; q++) {
     g.drawString(lines[q], 0, 20+q*g.getFontHeight());
   }
-
   g.flip();
   goDark(30);
+}
+
+function HRM(){
+  F07.setHRMPower(true);
+  g.setFont(myFont,3);
+  drawHRM();
+  goDark(30);
+  return setInterval(function(){
+    drawHRM();
+  },2000);
+}
+
+function drawHRM(){
+  g.clear();
+  g.setColor(14);
+  g.drawString(F07.getHRMValue(), 0, 80);
+  g.flip();
 }
 
 function drawClock(){
@@ -172,6 +166,7 @@ function drawClock(){
     g.fillCircle(24, 80,2);
     g.flip();
   } else {
+    //vibrate(1,1,100,0);
     rotate = false;
     g.setColor(8+7);
     if(EMULATOR) g.setColor(1,1,1);
@@ -186,14 +181,24 @@ function drawClock(){
     var dt=/*d[0]+" "+*/d[1]+" "+d[2];//+" "+d[3];
     g.drawString(dt,xmid-g.stringWidth(dt)/2,146);
     g.flip();
-    vibrate(1,1,100,0);
     goDark(30);
   }
 }
 
+let flipOn = 0; // for accel
 function clock(){
-  volts=0;
+  g.setFont(myFont,1);
   drawClock();
+  /*
+  flipOn = setInterval(function() {
+    let xyz = F07.getAccel();
+    console.log(JSON.stringify(xyz));
+    if(xyz.x > -2 && xyz.x < 32 && xyz.y > -12 && xyz.y <= 20) 
+      g.on();
+    else
+      g.off();
+  }, 1200);
+  */
   return setInterval(function(){
     drawClock();
   },60000);
@@ -202,6 +207,7 @@ function clock(){
 function sleep(){
   g.clear();//g.flip();
   g.off();
+  F07.setHRMPower(false);
   currscr=-1;
   if (currint>0) clearInterval(currint);
   return 0;
@@ -211,12 +217,13 @@ function runScreen(){
   if (!g.isOn) g.on();
   currscr++;if (currscr>=screens.length) currscr=0;
   if (currint>0) clearInterval(currint);
+  if (flipOn) clearInterval(flipOn);
   currint=screens[currscr]();
   //vibrate(1,1,100,0);
 
 }
 
-var screens=[clock,showNotes,sleep];
+var screens=[clock,showNotes,HRM,sleep];
 var currscr= -1;
 var currint=0;
 setWatch(runScreen, BTN1,{ repeat:true, edge:'rising',debounce:25 }
