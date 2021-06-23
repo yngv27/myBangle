@@ -203,18 +203,30 @@ g.off=function(){
   this.isOn=false;
 };
 
-var VIB=D25;
+const VIB=D25;
 function vibon(vib){
- if(vib.i>=1)VIB.set();else analogWrite(VIB,vib.i);
+ //if(vib.i>=1)VIB.set();else 
+ analogWrite(VIB,vib.i);
  setTimeout(viboff,vib.on,vib);
 }
 function viboff(vib){
- VIB.reset();
- if (vib.c>1){vib.c--;setTimeout(vibon,vib.off,vib);}
+ analogWrite(VIB, 0);
+ if (vib.c>1){
+   vib.c--;setTimeout(vibon,vib.off,vib);
+ } else {
+   VIB.reset();
+ }
 }
 
 vibrate=function(intensity,count,onms,offms){
- vibon({i:intensity,c:count,on:onms,off:offms});
+ //vibon({i:intensity,c:count,on:onms,off:offms});
+  while(count--) {
+    analogWrite(VIB, intensity);
+    delayms(onms);
+    analogWrite(VIB, 0);
+    delayms(offms);
+  }
+  VIB.reset();
 };
 
 function battVolts(){
@@ -317,13 +329,13 @@ function info(){
 ** BEGIN WATCH FACE
 */
 const startX=[6,43,6,43],startY=[14,14,82,82],nmX=[4,42,88,126],nmY=[12,12,12,12];let xS=1,yS=1,rotate=!1;function drawScaledPoly(l,e,o){let d=[];for(let t=0;t<l.length;t+=2){var a;d[t]=Math.floor(l[t]*xS)+e,d[t+1]=Math.floor(l[t+1]*yS)+o,rotate&&(a=d[t],d[t]=80-d[t+1],d[t+1]=a)}g.fillPoly(d,!0)}
-let lcdTopSeg=Uint8Array([0,0,29,0,29,9,0,9]);
-let lcdTopLeftSeg=Uint8Array([0,0,9,0,9,29,0,29]);
-let    lcdTopRightSeg=Uint8Array([20,0,29,0,29,29,20,29]);
-let    lcdMiddleSeg=Uint8Array([0,25,29,25,29,34,0,34]);
-let    lcdBottomLeftSeg=Uint8Array([0,30,9,30,9,59,0,59]);
-let    lcdBottomRightSeg=new Uint8Array([20,30,29,30,29,59,20,59]);
-let    lcdBottomSeg=new Uint8Array([0,50,29,50,29,59,0,59]);
+let lcdTopSeg=Uint8Array([0,0,29,0,29,7,0,7]);
+let lcdTopLeftSeg=Uint8Array([0,0,7,0,7,29,0,29]);
+let    lcdTopRightSeg=Uint8Array([22,0,29,0,29,29,22,29]);
+let    lcdMiddleSeg=Uint8Array([0,26,29,26,29,33,0,33]);
+let    lcdBottomLeftSeg=Uint8Array([0,30,7,30,7,59,0,59]);
+let    lcdBottomRightSeg=new Uint8Array([22,30,29,30,29,59,22,59]);
+let    lcdBottomSeg=new Uint8Array([0,52,29,52,29,59,0,59]);
 function drawDigit(t,l,e){let o=(e?nmX:startX)[t];t=(e?nmY:startY)[t];EMULATOR&&(o+=80),1!=l&&4!=l&&drawScaledPoly(lcdTopSeg,o,t),1!=l&&2!=l&&3!=l&&7!=l&&drawScaledPoly(lcdTopLeftSeg,o,t),5!=l&&6!=l&&drawScaledPoly(lcdTopRightSeg,o,t),0!=l&&1!=l&&7!=l&&drawScaledPoly(lcdMiddleSeg,o,t),0!=l&&2!=l&&6!=l&&8!=l||drawScaledPoly(lcdBottomLeftSeg,o,t),2!=l&&drawScaledPoly(lcdBottomRightSeg,o,t),1!=l&&4!=l&&7!=l&&drawScaledPoly(lcdBottomSeg,o,t);}
 /*
 ** END WATCH FACE
@@ -352,8 +364,8 @@ function drawClock(){
   
   if(!nm) {
     let xyz = accCoords();
-    console.log(JSON.stringify(xyz));
-    if(xyz.x < -2 || xyz.x > 38 || xyz.y < -12 || xyz.y > 20) {
+    //console.log(JSON.stringify(xyz));
+    if(xyz.x < -2 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20) {
       g.off();
       return;
     }
@@ -404,9 +416,25 @@ function drawClock(){
     g.setFont("6x8",2); 
     g.setColor(8+2);
     if(EMULATOR) g.setColor(0,1,0);
-    var dt=/*d[0]+" "+*/d[1]+" "+d[2];//+" "+d[3];
+    var dt=d[1]+" "+d[2];
     g.drawString(dt,xmid-g.stringWidth(dt)/2,146);
     g.flip();
+    // vibrate: long = 5, short = 1
+    const lev = 0.9;
+    // hours
+    let n = Math.floor(hr/5);
+    if(n) vibrate(lev, n, 600, 100);
+    vibrate(lev, hr % 5, 150, 200);
+    // delay
+    vibrate(0.0, 1, 500, 500);
+    // 10 mins - always single pulses
+    n = Math.floor(min/10);
+    if(n) vibrate(lev, n, 600, 100);
+    vibrate(0.0, 1, 500, 500);
+    // 1 mins
+    if(min % 10 >= 5){ vibrate(lev, 1, 400, 100); min -= 5; }
+    vibrate(lev, min % 5, 150, 200);
+
   }
 }
 
@@ -426,8 +454,25 @@ function sleep(){
 }
 
 var screens=[clock,info,sleep];
-var currscr= -1;
-var currint=0;
+var currscr= 0;
+var currint=0;//screens[currscr]();
+let longpress = 0;
+
+const btnDown = (b) => {
+  longpress = b.time;
+  setWatch(btnUp, BTN1, { repeat:false, edge:'falling', debounce:25});
+};
+const btnUp = (b) => {
+  if(b.time - longpress > 1.0) {
+    currscr++;if (currscr>=screens.length) currscr=0;
+    if (currint>0) clearInterval(currint);
+    currint=screens[currscr]();
+  }
+  setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
+};
+
+setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
+/*
 setWatch(function(){
   if (!g.isOn) g.on();
   currscr++;if (currscr>=screens.length) currscr=0;
@@ -435,6 +480,7 @@ setWatch(function(){
   currint=screens[currscr]();
 },BTN1,{ repeat:true, edge:'rising',debounce:25 }
 );
+*/
 
 
 var fc=new SPI(); // font chip - 2MB SPI flash
