@@ -220,13 +220,19 @@ function viboff(vib){
 
 vibrate=function(intensity,count,onms,offms){
  //vibon({i:intensity,c:count,on:onms,off:offms});
+  let accum = 1000;
+  analogWrite(VIB, 0.1);
+  function von(i) { analogWrite(VIB, i); }
+  function voff() { analogWrite(VIB, 0); }
   while(count--) {
-    analogWrite(VIB, intensity);
-    delayms(onms);
-    analogWrite(VIB, 0);
-    delayms(offms);
+    von(intensity);
+    let d=Date.now()+onms; 
+    while(d > Date.now() ) { let x =0; }
+    voff();
+    d=Date.now()+offms; 
+    while(d > Date.now() ) { let x =0; }
   }
-  VIB.reset();
+  //VIB.reset();
 };
 
 function battVolts(){
@@ -234,7 +240,7 @@ return 4.20/0.18*analogRead(D5);
 }
 
 function battLevel(v){
-  var l=3.23,h=4.19;
+  var l=3.3,h=4.1;
   v=v?v:battVolts();
   if(v>=h)return 100;
   if(v<=l)return 0;
@@ -242,63 +248,6 @@ function battLevel(v){
 }
 function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
 
-
-// cube from https://www.espruino.com/Pixl.js+Cube+Badge
-var rx = 0, ry = 0, cc = 1;
-// Draw the cube at rotation rx and ry
-function drawCube(xx,yy,zz) {
-  // precalculate sin&cos for rotations
-  var rcx=Math.cos(rx), rsx=Math.sin(rx);
-  var rcy=Math.cos(ry), rsy=Math.sin(ry);
-  // Project 3D into 2D
-  function p(x,y,z) {
-    var t;
-    t = x*rcy + z*rsy;
-    z = z*rcy - x*rsy;
-    x=t;
-    t = y*rcx + z*rsx;
-    z = z*rcx - y*rsx;
-    y=t;
-    z += 4;
-    return [xx + zz*x/z, yy + yy*y/z];
-  }
-  var a,b;
-  // -z
-  a = p(-1,-1,-1); b = p(1,-1,-1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(1,1,-1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  b = p(-1,1,-1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(-1,-1,-1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  // z
-  a = p(-1,-1,1); b = p(1,-1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(1,1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  b = p(-1,1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(-1,-1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  // edges
-  a = p(-1,-1,-1); b = p(-1,-1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(1,-1,-1); b = p(1,-1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(1,1,-1); b = p(1,1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(-1,1,-1); b = p(-1,1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-}
-
-function stepCube() {
-  rx += 0.1;
-  ry += 0.1;
-  g.setColor(0);g.fillRect(0,40,80,120);g.setColor(15);//+cc);cc=(cc+1)%15;
-  drawCube(40,80,80);
-  g.flip();
-}
 require("Font6x8").add(Graphics);
 //require("Font6x12").add(Graphics);
 //require("Font8x12").add(Graphics);
@@ -345,6 +294,36 @@ var batt=battInfo();
 let lastTime = '';
 let EMULATOR = false; 
 
+let buzzLock = 0;  // 0b10 = lockout, 0b01 = cancel
+
+function buzzClock (h,m) {
+  // skip if either lockout or canceled: 10 or 01 (i.e. not 0)
+  if(buzzLock) {
+    buzzLock &= 0b10;
+    console.log('no buzz..resetting');
+    return;
+  }
+  console.log('buzzing');
+  // vibrate: long = 5, short = 1
+  const lvl = 0.8, LONGBZ = 600, SHORTBZ = 150;
+  // hours
+  let n = Math.floor(h/5);
+  if(n) vibrate(lvl, n, LONGBZ, 100);
+  vibrate(lvl, h%5, SHORTBZ, 200);
+  // delay
+  vibrate(0.0, 1, 500, 500);
+  // 10 mins - always single pulses
+  n = Math.floor(m/10);
+  if(n) vibrate(lvl, n, SHORTBZ, 200);
+  vibrate(0.0, 1, 500, 500);
+  // 1 mins
+  if(m % 10 >= 5){ vibrate(lvl, 1, LONGBZ, 100); m -= 5; }
+  vibrate(lvl, m%5, SHORTBZ, 200);
+  // lockout for one minute
+  buzzLock |= 0b10;
+  setTimeout(function() { buzzLock &= 0b01; }, 60000);
+}
+
 function drawClock(){
   let d=Date();
   let sec=d.getSeconds();
@@ -361,12 +340,14 @@ function drawClock(){
   min = parseInt(min);
   xmid = 40;
   if(EMULATOR) xmid=120;
-  
+
   if(!nm) {
     let xyz = accCoords();
     //console.log(JSON.stringify(xyz));
     if(xyz.x < -2 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20) {
       g.off();
+      buzzLock |= 1;
+      //console.log('Canceling buzz');
       return;
     }
   }
@@ -374,11 +355,10 @@ function drawClock(){
 
   if (tm == lastTime) return;
   lastTime = tm;
-
+  
   g.clear();
   g.setFont("6x8");
   if(!nm) {
-    //g.setFont(myFont,1);g.setColor(15);
     g.setColor(8+2);
     if(EMULATOR) g.setColor(0,1,0);
     let batt = battInfo();
@@ -387,8 +367,8 @@ function drawClock(){
     g.setColor(4);
     let b = battLevel();
     for(let c=0; c<5; c++) {
-      if(b > c*20) g.fillCircle(24+8*c, 8, 2);
-      else g.drawCircle(24+8*c,8,2);
+      if(b > c*20) g.fillCircle(8+16*c, 8, 6);
+      else g.drawCircle(8+16*c,8,6);
     }
   }
 
@@ -404,7 +384,6 @@ function drawClock(){
     g.fillCircle(24, 80,2);
     g.flip();
   } else {
-    //vibrate(1,1,100,0);
     rotate = false;
     g.setColor(8+7);
     if(EMULATOR) g.setColor(1,1,1);
@@ -419,22 +398,9 @@ function drawClock(){
     var dt=d[1]+" "+d[2];
     g.drawString(dt,xmid-g.stringWidth(dt)/2,146);
     g.flip();
-    // vibrate: long = 5, short = 1
-    const lev = 0.9;
-    // hours
-    let n = Math.floor(hr/5);
-    if(n) vibrate(lev, n, 600, 100);
-    vibrate(lev, hr % 5, 150, 200);
-    // delay
-    vibrate(0.0, 1, 500, 500);
-    // 10 mins - always single pulses
-    n = Math.floor(min/10);
-    if(n) vibrate(lev, n, 600, 100);
-    vibrate(0.0, 1, 500, 500);
-    // 1 mins
-    if(min % 10 >= 5){ vibrate(lev, 1, 400, 100); min -= 5; }
-    vibrate(lev, min % 5, 150, 200);
-
+    console.log('buzing in 3...');
+    buzzLock &= 0b10;
+    setTimeout(buzzClock, 3000, hr, min);
   }
 }
 
@@ -454,7 +420,7 @@ function sleep(){
 }
 
 var screens=[clock,info,sleep];
-var currscr= 0;
+var currscr= -1;
 var currint=0;//screens[currscr]();
 let longpress = 0;
 
