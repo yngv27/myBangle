@@ -59,10 +59,22 @@ function drawDigit(t,l,e){let o=(e?nmX:startX)[t];t=(e?nmY:startY)[t];EMULATOR&&
 var volts;
 var batt=battInfo();
 let lastTime = '';
-let EMULATOR = false; 
 
 let buzzLock = 0;  // 0b10 = lockout, 0b01 = cancel
-
+let vibrate=function(intensity,count,onms,offms){
+  const VIB = D25;
+  analogWrite(VIB, 0.1);
+  function von(i) { analogWrite(VIB, i); }
+  function voff() { analogWrite(VIB, 0); }
+  while(count--) {
+    analogWrite(VIB, intensity);
+    let d=Date.now()+onms; 
+    while(d > Date.now() ) { let x =0; }
+    analogWrite(VIB, 0);
+    d=Date.now()+offms; 
+    while(d > Date.now() ) { let x =0; }
+  }
+};
 function buzzClock (h,m) {
   // skip if either lockout or canceled: 10 or 01 (i.e. not 0)
   if(buzzLock) {
@@ -109,7 +121,7 @@ function drawClock(){
   if(EMULATOR) xmid=120;
 
   if(!nm) {
-    let xyz = accCoords();
+    let xyz = F07.accCoords();
     //console.log(JSON.stringify(xyz));
     if(xyz.x < -2 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20) {
       g.off();
@@ -205,15 +217,6 @@ const btnUp = (b) => {
 };
 
 setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
-/*
-setWatch(function(){
-  if (!g.isOn) g.on();
-  currscr++;if (currscr>=screens.length) currscr=0;
-  if (currint>0) clearInterval(currint);
-  currint=screens[currscr]();
-},BTN1,{ repeat:true, edge:'rising',debounce:25 }
-);
-*/
 
 
 
