@@ -1,7 +1,6 @@
 E.kickWatchdog();
 function KickWd(){
-  if( (typeof(BTN1)=='undefined')||(!BTN1.read()) )                     
-  E.kickWatchdog();
+  if( (typeof(BTN1)=='undefined')||(!BTN1.read()) ) E.kickWatchdog();
 }
 var wdint=setInterval(KickWd,2000);
 E.enableWatchdog(15, false);
@@ -35,7 +34,7 @@ digitalPulse(RST,0,10);
 
 //SPI2.save();
 SPI2.setpins(SCK,MOSI,CS,DC); // CLK,MOSI,CS,DC
-//SPI2.disable();SPI2.enable(0x80,0); //8MBit, mode 0
+SPI2.disable();SPI2.enable(0x80,0); //8MBit, mode 0
 
 
 function toFlatString(arr){
@@ -83,7 +82,7 @@ function init(){
   cmd([0xc4,0x8d,0xee]);
   cmd([0xc5,0x1d]);
   cmd([0x36,200]);
-   cmd([0xe0,7,0x17,0xc,0x15,0x2e,0x2a,0x23,0x28,0x28,0x28,0x2e,0x39,0,3,2,0x10]);
+  cmd([0xe0,7,0x17,0xc,0x15,0x2e,0x2a,0x23,0x28,0x28,0x28,0x2e,0x39,0,3,2,0x10]);
   cmd([0xe1,6,0x21,0xd,0x17,0x35,0x30,0x2a,0x2d,0x2c,0x29,0x31,0x3b,0,2,3,0x12]);
   // GMCTRP1 Gamma correction
   //cmd([0xE0, 0x02, 0x1C, 0x07, 0x12, 0x37, 0x32, 0x29, 0x2D, 0x29, 0x25, 0x2B, 0x39, 0x00, 0x01, 0x03, 0x10]);
@@ -156,7 +155,7 @@ g.flip=function(force){
   SPI2.blt_pal(addr,g.palA,bitoff);
 };
 
-//g.lev=256;
+g.lev=256;
 g.setBrightness=function(lev){
   if (lev>=0 && lev<=256)
     this.lev=lev;
@@ -203,55 +202,84 @@ g.off=function(){
   [DC,SCK,MOSI,RST,CS].forEach((p)=>{p.mode("analog");} ); // disconnect like  poke32(0x50000700+4*pin,2);
   this.isOn=false;
 };
+exports.getGraphics = () => {return g;};
+exports.setHRMPower = (on) => { digitalWrite(D27,on?0:1);};
+exports.getHRMValue = () => { return analogRead(D28); };
+
+const VIB=D25;
+function vibon(vib){
+ //if(vib.i>=1)VIB.set();else 
+ analogWrite(VIB,vib.i);
+ setTimeout(viboff,vib.on,vib);
+}
+function viboff(vib){
+ analogWrite(VIB, 0);
+ if (vib.c>1){
+   vib.c--;setTimeout(vibon,vib.off,vib);
+ } else {
+   VIB.reset();
+ }
+}
+
+exports.vibrate=function(intensity,count,onms,offms){
+ //vibon({i:intensity,c:count,on:onms,off:offms});
+  let accum = 1000;
+  analogWrite(VIB, 0.1);
+  function von(i) { analogWrite(VIB, i); }
+  function voff() { analogWrite(VIB, 0); }
+  while(count--) {
+    von(intensity);
+    let d=Date.now()+onms; 
+    while(d > Date.now() ) { let x =0; }
+    voff();
+    d=Date.now()+offms; 
+    while(d > Date.now() ) { let x =0; }
+  }
+  //VIB.reset();
+};
+
+exports.battVolts = function(){
+return 4.20/0.18*analogRead(D5);
+};
+
+exports.battLevel = function(v){
+  var l=3.3,h=4.1;
+  v=v?v:battVolts();
+  if(v>=h)return 100;
+  if(v<=l)return 0;
+  return 100*(v-l)/(h-l);
+};
 
 var fc=new SPI(); // font chip - 2MB SPI flash
 D23.write(1);
 fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
 fc.send([0xb9],D23); //put to deep sleep
 
-exports.setAccelPower = (on) =>{ D31.write(on?1:0);};
-exports.getAccel = () => {
-  function readreg(r){
-    return fc.send([0x80|r,0x00],D18)[1];
-  }
-  function conv(i){
-    return (i & 0x7F)-(i & 0x80);
-  }
-  return {
-    x:conv(readreg(3)),
-    y:conv(readreg(5)),
-    z:conv(readreg(7))
-  };
+// BMA 222E accelerometer on shared spi with fontchip, CS=D18
+D18.set();
+D31.set();
+function accRegRead(r){
+  return fc.send([0x80|r,0x00],D18)[1];
+}
+function accWriteReg(r,v){
+  fc.send([0x7f & r,v],D18);
+}
+function accSetBit(r,b){
+    var v = accRegRead(r);
+    accWriteReg(r,v | 1<<b);
+}
+function accResetBit(r,b){
+  var v = accRegRead(r);
+  accWriteReg(r,v & ~(1<<b));
+}
+function accLowPowerMode(b){
+  if (b)
+    accSetBit(0x11,6);
+  else
+    accResetBit(0x11,6);
+}
 
+exports.accCoords = () => {
+  var coords=Int8Array(fc.send([0x82,0,0,0,0,0,0],D18).buffer,2);
+  return ({x:coords[0],y:coords[2],z:coords[4]});
 };
-exports.getGraphics = () => {return g;};
-exports.setHRMPower = (on) => { digitalWrite(D27,on?0:1);}
-exports.getHRMValue = () => { return analogRead(D28); };
-
-var VIB=D25;
-function vibon(vib){
-  if(vib.i>=1)VIB.set();else analogWrite(VIB,vib.i);
-  setTimeout(viboff,vib.on,vib);
-}
-function viboff(vib){
- VIB.reset();
- if (vib.c>1){vib.c--;setTimeout(vibon,vib.off,vib);}
-}
-
-exports.vibrate=function(intensity,count,onms,offms){
- vibon({i:intensity,c:count,on:onms,off:offms});
-};
-
-exports.battVolts = () => { return 4.20/0.18*analogRead(D5); }
-exports.battLevel = (v) => {
-  var l=3.23,h=4.19;
-  v=v?v:exports.battVolts();
-  if(v>=h)return 100;
-  if(v<=l)return 0;
-  return Math.floor(100*(v-l)/(h-l));
-}
-
-/*
-** minimize at https://javascript-minifier.com/
-** or maybe https://jscompress.com/ 
-*/
