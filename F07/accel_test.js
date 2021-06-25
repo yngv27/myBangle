@@ -483,6 +483,10 @@ function accCoords(){
   return ({x:coords[0],y:coords[2],z:coords[4]});
 }
 
+// auto launch
+currscr = 0;
+currint=screens[currscr]();
+
 /* try tap detection feature
 D17.mode("input_pulldown"); // irq2 pin
 accWriteReg(0x21,0x0E); // //latch irq for 50ms
