@@ -283,3 +283,8 @@ exports.accCoords = () => {
   var coords=Int8Array(fc.send([0x82,0,0,0,0,0,0],D18).buffer,2);
   return ({x:coords[0],y:coords[2],z:coords[4]});
 };
+
+/*
+** minimize at https://javascript-minifier.com/
+** or maybe https://jscompress.com/ 
+*/
