@@ -495,26 +495,40 @@ function sleep(){
   return 0;
 }
 
+g.setBrightness(32);
 var screens=[clock,info,sleep];
 var currscr= 0;
 var currint=screens[currscr]();
-let longpress = 0;
+//let longpress = 0;
+let longpressTO = 0;
 
 const btnDown = (b) => {
-  longpress = b.time;
+  //longpress = b.time;
+  longpressTO = setTimeout(function(){
+    g.setBrightness(256);
+    longpressTO = 0;
+  }, 1000);
   setWatch(btnUp, BTN1, { repeat:false, edge:'falling', debounce:25});
 };
 const btnUp = (b) => {
+  /*
   if(b.time - longpress > 1.0) {
-    currscr++;if (currscr>=screens.length) currscr=0;
-    if (currint>0) clearInterval(currint);
-    currint=screens[currscr]();
+    g.setBrightness(256);
+    setTimeout(function(){g.setBrightness(32);}, 10000);
   }
+  */
+  if(longpressTO) clearTimeout(longpressTO);
+  else setTimeout(()=>{g.setBrightness(32);},10000);
   setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
 };
 
-//setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
+setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
 
+/* screen switching
+ currscr++;if (currscr>=screens.length) currscr=0;
+    if (currint>0) clearInterval(currint);
+    currint=screens[currscr]();
+*/
 
 
 
