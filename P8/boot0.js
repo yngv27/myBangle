@@ -93,17 +93,26 @@ function watchBat(){
 
 let debounce = 0;
 let longPressTO = 0;
-function btnDn() {
+function btnDn(b) {
   if(debounce < 1) {
     debounce++;
     console.log('btnDn');
     if(!P8.awake) P8.wake();
+    //longpress = b.time;
+    longPressTO = setTimeout(function(){
+      console.log("long press");
+      load("launch.js");
+      longPressTO = 0;
+    }, 1000);
     setWatch(btnUp,D17,{repeat:false,edge:'falling'});
   }
 }
-function btnUp() {
+function btnUp(b) {
   if(debounce > 0) {
     debounce--;
+    //if(b.time - longpress > 1.0) {
+    if(longPressTO) clearTimeout(longPressTO);
+    //else console.log("short press");
     console.log('btnUp');
     setWatch(btnDn,D17,{repeat:false,edge:'rising'});
   }
@@ -132,8 +141,7 @@ if (P8.FACEUP && STOR.read("accel.js")){
     ACCEL.init();
     ACCEL.on("faceup",()=>{if (!P8.awake) P8.wake();});
 }
-//P8.ticker = setInterval(P8.tick,1000);
+P8.ticker = setInterval(P8.tick,1000);
 P8.POWER=D19.read();
 watchBat();
 if (STOR.read("alarm.boot.js")) eval(STOR.read("alarm.boot.js"));
-
