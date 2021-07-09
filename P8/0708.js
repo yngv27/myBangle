@@ -1,4 +1,4 @@
-
+require("m_knxt").add(Graphics);
 
 function battVolts(){
   return P8.batV();
@@ -76,8 +76,10 @@ function drawDayClock(d) {
   //console.log("here");
   let xmid=120;
 
+  g.setBgColor(0.1,0.2,0.2);
   g.clear();
-  g.setFont("8x16");
+  //g.setFont("8x16");
+  g.setFont("KNXT",1);
 
   g.setColor(0.8,0.8,0.4);
   let batt = battInfo();
@@ -93,7 +95,7 @@ function drawDayClock(d) {
   g.fillCircle(120, 105, 3);
   g.fillCircle(120, 135, 3);
 
-  g.setFont("8x16",2); 
+  g.setFont("KNXT",2);
   g.setColor(0.4,0.8,0.8);
   if(EMULATOR) g.setColor(0,1,0);
   
