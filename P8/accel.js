@@ -1,6 +1,3 @@
-/*
-** BMA421 Accelerometer basic control
-*/
 var ACCEL = {
   writeByte:(a,d) => { 
       P8I2C.writeTo(0x18,a,d);
@@ -38,5 +35,12 @@ var ACCEL = {
       }
       var a = ACCEL.readBytes(0x12,6); 
       return {ax:conv(a[0],a[1]), ay:conv(a[2],a[3]), az:conv(a[4],a[5])};
+  },
+  isFaceUp:() => {
+    let xyz = ACCEL.readBytes(0x12,6);
+    if ( (xyz[1] < 5 || xyz[1] > 250) &&
+      (xyz[3] < 5 || xyz[3] > 240) &&
+      (xyz[5] > 200) ) return true;
+    return false;
   },
 };
