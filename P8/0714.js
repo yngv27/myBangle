@@ -72,14 +72,13 @@ function checkClock() {
   hr %= 12;
   if (hr === 0) hr = 12;
   min = parseInt(min);
-  xmid = 40;
-  if(EMULATOR) xmid=120;
 
   if(nm) {
     drawNightClock({hr:hr,min:min});
     lastTime = tm;
     return;
   }
+  /**/
   if(ACCEL.isFaceUp()) {
     if(!faceAlreadyUp) {
       // delay, in case we're 'passing through'
@@ -94,6 +93,7 @@ function checkClock() {
     faceAlreadyUp = false;
     return;
   }
+  /**/
   drawDayClock({hr:hr,min:min,dt:d[1]+" "+d[2]});
 }
 
@@ -101,17 +101,16 @@ function drawDayClock(d) {
   let tm=('0'+d.hr).slice(-2)+('0'+d.min).slice(-2);
   if (tm == lastTime) return;
   console.log("tm/last= "+tm+" "+lastTime);
-  let xmid=120;
 
   //g.setBgColor(bg); //0.2,0.1,0.2);
   //g.clear();
   //g.setFont("8x16");
   g.setFont("KNXT",1);
 
-  g.setColor(0.8,0.8,0.4);
+  g.setColor(0.9,0.9,0.4);
   let batt = ' '+Math.floor(battLevel())+'%';
-  g.drawString(batt,240-g.stringWidth(batt),0,true);
-  g.drawString(d.dt,0,0);
+  g.drawString(batt,232-g.stringWidth(batt),2,true);
+  g.drawString(d.dt,8,2);
 
 
   rotate = false;
@@ -126,7 +125,7 @@ function drawDayClock(d) {
   }
   lastTime = tm;
 
-    /*
+  /*
   drawDigit(1,Math.floor(d.hr%10), false);
   g.setColor(0.9,0.9,0.9);
   drawDigit(2,Math.floor(d.min/10), false);
