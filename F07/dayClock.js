@@ -1,7 +1,7 @@
 eval(require("Storage").read("boot0"));
 
-require("Font6x8").add(Graphics);
-//require("Font6x12").add(Graphics);
+require("m_dylex13").add(Graphics);
+require("m_knxt").add(Graphics);
 //require("Font8x12").add(Graphics);
 //require("Font8x16").add(Graphics);
 
@@ -124,7 +124,7 @@ function checkClock() {
     return;
   }
   if(!showClockTO) {
-    showClockTO = setTimeout(drawDayClock, 1000,{hr:hr,min:min,dt:d[1]+" "+d[2]});
+    showClockTO = setTimeout(drawDayClock, 1000,{hr:hr,min:min,dt:(d[1]+" "+d[2]).toUpperCase()});
   } else {
     // in case it's on too long...
     if(youThere < 7) youThere++;
@@ -150,7 +150,7 @@ function drawDayClock(d) {
   //console.log("here");
 
   g.clear();
-  g.setFont("6x8");
+  g.setFont("Dylex7x13");
 
   g.setColor(8+2);
   if(EMULATOR) g.setColor(0,1,0);
@@ -165,11 +165,12 @@ function drawDayClock(d) {
   drawDigit(2,Math.floor(d.min/10), false);
   drawDigit(3,Math.floor(d.min%10), false);
 
-  g.setFont("6x8",2); 
-  g.setColor(8+2);
+  g.setFont("KNXT"); 
+  g.setColor(8+1);
   if(EMULATOR) g.setColor(0,1,0);
-  
-  g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,146);
+  g.fillRect(0,140,79,159);
+  g.setColor(15);
+  g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,141);
   g.flip();
   /*
   console.log('buzing in 3...');
