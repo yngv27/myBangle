@@ -152,8 +152,10 @@ function drawDayClock(d) {
   g.clear();
   g.setFont("Dylex7x13");
 
-  g.setColor(8+2);
+  g.setColor(2);
   if(EMULATOR) g.setColor(0,1,0);
+  g.fillRect(0,0,79,12);
+  g.setColor(0);
   let batt = battInfo();
   g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
 
@@ -166,10 +168,10 @@ function drawDayClock(d) {
   drawDigit(3,Math.floor(d.min%10), false);
 
   g.setFont("KNXT"); 
-  g.setColor(8+1);
+  g.setColor(1);
   if(EMULATOR) g.setColor(0,1,0);
   g.fillRect(0,140,79,159);
-  g.setColor(15);
+  g.setColor(14);
   g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,141);
   g.flip();
   /*
