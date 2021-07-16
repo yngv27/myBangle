@@ -361,7 +361,7 @@ function buzzClock (h,m) {
 */
 
 let youThere = 0;
-let nm = true;
+let nm = false;
 
 function checkClock() {
   let d=Date();
@@ -493,49 +493,51 @@ function clock(){
 }
 
 function sleep(){
-  g.on();
-  g.clear();
-  g.setFont("6x8",2);
-  g.setColor(15);
-  g.drawString("OFF...",20,72);
-  g.flip();
+
   let x = setTimeout(()=>{g.off();}, 3000);
   console.log("x=",x);
   currscr=-1;
   return 0;
 }
 
+let nextScreen = () => {
+  currscr++;
+  if (currscr>=screens.length) currscr=0;
+  if (currint>0) clearInterval(currint);
+  g.on();
+  g.clear();
+  g.setFont("6x8",2);
+  g.setColor(15);
+  g.drawString(screenNames[currscr],20,72);
+  g.flip();
+  setTimeout(()=>{
+    currint=screens[currscr](); 
+  }, 2500);
+};
+
+let screenNames=["Night\nclock","Day\nwatch","Sleep"];
 var screens=[clock,clock,sleep];
 var currscr= 0;
 var currint=screens[currscr]();
-/*
+
 let longpressTO = 0;
 
 const btnDown = (b) => {
   //longpress = b.time;
-  longpressTO = setTimeout(function(){
-    g.setBrightness(256);
-    longpressTO = 0;
-  }, 1000);
+  longpressTO = setTimeout(nextScreen, 1500);
   setWatch(btnUp, BTN1, { repeat:false, edge:'falling', debounce:25});
 };
 const btnUp = (b) => {
-  / * 
+  /* 
   if(b.time - longpress > 1.0) {
     g.setBrightness(256);
     setTimeout(function(){g.setBrightness(32);}, 10000);
   }
-  * /
+  */
   if(longpressTO) {
     clearTimeout(longpressTO);
-
-  } else setTimeout(()=>{g.setBrightness(32);},10000);
+  }
   setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
 };
-*/
-setWatch(() => {
-    currscr++;
-    if (currscr>=screens.length) currscr=0;
-    if (currint>0) clearInterval(currint);
-    currint=screens[currscr](); 
-}, BTN1, { repeat:true, edge:'rising', debounce:25});
+btnUp(); // cheap start
+
