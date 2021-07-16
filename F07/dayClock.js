@@ -154,7 +154,9 @@ function drawDayClock(d) {
 
   g.setColor(2);
   if(EMULATOR) g.setColor(0,1,0);
-  g.fillRect(0,0,79,12);
+  g.fillCircle(6,6,6);
+  g.fillCircle(73,6,6);
+  g.fillRect(6,0,73,12);
   g.setColor(0);
   let batt = battInfo();
   g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
