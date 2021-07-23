@@ -110,16 +110,16 @@ function buzzClock (h,m) {
 */
 
 let youThere = 0;
+let stepCounter = () => {};
 
 function checkClock() {
   let d=Date();
   let sec=d.getSeconds();
   d=d.toString().split(' ');
-  var tm=d[4].substring(0,5);
   var hr=d[4].substr(0,2);
   var min=d[4].substr(3,2);
   let nm = false;
-  
+
   if((hr > 20 || hr < 8) && myName == Eebie) {
     nm = true;
   }
@@ -177,10 +177,10 @@ function drawDayClock(d) {
   d.hr=d[4].substr(0,2);
   d.min=d[4].substr(3,2);
   */
+  //console.log("here");
   let tm=d.hr+':'+d.min;
   if (tm == lastTime) return;
   lastTime = tm;
-  //console.log("here");
 
   g.clear();
   g.setFont("Omnigo");
@@ -191,9 +191,10 @@ function drawDayClock(d) {
   //g.fillCircle(73,6,6);
   //g.fillRect(6,0,73,12);
   //g.setColor(0);
-  let batt = battInfo();
-  g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
-
+  let batt = (battInfo().split(' '))[0];
+  g.drawString(batt,79-g.stringWidth(batt),0);
+  g.drawString(getSteps(), 0, 0);
+  
   rotate = false;
   g.setColor(8+7);
   if(EMULATOR) g.setColor(1,1,1);
@@ -240,9 +241,7 @@ function drawNightClock(d) {
 
 function clock(){
   volts=0;
-  return setInterval(function(){
-    checkClock();
-},777);
+  return setInterval(checkClock, 777);
 }
 
 function sleep(){
@@ -252,8 +251,7 @@ function sleep(){
   return 0;
 }
 
-
-g.setBrightness(256); //32);
+g.setBrightness(32);
 var screens=[clock,sleep];
 var currscr= 0;
 var currint=screens[currscr]();
@@ -282,11 +280,28 @@ const btnUp = (b) => {
 
 setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
 
-/* screen switching
- currscr++;if (currscr>=screens.length) currscr=0;
-    if (currint>0) clearInterval(currint);
-    currint=screens[currscr]();
-*/
+let SCstate = 0;
+let SCcnt = 0;
+let SCprev, SCcurr;
 
-  
-  
+setInterval(() => { 
+  SCcurr = accCoords();
+  if(!SCprev) { SCprev=SCcurr; return;}
+  if(SCcurr.y > -52 || SCcurr.y < -63) {
+    if(!SCstate) SCstate = 1;
+    //console.log('up1: v='+Math.abs(prev.y-curr.y));
+  } else {
+    if(SCstate) {
+      //console.log('reset');
+      let v = Math.abs(SCprev.y-SCcurr.y);
+      if(v > 10) {
+        SCcnt++;
+        console.log(`STEP:${SCcnt} v=${v}`);
+      }
+      SCstate = 0;
+    }
+  }
+  SCprev = SCcurr;
+}, 100);
+let getSteps = () => {return (SCcnt);};
+
