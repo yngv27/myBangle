@@ -1,37 +1,32 @@
-eval(require("Storage").read("boot0"));
-let stop = Date.now() + 20000;
 let intvl = 0;
-
 let sstate = 0;
 let scnt = 0;
 let prev, curr;
+g.on();
+g.clear();
+g.setColor(15);
+require("Font6x8").add(Graphics);
+g.setFont("6x8",2);
 let a = () => { 
   curr = accCoords();
   if(!prev) { prev=curr; return;}
-  //console.log(curr);
-  if(curr.y > -52) {
-    if(! sstate) {
-      console.log('up1: v='+Math.abs(prev.y-curr.y));
-      sstate = 1;
-    }
-  } else if(curr.y < -63) {
-    if(! sstate) {
-      console.log('up2: v='+Math.abs(prev.y-curr.y));
-      sstate = 1;
-    }
+  if(curr.y > -52 || curr.y < -63) {
+    if(!sstate) sstate = 1;
+    //console.log('up1: v='+Math.abs(prev.y-curr.y));
   } else {
     if(sstate) {
-      console.log('reset');
+      //console.log('reset');
       let v = Math.abs(prev.y-curr.y);
-      if(v > 12) {
+      if(v > 10) {
         scnt++;
         console.log(`STEP:${scnt} v=${v}`);
+        g.drawString(scnt,0,70,true);
+        g.flip();
       }
       sstate = 0;
     }
   }
   prev = curr;
-  if(Date.now() > stop) clearInterval(intvl);
 };
 
 intvl = setInterval(a,100);
