@@ -1,36 +1,35 @@
-eval(".boot0");
+eval(require("Storage").read("boot0"));
 
-//require("Font6x8").add(Graphics);
-//require("Font6x12").add(Graphics);
-//require("Font8x12").add(Graphics);
 require("Font8x16").add(Graphics);
-/*
+let p82dk = 11/15;
+
+
 const imgCalorie = {
-  width : 16, height : 22, bpp : 3,
-  transparent : 0,
-  palette : new Uint16Array([65024,41977,41976,0]),
-  buffer : E.toArrayBuffer(atob("AAAEkAAAAAAkkAAAAAEkkAAAAAkkgAAAAEkkgAAAAEkkgAAAEEkkkAAAkEkkkAEgkEkkkAEkkEkkkAkkkkkkkgkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkEkkkkkkkAkkkkkkgAEkkkkkAAAkkkkgAAAEkkkAAAAAkkkAA"))
+  width : 16, height : 22, bpp : 2,
+  transparent : 1,
+  palette : new Uint16Array([12,8,8,0]),
+  buffer : E.toArrayBuffer(atob("VVQFVVVQBVVVQAVVVQAVVVQAFVVUABVVRAAFVQQABUEEAAVABAAFAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABQAAABVAAABVUAABVVQABVVVAAVQ=="))
 };
 
 const imgStep = {
-  width : 22, height : 22, bpp : 3,
+  width : 22, height : 22, bpp : 2,
   transparent : 0,
-  palette : new Uint16Array([0,0,0x0680,0]),
-  buffer : E.toArrayBuffer(atob("AAAAAAACSAAAAAAAAASSQAAAAAAACSSSAAAAAAACSSSAAAAAAACSSSAAAAAAACSSSAAAAAAACSSSAAASQAAASSQAACSSAAASSQAASSSQAASSQAASSSQAAAAAAASSSQAASSQAASSSQAASSQAASSSQAASSQAACSSAAASSQAACSSAAAAAAAACSSAAAAAAAAAAAAAAAAAAACSSAAAAAAAACSSAAAAAAAACSSAAAAAAAACSSAAAAAAAA="))
+  palette : new Uint16Array([15,9,9,0]),
+  buffer : E.toArrayBuffer(atob("AAAAAqAAAAAAqoAAAAAqqgAAAAKqoAAAACqqAAAAAqqgAAAAKqoACoAAqoACqgAKqACqqACqgAqqgAAAAKqoAKqACqqACqgAqqgAqoACqgAKqAAqoAAAAAKqAAAAAAAAAAAAAqoAAAAAKqAAAAACqgAAAAAqoAAAAA=="))
 };
 
 const imgPulse = {
-  width: 22, height: 21, bpp: 3,
-  transparent: 1,
-  palette: new Uint16Array([63488,63488]),
-  buffer : E.toArrayBuffer(atob("JIAAJJJAABJJAAABJIAAAJIAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAABJAAAAAAAAAJJIAAAAAAABJJIAAAAAAABJJJAAAAAAAJJJJIAAAAABJJJJJAAAAAJJJJJJIAAABJJJJJJIAAABJJJJJJJAAAJJJJJJJJIABJJJJJJJJJAJJJJJJJJJJJJJJJJA"))
+  width : 22, height : 22, bpp : 2,
+  transparent : 1,
+  palette : new Uint16Array([12, 15]),
+  buffer : E.toArrayBuffer(atob("VABVUAFVAAFUAAVAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAABUAAAAABVQAAAABVUAAAAAVVQAAAAVVVAAAAVVVUAAAVVVVQAAVVVVUAAFVVVVQAFVVVVVAFVVVVVUFVVVVVVVVVVVVVVVVVQ=="))
 };
-*/
+
 /*
 ** BEGIN WATCH FACE
 */
 
-const startX=[10,60,130,180],startY=[70,70,70,70],nmX=[16,42,88,126],nmY=[12,12,12,12];let rotate=!1,xS=1.25,yS=1.25;function setScale(t,r){xS=t,yS=r}function drawScaledPoly(r,n,a){let d=[];for(let t=0;t<r.length;t+=2){var e;d[t]=Math.floor(r[t]*xS)+n,d[t+1]=Math.floor(r[t+1]*yS)+a,rotate&&(e=d[t],d[t]=80-d[t+1],d[t+1]=e)}g.fillPoly(d,!1)}let d0=new Uint8Array([0,4,4,0,32,0,36,4,36,65,25,65,25,5,11,5,11,65,36,65,36,66,32,70,4,70,0,66]),d1=new Uint8Array([7,4,11,0,20,0,24,4,24,70,13,70,13,5,7,5]),d2=new Uint8Array([0,4,4,0,32,0,36,4,36,34,32,38,11,38,11,65,36,65,36,66,32,70,0,70,0,36,4,32,25,32,25,5,0,5]),d3=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38,0,32,25,32,25,5,0,5]),d4=new Uint8Array([0,4,4,0,11,0,11,32,25,32,25,0,32,0,36,4,36,70,25,70,25,38,0,38]),d5=new Uint8Array([0,0,32,0,36,4,36,5,11,5,11,32,32,32,36,36,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38]),d6=new Uint8Array([0,4,4,0,32,0,36,4,36,5,11,5,11,65,25,65,25,38,11,38,11,32,32,32,36,36,36,66,32,70,4,70,0,66]),d7=new Uint8Array([0,4,4,0,32,0,36,4,36,70,25,70,25,5,0,5]),d8=new Uint8Array([0,4,4,0,32,0,36,4,36,32,33,35,36,38,36,66,32,70,18,70,18,65,25,65,25,38,18,38,18,32,25,32,25,5,11,5,11,32,18,32,18,38,11,38,11,65,18,65,18,70,4,70,0,66,0,38,3,35,0,32]),d9=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,65,0,65,25,65,25,5,11,5,11,32,25,32,25,38,4,38,0,34]);function drawDigit(t,r,n){let a=(n?nmX:startX)[t];t=(n?nmY:startY)[t];EMULATOR&&(a+=80),drawScaledPoly([d0,d1,d2,d3,d4,d5,d6,d7,d8,d9][r],a,t)}
+const startX=[6,47,95,136],startY=[40,40,40,40],nmX=[16,42,88,126],nmY=[12,12,12,12];let rotate=!1,xS=1,yS=1;function setScale(t,r){xS=t,yS=r}function drawScaledPoly(r,n,a){let d=[];for(let t=0;t<r.length;t+=2){var e;d[t]=Math.floor(r[t]*xS)+n,d[t+1]=Math.floor(r[t+1]*yS)+a,rotate&&(e=d[t],d[t]=80-d[t+1],d[t+1]=e)}g.fillPoly(d,!1)}let d0=new Uint8Array([0,4,4,0,32,0,36,4,36,65,25,65,25,5,11,5,11,65,36,65,36,66,32,70,4,70,0,66]),d1=new Uint8Array([7,4,11,0,20,0,24,4,24,70,13,70,13,5,7,5]),d2=new Uint8Array([0,4,4,0,32,0,36,4,36,34,32,38,11,38,11,65,36,65,36,66,32,70,0,70,0,36,4,32,25,32,25,5,0,5]),d3=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38,0,32,25,32,25,5,0,5]),d4=new Uint8Array([0,4,4,0,11,0,11,32,25,32,25,0,32,0,36,4,36,70,25,70,25,38,0,38]),d5=new Uint8Array([0,0,32,0,36,4,36,5,11,5,11,32,32,32,36,36,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38]),d6=new Uint8Array([0,4,4,0,32,0,36,4,36,5,11,5,11,65,25,65,25,38,11,38,11,32,32,32,36,36,36,66,32,70,4,70,0,66]),d7=new Uint8Array([0,4,4,0,32,0,36,4,36,70,25,70,25,5,0,5]),d8=new Uint8Array([0,4,4,0,32,0,36,4,36,32,33,35,36,38,36,66,32,70,18,70,18,65,25,65,25,38,18,38,18,32,25,32,25,5,11,5,11,32,18,32,18,38,11,38,11,65,18,65,18,70,4,70,0,66,0,38,3,35,0,32]),d9=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,65,0,65,25,65,25,5,11,5,11,32,25,32,25,38,4,38,0,34]);function drawDigit(t,r,n){let a=(n?nmX:startX)[t];t=(n?nmY:startY)[t];EMULATOR&&(a+=80),drawScaledPoly([d0,d1,d2,d3,d4,d5,d6,d7,d8,d9][r],a,t)}
 /*
 ** END WATCH FACE
 */
@@ -95,8 +94,8 @@ function drawDayClock(d) {
 
   //g.setColor(0.9,0.9,0.4);
   let batt = ' '+Math.floor(battLevel())+'%';
-  g.drawString(batt,232-g.stringWidth(batt),2,true);
-  g.drawString(d.dt,8,2);
+  g.drawString(batt,175-g.stringWidth(batt),2,true);
+  g.drawString(d.dt,8,2,true);
 
 
   rotate = false;
@@ -111,27 +110,27 @@ function drawDayClock(d) {
   }
   lastTime = tm;
 
-  g.fillCircle(117, 105, 4);
-  g.fillCircle(117, 135, 4);
+  g.fillCircle(88,  74, 3);
+  g.fillCircle(88,  98, 3);
 
   //g.setFont("KNXT",2);
-  /*
+  
   g.setColor(15);
 
-  g.drawImage(imgCalorie, 40, 180);
-  g.drawImage(imgStep, 110, 180);
-  g.drawImage(imgPulse, 180, 180);
+  g.drawImage(imgCalorie, 30, 125);
+  g.drawImage(imgStep, 80, 125);
+  g.drawImage(imgPulse, 130, 125);
   
-  g.drawString('000', 30, 206);
-  g.drawString(('00000'+getSteps()).slice(-5), 90, 206, true);
-  g.drawString('000', 176, 206);
+  g.drawString('000', 26, 148, true);
+  g.drawString(('00000'+getSteps()).slice(-5), 70, 148, true);
+  g.drawString('000', 130, 148, true);
   
-  g.flip();
-  
+  /*
   console.log('buzing in 3...');
   buzzLock &= 0b10;
   setTimeout(buzzClock, 3000, hr, min);
   */
+  g.flip();
 }
 
 function clock(){
@@ -159,6 +158,7 @@ let getSteps = () => {return (SCcnt);};
 function waitForDisplay() {
   g.setBgColor(bg);
   g.clear();
+  g.setColor(15);
   currint=screens[currscr]();
 }
   
