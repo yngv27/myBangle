@@ -540,4 +540,5 @@ const btnUp = (b) => {
   setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
 };
 btnUp(); // cheap start
+E.setTimeZone(-4);
 
