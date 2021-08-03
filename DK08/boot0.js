@@ -180,27 +180,27 @@ switch(bpp){
   g.sc=g.setColor;
   c1=pal[1]; //save color 1
   g.setColor=function(c){ //change color 1 dynamically
+    /*
     c=Math.floor(c);
     if (c > 1) {
       pal[1]=pal[c]; g.sc(1);
     } else if (c==1) {
       pal[1]=c1; g.sc(1);
     } else g.sc(c);
+    */
+    if(c >= 0 && c <= 0x3f) pal[1] = c; g.sc(1);
   }; break;
   case 4: pal=
     // CGA
     new Uint8Array(toFlatBuffer([
-    // function RGB444to222(r,g,b){return(((r>>2)<<6)|((g>>2)<<4)|((b>>2)<<2)).toString(16);}
-//  CGA palette 6bit RGB222
-    0,0x2,0x8,0xa,0x20,0x22,0x24,0x2a,0x15,0x17,0x1d,0x1f,0x3d,0x37,0x3d,0x3f
-//  CGA palette 12bit RGB444
-//      0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
-//     0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff
-//16bit RGB565
-//      0x0000,0x00a8,0x0540,0x0555,0xa800,0xa815,0xaaa0,0xad55,
-//      0x52aa,0x52bf,0x57ea,0x57ff,0xfaaa,0xfabf,0xffea,0xffff
-
-    ]));break;
+//  CGA palette 6bit RGB222    
+0,0x2,0x8,0xa,0x20,0x22,0x24,0x2a,0x15,0x17,0x1d,0x1f,0x3d,0x37,0x3d,0x3f
+    ]));
+    g.sc=g.setColor;
+    c1=pal[1]; //save color 1
+    g.setColor=function(c){ //change color 1 dynamically
+    if(c >= 0 && c <= 0x3f) pal[1] = c; g.sc(1);
+  }; break;
     case 6:
     pal = new Uint8Array(64);
     for(var i=0;i<64;i++) pal[i]=i<<2;
