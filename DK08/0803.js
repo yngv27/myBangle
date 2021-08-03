@@ -97,23 +97,27 @@ function drawDayClock(d) {
   let batt = ' '+Math.floor(battLevel())+'%';
   g.drawString(batt,175-g.stringWidth(batt),2,true);
   g.drawString(d.dt,8,2,true);
-
+  g.flip();
 
   rotate = false;
   for(let i=0; i<4; i++) {
     console.log(tm[i],lastTime[i]);
     if(tm[i] != lastTime[i]) {
-      g.setColor(15);
-   g.fillRect(startX[i],startY[i],startX[i]+36*xS,startY[i]+70*yS);
-      g.setColor(0);
-      drawDigit(i,tm[i], false);
+      //g.setColor(0x3f);
+   //g.fillRect(startX[i],startY[i],startX[i]+36*xS,startY[i]+70*yS);
+      //g.flip();
+      //setTimeout((i)=>{
+        g.setColor(Math.random()*64);
+        drawDigit(i,tm[i], false);
+        g.flip();
+      //}, 500, i);
     }
   }
   lastTime = tm;
 
   g.fillCircle(88,  74, 3);
   g.fillCircle(88,  98, 3);
-
+  g.flip();
   //g.setFont("KNXT",2);
   
   g.setColor(0);
@@ -157,23 +161,28 @@ let SCprev, SCcurr;
 let getSteps = () => {return (SCcnt);};
 
 function waitForDisplay() {
-  g.setBgColor(15);
+  g.setBgColor(0x3f);
   g.clear();
   g.setColor(0);
   currint=screens[currscr]();
 }
 
+setWatch(()=>{
+  g.bl(0.25);
+  setTimeout(()=>{g.bl(0);}, 5000);
+},BTN1, {repeat: true, edge:'rising', debounce:10});
 setTimeout(waitForDisplay, 500);
-//setTimeout(otherThing, 500);
+//setTimeout(coolbkgd, 500);
 
-function otherThing() {
-  g.setBgColor(0);
+function coolbkgd() {
+  g.setBgColor(0x3f);
   g.clear();
   for(let x=0; x < 8; x++) {
     for(let y =0; y<8; y++) {
       g.setColor(y+8*x);
-      g.fillRect(4+x*10, 4+y*10, x*10+12, y*10+12);
+      g.fillRect(4+x*20, 4+y*20, x*20+18, y*20+18);
+      g.flip();
     }
   }
-  g.flip();
+
 }
