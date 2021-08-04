@@ -15,14 +15,14 @@ const imgCalorie = {
 const imgStep = {
   width : 22, height : 22, bpp : 2,
   transparent : 0,
-  palette : new Uint16Array([12,9,9,0]),
+  palette : new Uint16Array([1,0]),
   buffer : E.toArrayBuffer(atob("AAAAAqAAAAAAqoAAAAAqqgAAAAKqoAAAACqqAAAAAqqgAAAAKqoACoAAqoACqgAKqACqqACqgAqqgAAAAKqoAKqACqqACqgAqqgAqoACqgAKqAAqoAAAAAKqAAAAAAAAAAAAAqoAAAAAKqAAAAACqgAAAAAqoAAAAA=="))
 };
 
 const imgPulse = {
   width : 22, height : 22, bpp : 2,
   transparent : 1,
-  palette : new Uint16Array([4, 15]),
+  palette : new Uint16Array([4, 0]),
   buffer : E.toArrayBuffer(atob("VABVUAFVAAFUAAVAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAABUAAAAABVQAAAABVUAAAAAVVQAAAAVVVAAAAVVVUAAAVVVVQAAVVVVUAAFVVVVQAFVVVVVAFVVVVVUFVVVVVVVVVVVVVVVVVQ=="))
 };
 
@@ -93,7 +93,7 @@ function drawDayClock(d) {
   g.setFont("8x16");
   //g.setFont("KNXT",1);
 
-  g.setColor(0);
+  g.sc(0);
   let batt = ' '+Math.floor(battLevel())+'%';
   g.drawString(batt,175-g.stringWidth(batt),2,true);
   g.drawString(d.dt,8,2,true);
@@ -103,14 +103,12 @@ function drawDayClock(d) {
   for(let i=0; i<4; i++) {
     console.log(tm[i],lastTime[i]);
     if(tm[i] != lastTime[i]) {
-      //g.setColor(0x3f);
-   //g.fillRect(startX[i],startY[i],startX[i]+36*xS,startY[i]+70*yS);
-      //g.flip();
-      //setTimeout((i)=>{
-        g.setColor(Math.random()*64);
-        drawDigit(i,tm[i], false);
-        g.flip();
-      //}, 500, i);
+      g.sc(14);
+      g.fillRect(
+        startX[i],startY[i],startX[i]+36*xS,startY[i]+70*yS);
+      g.sc(0);
+      drawDigit(i,tm[i], false);
+      g.flip();
     }
   }
   lastTime = tm;
@@ -120,7 +118,7 @@ function drawDayClock(d) {
   g.flip();
   //g.setFont("KNXT",2);
   
-  g.setColor(0);
+  g.sc(0);
 
   g.drawImage(imgCalorie, 30, 125);
   g.drawImage(imgStep, 80, 125);
@@ -142,7 +140,7 @@ function clock(){
   volts=0;
   return setInterval(function(){
     checkClock();
-  },500);
+  },3000);
 }
 
 function sleep(){
@@ -161,14 +159,17 @@ let SCprev, SCcurr;
 let getSteps = () => {return (SCcnt);};
 
 function waitForDisplay() {
-  g.setBgColor(0x3f);
-  g.clear();
-  g.setColor(0);
+  pal[14] = 0b00111000;
+  g.sc(14);
+  g.fillRect(0,0,175,175);
+  g.setBgColor(14);
+  g.flip();
+  g.sc(0);
   currint=screens[currscr]();
 }
 
 setWatch(()=>{
-  g.bl(0.25);
+  g.bl(0.20);
   setTimeout(()=>{g.bl(0);}, 5000);
 },BTN1, {repeat: true, edge:'rising', debounce:10});
 setTimeout(waitForDisplay, 500);
