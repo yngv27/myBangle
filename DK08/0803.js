@@ -1,6 +1,8 @@
 eval(require("Storage").read("dk08.js"));
 
 require("Font8x16").add(Graphics);
+require("omnigo2.fnt").add(Graphics);
+
 let p82dk = 11/15;
 
 //let battInfo = () => { return ""; };
@@ -90,8 +92,8 @@ function drawDayClock(d) {
 
   //g.setBgColor(bg); //0.2,0.1,0.2);
   //g.clear();
-  g.setFont("8x16");
-  //g.setFont("KNXT",1);
+  //g.setFont("8x16");
+  g.setFont("Omnigo",1);
 
   g.sc(14);
   let batt = ' '+Math.floor(battLevel())+'%';
@@ -159,7 +161,7 @@ let SCprev, SCcurr;
 let getSteps = () => {return (SCcnt);};
 
 function waitForDisplay() {
-  pal[14] = 0b00111000;
+  pal[14] = 0b00111111;
   g.sc(0);
   g.fillRect(0,0,175,175);
   g.setBgColor(0);
