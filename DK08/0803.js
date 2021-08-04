@@ -8,14 +8,14 @@ let p82dk = 11/15;
 const imgCalorie = {
   width : 16, height : 22, bpp : 2,
   transparent : 1,
-  palette : new Uint16Array([8,0]),
+  palette : new Uint16Array([14,0]),
   buffer : E.toArrayBuffer(atob("VVQFVVVQBVVVQAVVVQAVVVQAFVVUABVVRAAFVQQABUEEAAVABAAFAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABQAAABVAAABVUAABVVQABVVVAAVQ=="))
 };
 
 const imgStep = {
   width : 22, height : 22, bpp : 2,
   transparent : 0,
-  palette : new Uint16Array([1,0]),
+  palette : new Uint16Array([9,0]),
   buffer : E.toArrayBuffer(atob("AAAAAqAAAAAAqoAAAAAqqgAAAAKqoAAAACqqAAAAAqqgAAAAKqoACoAAqoACqgAKqACqqACqgAqqgAAAAKqoAKqACqqACqgAqqgAqoACqgAKqAAqoAAAAAKqAAAAAAAAAAAAAqoAAAAAKqAAAAACqgAAAAAqoAAAAA=="))
 };
 
@@ -93,7 +93,7 @@ function drawDayClock(d) {
   g.setFont("8x16");
   //g.setFont("KNXT",1);
 
-  g.sc(0);
+  g.sc(14);
   let batt = ' '+Math.floor(battLevel())+'%';
   g.drawString(batt,175-g.stringWidth(batt),2,true);
   g.drawString(d.dt,8,2,true);
@@ -103,10 +103,10 @@ function drawDayClock(d) {
   for(let i=0; i<4; i++) {
     console.log(tm[i],lastTime[i]);
     if(tm[i] != lastTime[i]) {
-      g.sc(14);
+      g.sc(0);
       g.fillRect(
         startX[i],startY[i],startX[i]+36*xS,startY[i]+70*yS);
-      g.sc(0);
+      g.sc(14);
       drawDigit(i,tm[i], false);
       g.flip();
     }
@@ -118,7 +118,7 @@ function drawDayClock(d) {
   g.flip();
   //g.setFont("KNXT",2);
   
-  g.sc(0);
+  g.sc(14);
 
   g.drawImage(imgCalorie, 30, 125);
   g.drawImage(imgStep, 80, 125);
@@ -140,7 +140,7 @@ function clock(){
   volts=0;
   return setInterval(function(){
     checkClock();
-  },3000);
+  },23000);
 }
 
 function sleep(){
@@ -160,30 +160,30 @@ let getSteps = () => {return (SCcnt);};
 
 function waitForDisplay() {
   pal[14] = 0b00111000;
-  g.sc(14);
+  g.sc(0);
   g.fillRect(0,0,175,175);
-  g.setBgColor(14);
+  g.setBgColor(0);
   g.flip();
   g.sc(0);
   currint=screens[currscr]();
 }
 
 setWatch(()=>{
-  g.bl(0.20);
+  g.bl(0.04);
   setTimeout(()=>{g.bl(0);}, 5000);
 },BTN1, {repeat: true, edge:'rising', debounce:10});
+
 setTimeout(waitForDisplay, 500);
-//setTimeout(coolbkgd, 500);
+//setTimeout(testfunc, 500);
 
-function coolbkgd() {
-  g.setBgColor(0x3f);
+function testfunc() {
+  g.setBgColor(0);
   g.clear();
-  for(let x=0; x < 8; x++) {
-    for(let y =0; y<8; y++) {
-      g.setColor(y+8*x);
-      g.fillRect(4+x*20, 4+y*20, x*20+18, y*20+18);
-      g.flip();
-    }
-  }
-
+  g.sc(15);
+  g.fillRect(0,0,120,40);
+  g.sc(4);
+  g.fillRect(0,40,120,80);
+  g.sc(1);
+  g.fillPoly([0,0,60,40,0,80],true);
+  g.flip();
 }
