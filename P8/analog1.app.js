@@ -28,13 +28,13 @@ g.sc = (c) => {
 var imin = {
   width : 5, height : 176, bpp : 2,
   transparent : 0,
-  palette : new Uint16Array([0,0xc658,0,0]),
+  palette : new Uint16Array([0,0xefff,0,0]),
   buffer : require("heatshrink").decompress(atob("AAcQisFoNQqgE/Als3Wn4AiA"))
 };
 var ihr = {
   width : 7, height : 176, bpp : 2,
   transparent : 0,
-  palette : new Uint16Array([0,0xdf1b,0,0]),
+  palette : new Uint16Array([0,0xefff,0,0]),
   buffer : require("heatshrink").decompress(atob("AHMVgNVitVAH4AmstUhtgV/4A/ABIA=="))
 }
 ;
@@ -51,14 +51,17 @@ let drawDayClock = (d) => {
   let minRot = Math.PI* 2 * d.min / 60 ;
   let ctr = g.getWidth()/2;
   g.sc(0);
-  g.fillCircle(ctr,118,10);
+  
 
-  g.sc(15);
+  g.sc(0xefff);
   g.fillCircle(ctr,ctr,6);
+  g.setColor(0.9,0.9,0.9);
+  g.drawCircle(ctr,ctr*1.34,24);
+  g.sc(15);
   let s = "SUNMONTUEWEDTHUFRISAT".substr(d.dow*3,3) + ' ' + d.dt;
   //console.log(d.dow, s);
   g.drawString(s, ctr*1.8-g.stringWidth(s), ctr*0.95);
-  g.drawString(d.batt,ctr-g.stringWidth(d.batt)/2,ctr*1.34);
+  g.drawString(d.batt,ctr-g.stringWidth(d.batt)/2,ctr*1.3);
 
   g.drawImage(ihr, ctr, ctr, { rotate: hrRot } );
   g.drawImage(imin, ctr, ctr, { rotate: minRot } );
