@@ -1,9 +1,14 @@
 var img = {
   width : 176, height : 176, bpp : 2,
   transparent : 0,
-  palette : new Uint16Array([0,3,11,11]),
-  buffer : require("heatshrink").decompress(atob("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"))
-
+  palette : new Uint16Array([0,8,15,15]),
+  buffer : require("heatshrink").decompress(atob("ABEBoALK3AZLqArQgeQFa0B8ArQgQSKFZkG6CDR8grWheAWCIfKFZkaZBQAHtorWlwqRgEeH5IrMvIrShYrW2grSg+QFakB8ArSgQUJFZcG6ArSgJsJFZcLwArSgF4FakeFScAlorUCpIALj1AFad5FaiZJFZTFKABcGyArSgXgFagWJFZUDIBAAMNxIrKTBIANvArShQqVgEkFaUFFayNJFZIAhFddQFdQA/AH4A/AH4A/AH4A/AH4A/ACMGoAqogkLyArotMG/IqngQpBt5YnrYoBg3pFUsB3zZBgOubssb8gEHAEJSELgIqjgzZBLonQFcVvbIIyKK0YzIADdb0A0HFcO+bIYADgIIHADNkf8YA/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A7gNVAAVAFcsK/4ACyArlg2qAAQrmAH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/AH4A/ABcCyAigsgIHjYrhv1AA4sB3wIGADUb8gHNADcB3RPFt2AacVrU4kG/L/jEotvbMImHgO5bMIADjTVCjfgFUhTB31AAQQrlKgPkgxaCLE25hTZlAAdpgIqogEEFVIA/AH4A/AH4A/AH4A/AH4A/AH4AhlAJIjAJIjIrW3AJIloJIjwqVgO0FaULoArUgXgFaUHyArUCxQrJIBQALheAFaUB8grUjyaJFZLwKABYgKBRVtFahBKFZUeFScB+grUhaZJABLxLFZUHeJIUVFZRCLABEbNhQrKgPkFaUuBZQrKgF4FaVpFawLLAA+4D60eTZSXTFZcLFaMC6ArWg+QFaEDwArWIhI"))
+};
+var isec = {
+  width : 3, height : 176, bpp : 2,
+  transparent : 0,
+  palette : new Uint16Array([12,12]),
+  buffer : require("heatshrink").decompress(atob("AAMEiFBAX4CDQPQ="))
 };
 var imin = {
   width : 5, height : 176, bpp : 2,
@@ -20,23 +25,37 @@ var ihr = {
 ;
 require("omnigo2.fnt").add(Graphics);
 
+let battAvg = [0,0,0,0,0,0,0,0,0,0,0,0];
+function battLevelAvg() {
+  battAvg.push(Math.floor(battLevel()));
+  battAvg.shift();
+  let sum = battAvg.reduce((a, b) => a + b, 0);
+  return Math.floor(sum / battAvg.length) || 0;
+}
+
 // d contains hours, mins and each digit, nm == night mode (set when BTN1 is pushed)
 let drawTime = (d, nm) => {
   let hrRot = Math.PI * 2 * ((d.hour % 12) * 60 + d.min) / 720;
   let minRot = Math.PI* 2 * d.min / 60 ;
+  let secRot = Math.PI* 2 * d.sec / 60 ;
+  
   g.sc(0);
   g.fillCircle(88,118,10);
 
-  g.sc(15);
+  g.sc(12);
   g.fillCircle(88,88,6);
+  g.sc(15);
   let s = "SUNMONTUEWEDTHUFRISAT".substr(d.dow*3,3) + ' ' + d.dt;
   //console.log(d.dow, s);
-  g.drawString(s, 160-g.stringWidth(s), 83);
-  s=Math.floor(battLevel());
-  g.drawString(s,88-g.stringWidth(s)/2,118);
+  g.drawString(s, 164-g.stringWidth(s), 84);
+  g.drawString(s, 163-g.stringWidth(s), 84);
+  s=battLevelAvg();
+  let y = (d.hour >= 17 && d.hour <= 19) ? 58 : 118;
+  g.drawString(s,88-g.stringWidth(s)/2, y);
 
   g.drawImage(ihr, 88, 88, { rotate: hrRot } );
   g.drawImage(imin, 88, 88, { rotate: minRot } );
+  g.drawImage(isec, 88, 88, { rotate: secRot } );
   g.sc(0);
   g.fillCircle(88,88,3);
   g.flip();
@@ -51,7 +70,7 @@ function thing() {
   g.drawImage(img,0,0);
   //g.flip();
   let dt=new Date();
-  let d = { hour:dt.getHours(), min:dt.getMinutes(), dt:dt.getDate(), dow:dt.getDay() };
+  let d = { hour:dt.getHours(), min:dt.getMinutes(), dt:dt.getDate(), dow:dt.getDay(), sec:dt.getSeconds() };
   drawTime(d, false);
 }
 g.setFont("Omnigo",1);
@@ -61,5 +80,5 @@ setWatch(()=>{
   setTimeout(g.bl, 5000, 0);
 }, BTN1, {edge: 'rising', debounce: 100, repeat: true});
 
-setTimeout(thing, 1000);
-setInterval(thing, 23000);
+//setTimeout(thing, 1000);
+setInterval(thing, 1000);
