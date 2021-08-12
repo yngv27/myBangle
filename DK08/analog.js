@@ -56,8 +56,6 @@ let drawTime = (d, nm) => {
   g.sc(bgc);
   g.fillCircle(88,118,10);
 
-  g.sc(12);
-  g.fillCircle(88,88,6);
   g.sc(fgc);
   let s = "SUNMONTUEWEDTHUFRISAT".substr(d.dow*3,3) + ' ' + d.dt;
   //console.log(d.dow, s);
@@ -70,6 +68,8 @@ let drawTime = (d, nm) => {
   g.drawImage(ihr, 88, 88, { rotate: hrRot } );
   g.drawImage(imin, 88, 88, { rotate: minRot } );
   g.drawImage(isec, 88, 88, { rotate: secRot } );
+  g.sc(4);
+  g.fillCircle(88,88,6);
   g.sc(bgc);
   g.fillCircle(88,88,3);
   g.flip();
@@ -95,6 +95,8 @@ function swapColor() {
   let x=fgc;
   fgc=bgc;
   bgc=x;
+  imin.palette[1]=fgc;
+  ihr.palette[1]=fgc;
 }
 
 function liteOn() {
