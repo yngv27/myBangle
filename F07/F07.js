@@ -93,35 +93,19 @@ function init(){
 
 var bpp=4; // powers of two work, 3=8 colors would be nice
 var g=Graphics.createArrayBuffer(80,160,bpp);
-var pal;
-switch(bpp){
-  case 2: pal= Uint16Array([0x000,0xf00,0x0f0,0x00f]);break; // white won't fit
-//  case 1: pal= Uint16Array([0x000,0xfff]);break;
-  case 1:
-  pal= Uint16Array( // same as 16color below, use for dynamic colors
-    [ 0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
-      0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff ]);
-  g.sc=g.setColor;
-  c1=pal[1]; //save color 1
-  g.setColor=function(c){ //change color 1 dynamically
-    c=Math.floor(c);
-    if (c > 1) {
-      pal[1]=pal[c]; g.sc(1);
-    } else if (c==1) {
-      pal[1]=c1; g.sc(1);
-    } else g.sc(c);
-  }; break;
-  case 4: pal= Uint16Array( // CGA
-    [
-// 12bit RGB444
-      0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
-     0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff
-//16bit RGB565
-//      0x0000,0x00a8,0x0540,0x0555,0xa800,0xa815,0xaaa0,0xad55,
-//      0x52aa,0x52bf,0x57ea,0x57ff,0xfaaa,0xfabf,0xffea,0xffff
-
-    ]);break;
-}
+var pal=Uint16Array( 
+  [ 0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
+    0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff ]);
+g.sc=g.setColor;
+c1=pal[1]; //save color 1
+g.setColor=function(c){ //change color 1 dynamically
+  c=Math.floor(c);
+  if (c > 1) {
+    pal[1]=pal[c]; g.sc(1);
+  } else if (c==1) {
+    pal[1]=c1; g.sc(1);
+  } else g.sc(c);
+}; 
 
 // preallocate setwindow command buffer for flip
 g.winCmd=toFlatBuffer([
@@ -134,6 +118,7 @@ g.winA=E.getAddressOf(g.winCmd,true);
 g.palA=E.getAddressOf(pal.buffer,true); // pallete address
 g.buffA=E.getAddressOf(g.buffer,true); // framebuffer address
 g.stride=g.getWidth()*bpp/8;
+g.palette=pal;
 
 g.flip=function(force){
   var r=g.getModified(true);
@@ -202,9 +187,15 @@ g.off=function(){
   [DC,SCK,MOSI,RST,CS].forEach((p)=>{p.mode("analog");} ); // disconnect like  poke32(0x50000700+4*pin,2);
   this.isOn=false;
 };
-exports.getGraphics = () => {return g;};
-exports.setHRMPower = (on) => { digitalWrite(D27,on?0:1);};
-exports.getHRMValue = () => { return analogRead(D28); };
+
+g.origSetColor = g.setColor;
+g.setColor=(val)=>{
+  if(typeof val == 'string') {
+    this.palette[15]=val.replace('#','0x');
+    val = 15;
+  }
+  this.origSetColor(val);
+};
 
 const VIB=D25;
 function vibon(vib){
@@ -221,7 +212,7 @@ function viboff(vib){
  }
 }
 
-exports.vibrate=function(intensity,count,onms,offms){
+vibrate=function(intensity,count,onms,offms){
  //vibon({i:intensity,c:count,on:onms,off:offms});
   let accum = 1000;
   analogWrite(VIB, 0.1);
@@ -238,17 +229,18 @@ exports.vibrate=function(intensity,count,onms,offms){
   //VIB.reset();
 };
 
-exports.battVolts = function(){
+function battVolts(){
 return 4.20/0.18*analogRead(D5);
-};
+}
 
-exports.battLevel = function(v){
+function battLevel(v){
   var l=3.3,h=4.1;
   v=v?v:battVolts();
   if(v>=h)return 100;
   if(v<=l)return 0;
   return 100*(v-l)/(h-l);
-};
+}
+function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
 
 var fc=new SPI(); // font chip - 2MB SPI flash
 D23.write(1);
@@ -258,6 +250,7 @@ fc.send([0xb9],D23); //put to deep sleep
 // BMA 222E accelerometer on shared spi with fontchip, CS=D18
 D18.set();
 D31.set();
+/*
 function accRegRead(r){
   return fc.send([0x80|r,0x00],D18)[1];
 }
@@ -278,13 +271,8 @@ function accLowPowerMode(b){
   else
     accResetBit(0x11,6);
 }
-
-exports.accCoords = () => {
+*/
+function accCoords(){
   var coords=Int8Array(fc.send([0x82,0,0,0,0,0,0],D18).buffer,2);
   return ({x:coords[0],y:coords[2],z:coords[4]});
-};
-
-/*
-** minimize at https://javascript-minifier.com/
-** or maybe https://jscompress.com/ 
-*/
+}
