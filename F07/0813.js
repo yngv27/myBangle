@@ -1,73 +1,89 @@
 eval(require("Storage").read("F07.js"));
 
-require("m_dylex13").add(Graphics);
 //require("m_knxt").add(Graphics);
 //require("Font8x12").add(Graphics);
-//require("omnigo.fnt").add(Graphics);
+require("omnigo.fnt").add(Graphics);
 
 E.getBattery = () => {return 99;};
 
+// funky!  16bit to 12bit conv
+function to12(c) {
+  let r = (c & 0xf000) >> 4;
+  let g = (c & 0x0780) >> 3;
+  let b = (c & 0x001e) >> 1;
+  //console.log((c).toString(2)+" to "+(r).toString(2)+':'+(g).toString(2)+':'+(b).toString(2));
+  return r+g+b;
+}
 /*
 ** BEGIN WATCH FACE
 */
-const startX=[10,45,10,45],startY=[16,16,78,78],nmX=[4,42,88,126],nmY=[12,12,12,12];
+const startX=[-4,11,34,56],startY=[60,60,60,60],nmX=[4,42,88,126],nmY=[12,12,12,12];
 let rotate=!1;
 let imgDig = [
   {
   width : 26, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,50712,23275]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,50712,23275]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAD7wAAAAADWpcAAAAAnADrAAAAGAAAnAAACgAAAoAAAoAAAAoAANwAAAAcAAoAAAADgANAAAAABwA4AAAAAKABwAAAAA0AEAAAAAAcDQAAAAACwKAAAAAAOAsAAAAAA4CwAAAAADQLAAAAAANAsAAAAAA0CwAAAAADQLAAAAAAOAoAAAAAA4DgAAAAACwNAAAAAALAHAAAAAAQAoAAAAAOADQAAAAAsABwAAAANAANAAAAAoAAKAAAANAAA3AAADcAAA3AAA3AAAA2AANwAAAA5/9cAAAAAOmsAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="))
 },{
   width : 19, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,59164,19017]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,59164,19017]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAMAAAAA5wAAADncAAADYHAAAOsBwAADwAcAAAAAHAAAAABwAAAAAcAAAAAHAAAAABwAAAAAcAAAAAHAAAAABwAAAAAcAAAAAHAAAAABwAAAAAcAAAAAHAAAAABwAAAAAcAAAAAHAAAAABwAAAAAcAAAAAHAAAAABwAAAAAcAAAAAHAAAAABwAAAAAcAAAAAHAAAAABwAAAAAcAAAAALAAAAAAAAAAAAAAAAAAAAAA=="))
 },{
   width : 25, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,12678,33840]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,12678,33840]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAv+AAAAALV9XgAAANcAC3AAANwAADcAANgAAAJwABgAAAAmAAAAAAADQAAAAAAAmAAAAAAABwAAAAAAA8AAAAAAANAAAAAAADQAAAAAAA8AAAAAAAPAAAAAAABgAAAAAADQAAAAAACcAAAAAAAcAAAAAAA8AAAAAAAcAAAAAACcAAAAAACcAAAAAACcAAAAAADcAAAAAADcAAAAAADcAAAAAADcAAAAAADYAAAAAABYAAAAAAJQAAAAAAJQAAAAAAJQAAAAAANaqqqqqgBVVVVVVUAAAAAAAAAAAAAAAAAAAAAAAAAA=="))
 },{
   width : 25, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,42292,12710]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,42292,12710]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAOqqqqqgADqqqqVYAAAAAADYAAAAAADYAAAAAAAUAAAAAAAUAAAAAAAUAAAAAAAXAAAAAAAnAAAAAAAnAAAAAAAnAAAAAAAmwAAAAAAJWgAAAAAADlwAAAAAAAnAAAAAAACcAAAAAAAJwAAAAAAAoAAAAAAANwAAAAAAAYAAAAAAAKAAAAAAADQAAAAAAA0AAAAAAANAAAAAAACQAAAAAAAoAAAAAAAHAAAAAAAJAAAAAAANwADAAAANgADYAAANgAANsAAJgAAAJa+lwAAAA6VrAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="))
  },{
    width : 30, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,23243,27469]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,23243,27469]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAANgAAAAAAAAlgAAAAAAAAVgAAAAAAABRgAAAAAAANhgAAAAAAA3BgAAAAAACcBgAAAAAABQBgAAAAAAFABgAAAAAA0ABgAAAAADYABgAAAAAJwABgAAAAAFAABgAAAAAUAABgAAAADQAABgAAAANgAABgAAAAnAAABgAAACcAAABgAAABQAAABgAAANAAAABgAAA2AAAABgAACcAAAABgAAJwAAAABgAAFAAAAABgAAX/////96gAVVVVVVVVQAAAAAAABgAAAAAAAABgAAAAAAAABgAAAAAAAABgAAAAAAAABgAAAAAAAABgAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))
 },{
    width : 25, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,50712,50744]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,50712,50744]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAKqqqqqAAB/+qqqoAAQAAAAAAAEAAAAAAAJAAAAAAACQAAAAAAAsAAAAAAAKAAAAAAADgAAAAAAAYAAAAAAAEAAAAAAABAAgAAAAAQlVWAAAAmYACmAAAJwAAAcAACgAAACwAAAAAAAOAAAAAAAAQAAAAAAALAAAAAAAAQAAAAAAAEAAAAAAACgAAAAAAAoAAAAAAAKAAAAAAADgAAAAAAAQAAAAAAAkAAAAAAAOAAAAAAAJAAAAAAABAACQAAAJgAAJgAAJgAAANoC2AAAAALVoAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="))
 },{
   width : 26, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,23275,44405]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,23275,44405]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAArAAAAAACV8AAAAACWAAAAAAA2AAAAAAANgAAAAAADwAAAAAAAmAAAAAAABgAAAAAAA8AAAAAAABgAAAAAAA8AAAAAAABgAAAAAAAkAK/4AAACwJXtWAAAOJYAAlgAAacAAANgABmAAAAJAAlwAAAAPACUAAAAAGAJwAAAAA8AmAAAAACQCQAAAAABgJAAAAAAGAkAAAAAAYCQAAAAABgBgAAAAAEAGAAAAACwAkAAAAAGAAcAAAADQACYAAAAmAACYAAAJgAACcAADYAAAC3qreAAAAAtV6AAAAAAAAAAAAAAAAAAAAAAAAAAAAA="))
 }, {
     width : 25, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,35953,50712]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,35953,50712]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAACqqqqqqgAv///9VcAAAAAAAGAAAAAAAJAAAAAAABgAAAAAAAQAAAAAAA8AAAAAAAGAAAAAAAJAAAAAAABgAAAAAACQAAAAAAA8AAAAAAAGAAAAAAALAAAAAAABgAAAAAACQAAAAAAA4AAAAAAAEAAAAAAAPAAAAAAABgAAAAAACwAAAAAAAYAAAAAAAkAAAAAAAOAAAAAAABAAAAAAACwAAAAAAAYAAAAAAAkAAAAAAAOAAAAAAAJAAAAAAADwAAAAAAAYAAAAAAAsAAAAAAAOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="))
 },{
     width : 26, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,4258,4226]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,4258,4226]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAKWgAAAAACVVgAAAAAWAJQAAAAJgABQAAACYAAJgAAAJAAAGAAAAUAAAUAAABQAABQAAAJAAAGAAAAmAACYAAAAXAAFAAAAAWAJcAAAADVVWAAAAAJVVYAAAAJWAKWAAACWAAAWAAAlAAAAmAABQAAAAnAAkAAAAAUABgAAAACYAnAAAAABgCQAAAAAFAFAAAAAAkAUAAAAACQCQAAAAAJAJAAAAAAUAmAAAAABgAUAAAAAkACYAAAAJgABYAAAAUAABYAAA1gAABYAAJYAAACVqpYAAAAAlVaAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="))
 },{
   width : 26, height : 40, bpp : 2,
-  transparent : -1,
-  palette : new Uint16Array([0,65535,61277,21130]),
+  transparent : 0,
+  f7palette : new Uint16Array([0,65535,61277,21130]),
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/8AAAAAOapbAAAADbAA6wAAArAAANwAAOAAAANwADcAAAAOAALAAAAALADgAAAAA4ALAAAAAAsAsAAAAACwBwAAAAAOAEAAAAAA4AcAAAAACgCwAAAAAKAOAAAAAAYA3AAAAANgAoAAAAAaAAsAAAAKsADcAAACiwADbAADoHAADm8PnDQAAA+VrAOAAAAAAAAsAAAAAAANAAAAAAAAoAAAAAAANwAAAAAAAoAAAAAAAOAAAAAAADcAAAAAAA3AAAAAAANwAAAAAAOsAAAAAD6sAAAAAAqsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="))
 }
   ];
 function drawDigit(t,r,n){
-  let a=(n?nmX:startX)[t];t=(n?nmY:startY)[t];
-  g.drawImage(imgDig[r],a,t);
+  pal[1]=0xfff; pal[2]=0xccc; pal[3]=0xaaa;
+  imgDig[r]
+  let a=(n?nmX:startX)[t];y=(n?nmY:startY)[t];
+  /*
+  for(let i=1;i<4;i++) {
+    pal[i]=to12(imgDig[r].palette[i]);
+    //console.log(pal);
+  }
+  //console.log('---');
+  */
+  if(r || t) g.drawImage(imgDig[r],a,y);
 }
 /*
 ** END WATCH FACE
@@ -170,27 +186,14 @@ function checkClock() {
 }
 function drawDayClock(d) {
   g.on();
-  /*
-  let d=Date();
-  let sec=d.getSeconds();
-  d=d.toString().split(' ');
-  var tm=d[4].substring(0,5);
-  d.hr=d[4].substr(0,2);
-  d.min=d[4].substr(3,2);
-  */
-  //console.log("here");
   let tm=d.hr+':'+d.min;
   if (tm == lastTime) return;
   lastTime = tm;
 
   g.clear();
-  //g.setFont("Omnigo");
+  g.setFont("Omnigo");
 
   g.setColor(2+8);
-  //g.fillCircle(6,6,6);
-  //g.fillCircle(73,6,6);
-  //g.fillRect(6,0,73,12);
-  //g.setColor(0);
   let batt = E.getBattery()+'%';
   g.drawString(batt,79-g.stringWidth(batt),0);
   g.drawString(getSteps(), 0, 0);
@@ -202,9 +205,6 @@ function drawDayClock(d) {
   drawDigit(2,Math.floor(d.min/10), false);
   drawDigit(3,Math.floor(d.min%10), false);
 
-  //g.setFont("KNXT"); 
-  //g.setColor(1);
-  //g.fillRect(0,140,79,159);
   g.setColor(14);
   g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,141);
   g.flip();
@@ -220,7 +220,6 @@ function drawNightClock(d) {
     g.on();
     rotate = true;
     g.setColor(4);
-    if(EMULATOR) g.setColor(0.5,0.5,0.5);
   //console.log("draw1: "+d.hr);
     if (d.hr>9) drawDigit(0,Math.floor(d.hr/10), true);
     drawDigit(1,Math.floor(d.hr%10), true);
