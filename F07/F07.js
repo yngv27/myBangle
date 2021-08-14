@@ -242,6 +242,17 @@ function battLevel(v){
 }
 function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
 
+let battAvg = [0,0,0,0,0,0,0,0,0,0,0,0];
+function battLevelAvg() {
+  battAvg.push(Math.floor(battLevel()));
+  battAvg.shift();
+  let sum = battAvg.reduce((a, b) => a + b, 0);
+  return Math.floor(sum / battAvg.length) || 0;
+}
+E.getBattery = () => {
+  return battLevelAvg();
+};
+
 var fc=new SPI(); // font chip - 2MB SPI flash
 D23.write(1);
 fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
