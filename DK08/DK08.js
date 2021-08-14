@@ -280,7 +280,16 @@ function battLevel(v){
   return 100*(v-l)/(h-l);
 }
 function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
-
+let battAvg = [0,0,0,0,0,0,0,0,0,0,0,0];
+function battLevelAvg() {
+  battAvg.push(Math.floor(battLevel()));
+  battAvg.shift();
+  let sum = battAvg.reduce((a, b) => a + b, 0);
+  return Math.floor(sum / battAvg.length) || 0;
+}
+E.getBattery = () => {
+  return battLevelAvg();
+};
 var lastmin=-1;
 var volts;
 
