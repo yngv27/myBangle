@@ -228,7 +228,9 @@ vibrate=function(intensity,count,onms,offms){
   }
   //VIB.reset();
 };
-
+let F07 = {
+  buzz: (t,i) => { vibrate(i,1,t,10); }
+};
 function battVolts(){
 return 4.20/0.18*analogRead(D5);
 }
