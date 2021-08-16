@@ -93,19 +93,35 @@ function init(){
 
 var bpp=4; // powers of two work, 3=8 colors would be nice
 var g=Graphics.createArrayBuffer(80,160,bpp);
-var pal=Uint16Array( 
-  [ 0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
-    0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff ]);
-g.sc=g.setColor;
-c1=pal[1]; //save color 1
-g.setColor=function(c){ //change color 1 dynamically
-  c=Math.floor(c);
-  if (c > 1) {
-    pal[1]=pal[c]; g.sc(1);
-  } else if (c==1) {
-    pal[1]=c1; g.sc(1);
-  } else g.sc(c);
-}; 
+var pal;
+switch(bpp){
+  case 2: pal= Uint16Array([0x000,0xf00,0x0f0,0x00f]);break; // white won't fit
+//  case 1: pal= Uint16Array([0x000,0xfff]);break;
+  case 1:
+  pal= Uint16Array( // same as 16color below, use for dynamic colors
+    [ 0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
+      0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff ]);
+  g.sc=g.setColor;
+  c1=pal[1]; //save color 1
+  g.setColor=function(c){ //change color 1 dynamically
+    c=Math.floor(c);
+    if (c > 1) {
+      pal[1]=pal[c]; g.sc(1);
+    } else if (c==1) {
+      pal[1]=c1; g.sc(1);
+    } else g.sc(c);
+  }; break;
+  case 4: pal= Uint16Array( // CGA
+    [
+// 12bit RGB444
+      0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
+     0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff
+//16bit RGB565
+//      0x0000,0x00a8,0x0540,0x0555,0xa800,0xa815,0xaaa0,0xad55,
+//      0x52aa,0x52bf,0x57ea,0x57ff,0xfaaa,0xfabf,0xffea,0xffff
+
+    ]);break;
+}
 
 // preallocate setwindow command buffer for flip
 g.winCmd=toFlatBuffer([
@@ -118,7 +134,6 @@ g.winA=E.getAddressOf(g.winCmd,true);
 g.palA=E.getAddressOf(pal.buffer,true); // pallete address
 g.buffA=E.getAddressOf(g.buffer,true); // framebuffer address
 g.stride=g.getWidth()*bpp/8;
-g.palette=pal;
 
 g.flip=function(force){
   var r=g.getModified(true);
@@ -188,15 +203,6 @@ g.off=function(){
   this.isOn=false;
 };
 
-g.origSetColor = g.setColor;
-g.setColor=(val)=>{
-  if(typeof val == 'string') {
-    this.palette[15]=val.replace('#','0x');
-    val = 15;
-  }
-  this.origSetColor(val);
-};
-
 const VIB=D25;
 function vibon(vib){
  //if(vib.i>=1)VIB.set();else 
@@ -228,9 +234,7 @@ vibrate=function(intensity,count,onms,offms){
   }
   //VIB.reset();
 };
-let F07 = {
-  buzz: (t,i) => { vibrate(i,1,t,10); }
-};
+
 function battVolts(){
 return 4.20/0.18*analogRead(D5);
 }
@@ -243,17 +247,6 @@ function battLevel(v){
   return 100*(v-l)/(h-l);
 }
 function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
-
-let battAvg = [0,0,0,0,0,0,0,0,0,0,0,0];
-function battLevelAvg() {
-  battAvg.push(Math.floor(battLevel()));
-  battAvg.shift();
-  let sum = battAvg.reduce((a, b) => a + b, 0);
-  return Math.floor(sum / battAvg.length) || 0;
-}
-E.getBattery = () => {
-  return battLevelAvg();
-};
 
 var fc=new SPI(); // font chip - 2MB SPI flash
 D23.write(1);
@@ -289,3 +282,218 @@ function accCoords(){
   var coords=Int8Array(fc.send([0x82,0,0,0,0,0,0],D18).buffer,2);
   return ({x:coords[0],y:coords[2],z:coords[4]});
 }
+
+
+require("Font6x8").add(Graphics);
+//require("Font6x12").add(Graphics);
+//require("Font8x12").add(Graphics);
+//require("Font8x16").add(Graphics);
+
+function info(){
+  g.clear();
+  g.setFont("4x6",1/*2*/);g.setColor(10);
+  g.drawString("Espruino "+process.version,5,10);
+  if (bpp==1) g.flip();
+  g.setFont("4x6",1);g.setColor(14);
+  g.drawString("ST7735 12 bit mode\n8Mbps SPI with DMA",4,22);
+  if (bpp==1) g.flip();
+  for (var c=0;c<8;c++){
+    g.setColor(c+8);g.fillRect(8+8*c,130,16+8*c,138);
+    if (bpp==1) g.flip();
+  }
+  for ( c=0;c<8;c++) {g.setColor(c);g.fillRect(8+8*c,142,16+8*c,150);
+    if (bpp==1) g.flip();
+  }
+  g.flip();
+  return setInterval(function(){
+    stepCube();
+  },5);
+}
+
+/*
+** BEGIN WATCH FACE
+*/
+
+const startX=[10,45,10,45],startY=[16,16,78,78],nmX=[16,42,88,126],nmY=[12,12,12,12];let rotate=!1,xS=.8,yS=.8;function setScale(t,r){xS=t,yS=r}function drawScaledPoly(r,n,a){let d=[];for(let t=0;t<r.length;t+=2){var e;d[t]=Math.floor(r[t]*xS)+n,d[t+1]=Math.floor(r[t+1]*yS)+a,rotate&&(e=d[t],d[t]=80-d[t+1],d[t+1]=e)}g.fillPoly(d,!1)}let d0=new Uint8Array([0,4,4,0,32,0,36,4,36,65,25,65,25,5,11,5,11,65,36,65,36,66,32,70,4,70,0,66]),d1=new Uint8Array([7,4,11,0,20,0,24,4,24,70,13,70,13,5,7,5]),d2=new Uint8Array([0,4,4,0,32,0,36,4,36,34,32,38,11,38,11,65,36,65,36,66,32,70,0,70,0,36,4,32,25,32,25,5,0,5]),d3=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38,0,32,25,32,25,5,0,5]),d4=new Uint8Array([0,4,4,0,11,0,11,32,25,32,25,0,32,0,36,4,36,70,25,70,25,38,0,38]),d5=new Uint8Array([0,0,32,0,36,4,36,5,11,5,11,32,32,32,36,36,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38]),d6=new Uint8Array([0,4,4,0,32,0,36,4,36,5,11,5,11,65,25,65,25,38,11,38,11,32,32,32,36,36,36,66,32,70,4,70,0,66]),d7=new Uint8Array([0,4,4,0,32,0,36,4,36,70,25,70,25,5,0,5]),d8=new Uint8Array([0,4,4,0,32,0,36,4,36,32,33,35,36,38,36,66,32,70,18,70,18,65,25,65,25,38,18,38,18,32,25,32,25,5,11,5,11,32,18,32,18,38,11,38,11,65,18,65,18,70,4,70,0,66,0,38,3,35,0,32]),d9=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,65,0,65,25,65,25,5,11,5,11,32,25,32,25,38,4,38,0,34]);function drawDigit(t,r,n){let a=(n?nmX:startX)[t];t=(n?nmY:startY)[t];EMULATOR&&(a+=80),drawScaledPoly([d0,d1,d2,d3,d4,d5,d6,d7,d8,d9][r],a,t)}
+/*
+** END WATCH FACE
+*/
+var volts;
+var batt=battInfo();
+let lastTime = '';
+let EMULATOR = false; 
+
+let buzzLock = 0;  // 0b10 = lockout, 0b01 = cancel
+let myName = NRF.getAddress().slice(-5);
+console.log(myName);
+
+
+function buzzClock (h,m) {
+  // skip if either lockout or canceled: 10 or 01 (i.e. not 0)
+  if(buzzLock) {
+    buzzLock &= 0b10;
+    console.log('no buzz..resetting');
+    return;
+  }
+  console.log('buzzing');
+  // vibrate: long = 5, short = 1
+  const lvl = 0.8, LONGBZ = 600, SHORTBZ = 150;
+  // hours
+  let n = Math.floor(h/5);
+  if(n) vibrate(lvl, n, LONGBZ, 100);
+  vibrate(lvl, h%5, SHORTBZ, 200);
+  // delay
+  vibrate(0.0, 1, 500, 500);
+  // 10 mins - always single pulses
+  n = Math.floor(m/10);
+  if(n) vibrate(lvl, n, SHORTBZ, 200);
+  vibrate(0.0, 1, 500, 500);
+  // 1 mins
+  if(m % 10 >= 5){ vibrate(lvl, 1, LONGBZ, 100); m -= 5; }
+  vibrate(lvl, m%5, SHORTBZ, 200);
+  // lockout for one minute
+  buzzLock |= 0b10;
+  setTimeout(function() { buzzLock &= 0b01; }, 60000);
+}
+
+function drawClock(){
+  let d=Date();
+  let sec=d.getSeconds();
+  d=d.toString().split(' ');
+  var tm=d[4].substring(0,5);
+  var hr=d[4].substr(0,2);
+  var min=d[4].substr(3,2);
+  let nm = false;
+  
+  if((hr > 20 || hr < 8) && myName == 'eb:7b') {
+    nm = true;
+  }
+
+  hr %= 12;
+  if (hr === 0) hr = 12;
+  min = parseInt(min);
+  xmid = 40;
+  if(EMULATOR) xmid=120;
+
+  //nm = true;
+  
+  if(!nm) {
+    let xyz = accCoords();
+    //console.log(JSON.stringify(xyz));
+    if(xyz.x < -2 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20) {
+      g.off();
+      buzzLock |= 1;
+      //console.log('Canceling buzz');
+      return;
+    }
+  }
+  
+  if(nm && sec%15 < 10) { g.off(); return;}
+  g.on();
+  if (tm == lastTime) return;
+  lastTime = tm;
+  //console.log("here");
+
+  g.clear();
+  g.setFont("6x8");
+  if(!nm) {
+    g.setColor(8+2);
+    if(EMULATOR) g.setColor(0,1,0);
+    let batt = battInfo();
+    g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
+  } else {
+    g.setColor(4);
+    //g.setBrightness(120);
+    let b = battLevel();
+    for(let c=0; c<5; c++) {
+      if(b > c*20) g.drawCircle(16+12*c, 8, 4);
+      //else g.drawCircle(14+12*c,8,4);
+    }
+  }
+
+  if(nm) {
+    rotate = true;
+    g.setColor(4);
+    if(EMULATOR) g.setColor(0.5,0.5,0.5);
+    if (hr>9) drawDigit(0,Math.floor(hr/10), nm);
+    drawDigit(1,Math.floor(hr%10), nm);
+    drawDigit(2,Math.floor(min/10), nm);
+    drawDigit(3,Math.floor(min%10), nm);
+    g.fillCircle(40, 80,2);
+    g.fillCircle(24, 80,2);
+    g.flip();
+  } else {
+    rotate = false;
+    g.setColor(8+7);
+    if(EMULATOR) g.setColor(1,1,1);
+    drawDigit(0,Math.floor(hr/10), nm);
+    drawDigit(1,Math.floor(hr%10), nm);
+    drawDigit(2,Math.floor(min/10), nm);
+    drawDigit(3,Math.floor(min%10), nm);
+
+    g.setFont("6x8",2); 
+    g.setColor(8+2);
+    if(EMULATOR) g.setColor(0,1,0);
+    var dt=d[1]+" "+d[2];
+    g.drawString(dt,xmid-g.stringWidth(dt)/2,146);
+    g.flip();
+    console.log('buzing in 3...');
+    buzzLock &= 0b10;
+    setTimeout(buzzClock, 3000, hr, min);
+  }
+}
+
+function clock(){
+  volts=0;
+  drawClock();
+  return setInterval(function(){
+    drawClock();
+},777);
+}
+
+function sleep(){
+  g.clear();//g.flip();
+  g.off();
+  currscr=-1;
+  return 0;
+}
+
+var screens=[clock,info,sleep];
+var currscr= 0;
+var currint=screens[currscr]();
+let longpress = 0;
+
+const btnDown = (b) => {
+  longpress = b.time;
+  setWatch(btnUp, BTN1, { repeat:false, edge:'falling', debounce:25});
+};
+const btnUp = (b) => {
+  if(b.time - longpress > 1.0) {
+    currscr++;if (currscr>=screens.length) currscr=0;
+    if (currint>0) clearInterval(currint);
+    currint=screens[currscr]();
+  }
+  setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
+};
+
+//setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
+
+
+
+
+/* try tap detection feature
+D17.mode("input_pulldown"); // irq2 pin
+accWriteReg(0x21,0x0E); // //latch irq for 50ms
+accSetBit(0x16,5); // single tap enable
+accSetBit(0x1b,5); // map it to int2
+accLowPowerMode(1);
+accWriteReg(0x2b,(3<<6)|4) //tap sensitivity  
+
+// values are 4=face tap, 2=side tap, 1=bottom or top side tap
+setWatch(()=>{
+      var rv = accRegRead(0x0b);
+      var v = (rv&0x7f)>>4;
+      v  = rv&0x80?-v:v;
+      print("tap ",v);
+},D17,{ repeat:true, debounce:false, edge:'rising' });
+*/

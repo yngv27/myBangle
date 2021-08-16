@@ -361,7 +361,6 @@ function buzzClock (h,m) {
 */
 
 let youThere = 0;
-let nm = false;
 
 function checkClock() {
   let d=Date();
@@ -370,12 +369,12 @@ function checkClock() {
   var tm=d[4].substring(0,5);
   var hr=d[4].substr(0,2);
   var min=d[4].substr(3,2);
-
-  /*
+  let nm = false;
+  
   if((hr > 20 || hr < 8) && myName == Eebie) {
     nm = true;
   }
-  */
+  
   hr %= 12;
   if (hr === 0) hr = 12;
   min = parseInt(min);
@@ -396,7 +395,7 @@ function checkClock() {
 
   let xyz = accCoords();
   //console.log(JSON.stringify(xyz));
-  if(xyz.x < 0 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20 || xyz.z > 0) {
+  if(xyz.x < -2 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20) {
     g.off();
     //buzzLock |= 1;
     //console.log('Canceling buzz');
@@ -410,7 +409,6 @@ function checkClock() {
   }
   if(!showClockTO) {
     showClockTO = setTimeout(drawDayClock, 1000,{hr:hr,min:min,dt:d[1]+" "+d[2]});
-    console.log("will show clock...");
   } else {
     // in case it's on too long...
     if(youThere < 7) youThere++;
@@ -488,57 +486,68 @@ function drawNightClock(d) {
 
 function clock(){
   volts=0;
-  nm = !nm;
-  return setInterval(checkClock,777);
+  return setInterval(function(){
+    checkClock();
+},777);
 }
 
 function sleep(){
-
-  let x = setTimeout(()=>{g.off();}, 3000);
-  console.log("x=",x);
+  g.clear();//g.flip();
+  g.off();
   currscr=-1;
   return 0;
 }
 
-let nextScreen = () => {
-  currscr++;
-  if (currscr>=screens.length) currscr=0;
-  if (currint>0) clearInterval(currint);
-  g.on();
-  g.clear();
-  g.setFont("6x8",2);
-  g.setColor(15);
-  g.drawString(screenNames[currscr],20,72);
-  g.flip();
-  setTimeout(()=>{
-    currint=screens[currscr](); 
-  }, 2500);
-};
-
-let screenNames=["Night\nclock","Day\nwatch","Sleep"];
-var screens=[clock,clock,sleep];
+g.setBrightness(32);
+var screens=[clock,info,sleep];
 var currscr= 0;
 var currint=screens[currscr]();
-
+//let longpress = 0;
 let longpressTO = 0;
 
 const btnDown = (b) => {
   //longpress = b.time;
-  longpressTO = setTimeout(nextScreen, 1500);
+  longpressTO = setTimeout(function(){
+    g.setBrightness(256);
+    longpressTO = 0;
+  }, 1000);
   setWatch(btnUp, BTN1, { repeat:false, edge:'falling', debounce:25});
 };
 const btnUp = (b) => {
-  /* 
+  /*
   if(b.time - longpress > 1.0) {
     g.setBrightness(256);
     setTimeout(function(){g.setBrightness(32);}, 10000);
   }
   */
-  if(longpressTO) {
-    clearTimeout(longpressTO);
-  }
+  if(longpressTO) clearTimeout(longpressTO);
+  else setTimeout(()=>{g.setBrightness(32);},10000);
   setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
 };
-btnUp(); // cheap start
-E.setTimeZone(-4);
 
+setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
+
+/* screen switching
+ currscr++;if (currscr>=screens.length) currscr=0;
+    if (currint>0) clearInterval(currint);
+    currint=screens[currscr]();
+*/
+
+
+
+/* try tap detection feature
+D17.mode("input_pulldown"); // irq2 pin
+accWriteReg(0x21,0x0E); // //latch irq for 50ms
+accSetBit(0x16,5); // single tap enable
+accSetBit(0x1b,5); // map it to int2
+accLowPowerMode(1);
+accWriteReg(0x2b,(3<<6)|4) //tap sensitivity  
+
+// values are 4=face tap, 2=side tap, 1=bottom or top side tap
+setWatch(()=>{
+      var rv = accRegRead(0x0b);
+      var v = (rv&0x7f)>>4;
+      v  = rv&0x80?-v:v;
+      print("tap ",v);
+},D17,{ repeat:true, debounce:false, edge:'rising' });
+*/

@@ -93,19 +93,35 @@ function init(){
 
 var bpp=4; // powers of two work, 3=8 colors would be nice
 var g=Graphics.createArrayBuffer(80,160,bpp);
-var pal=Uint16Array( 
-  [ 0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
-    0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff ]);
-g.sc=g.setColor;
-c1=pal[1]; //save color 1
-g.setColor=function(c){ //change color 1 dynamically
-  c=Math.floor(c);
-  if (c > 1) {
-    pal[1]=pal[c]; g.sc(1);
-  } else if (c==1) {
-    pal[1]=c1; g.sc(1);
-  } else g.sc(c);
-}; 
+var pal;
+switch(bpp){
+  case 2: pal= Uint16Array([0x000,0xf00,0x0f0,0x00f]);break; // white won't fit
+//  case 1: pal= Uint16Array([0x000,0xfff]);break;
+  case 1:
+  pal= Uint16Array( // same as 16color below, use for dynamic colors
+    [ 0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
+      0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff ]);
+  g.sc=g.setColor;
+  c1=pal[1]; //save color 1
+  g.setColor=function(c){ //change color 1 dynamically
+    c=Math.floor(c);
+    if (c > 1) {
+      pal[1]=pal[c]; g.sc(1);
+    } else if (c==1) {
+      pal[1]=c1; g.sc(1);
+    } else g.sc(c);
+  }; break;
+  case 4: pal= Uint16Array( // CGA
+    [
+// 12bit RGB444
+      0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
+     0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff
+//16bit RGB565
+//      0x0000,0x00a8,0x0540,0x0555,0xa800,0xa815,0xaaa0,0xad55,
+//      0x52aa,0x52bf,0x57ea,0x57ff,0xfaaa,0xfabf,0xffea,0xffff
+
+    ]);break;
+}
 
 // preallocate setwindow command buffer for flip
 g.winCmd=toFlatBuffer([
@@ -118,7 +134,6 @@ g.winA=E.getAddressOf(g.winCmd,true);
 g.palA=E.getAddressOf(pal.buffer,true); // pallete address
 g.buffA=E.getAddressOf(g.buffer,true); // framebuffer address
 g.stride=g.getWidth()*bpp/8;
-g.palette=pal;
 
 g.flip=function(force){
   var r=g.getModified(true);
@@ -188,15 +203,6 @@ g.off=function(){
   this.isOn=false;
 };
 
-g.origSetColor = g.setColor;
-g.setColor=(val)=>{
-  if(typeof val == 'string') {
-    this.palette[15]=val.replace('#','0x');
-    val = 15;
-  }
-  this.origSetColor(val);
-};
-
 const VIB=D25;
 function vibon(vib){
  //if(vib.i>=1)VIB.set();else 
@@ -228,9 +234,7 @@ vibrate=function(intensity,count,onms,offms){
   }
   //VIB.reset();
 };
-let F07 = {
-  buzz: (t,i) => { vibrate(i,1,t,10); }
-};
+
 function battVolts(){
 return 4.20/0.18*analogRead(D5);
 }
@@ -243,17 +247,6 @@ function battLevel(v){
   return 100*(v-l)/(h-l);
 }
 function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
-
-let battAvg = [0,0,0,0,0,0,0,0,0,0,0,0];
-function battLevelAvg() {
-  battAvg.push(Math.floor(battLevel()));
-  battAvg.shift();
-  let sum = battAvg.reduce((a, b) => a + b, 0);
-  return Math.floor(sum / battAvg.length) || 0;
-}
-E.getBattery = () => {
-  return battLevelAvg();
-};
 
 var fc=new SPI(); // font chip - 2MB SPI flash
 D23.write(1);
@@ -289,3 +282,4 @@ function accCoords(){
   var coords=Int8Array(fc.send([0x82,0,0,0,0,0,0],D18).buffer,2);
   return ({x:coords[0],y:coords[2],z:coords[4]});
 }
+

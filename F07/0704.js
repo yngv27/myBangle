@@ -248,42 +248,6 @@ function battLevel(v){
 }
 function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
 
-var fc=new SPI(); // font chip - 2MB SPI flash
-D23.write(1);
-fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
-fc.send([0xb9],D23); //put to deep sleep
-
-// BMA 222E accelerometer on shared spi with fontchip, CS=D18
-D18.set();
-D31.set();
-/*
-function accRegRead(r){
-  return fc.send([0x80|r,0x00],D18)[1];
-}
-function accWriteReg(r,v){
-  fc.send([0x7f & r,v],D18);
-}
-function accSetBit(r,b){
-    var v = accRegRead(r);
-    accWriteReg(r,v | 1<<b);
-}
-function accResetBit(r,b){
-  var v = accRegRead(r);
-  accWriteReg(r,v & ~(1<<b));
-}
-function accLowPowerMode(b){
-  if (b)
-    accSetBit(0x11,6);
-  else
-    accResetBit(0x11,6);
-}
-*/
-function accCoords(){
-  var coords=Int8Array(fc.send([0x82,0,0,0,0,0,0],D18).buffer,2);
-  return ({x:coords[0],y:coords[2],z:coords[4]});
-}
-
-
 require("Font6x8").add(Graphics);
 //require("Font6x12").add(Graphics);
 //require("Font8x12").add(Graphics);
@@ -313,8 +277,234 @@ function info(){
 /*
 ** BEGIN WATCH FACE
 */
+const startX = [ 10,  45,  10,  45 ];
+const startY = [ 16,  16,  78,  78 ];
+const nmX = [ 4, 42, 88, 126];
+const nmY = [ 12, 12, 12, 12];
+let rotate = false;
 
-const startX=[10,45,10,45],startY=[16,16,78,78],nmX=[16,42,88,126],nmY=[12,12,12,12];let rotate=!1,xS=.8,yS=.8;function setScale(t,r){xS=t,yS=r}function drawScaledPoly(r,n,a){let d=[];for(let t=0;t<r.length;t+=2){var e;d[t]=Math.floor(r[t]*xS)+n,d[t+1]=Math.floor(r[t+1]*yS)+a,rotate&&(e=d[t],d[t]=80-d[t+1],d[t+1]=e)}g.fillPoly(d,!1)}let d0=new Uint8Array([0,4,4,0,32,0,36,4,36,65,25,65,25,5,11,5,11,65,36,65,36,66,32,70,4,70,0,66]),d1=new Uint8Array([7,4,11,0,20,0,24,4,24,70,13,70,13,5,7,5]),d2=new Uint8Array([0,4,4,0,32,0,36,4,36,34,32,38,11,38,11,65,36,65,36,66,32,70,0,70,0,36,4,32,25,32,25,5,0,5]),d3=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38,0,32,25,32,25,5,0,5]),d4=new Uint8Array([0,4,4,0,11,0,11,32,25,32,25,0,32,0,36,4,36,70,25,70,25,38,0,38]),d5=new Uint8Array([0,0,32,0,36,4,36,5,11,5,11,32,32,32,36,36,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38]),d6=new Uint8Array([0,4,4,0,32,0,36,4,36,5,11,5,11,65,25,65,25,38,11,38,11,32,32,32,36,36,36,66,32,70,4,70,0,66]),d7=new Uint8Array([0,4,4,0,32,0,36,4,36,70,25,70,25,5,0,5]),d8=new Uint8Array([0,4,4,0,32,0,36,4,36,32,33,35,36,38,36,66,32,70,18,70,18,65,25,65,25,38,18,38,18,32,25,32,25,5,11,5,11,32,18,32,18,38,11,38,11,65,18,65,18,70,4,70,0,66,0,38,3,35,0,32]),d9=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,65,0,65,25,65,25,5,11,5,11,32,25,32,25,38,4,38,0,34]);function drawDigit(t,r,n){let a=(n?nmX:startX)[t];t=(n?nmY:startY)[t];EMULATOR&&(a+=80),drawScaledPoly([d0,d1,d2,d3,d4,d5,d6,d7,d8,d9][r],a,t)}
+let xS = .6;
+let yS = .6;
+
+function setScale(x, y) {
+  xS = x; yS = y;
+}
+
+function drawScaledPoly(arr, x, y) {
+  let newArr = [];
+  for(let i=0; i< arr.length; i+=2) {
+    newArr[i] = Math.floor(arr[i]*xS) + x;
+    newArr[i+1] =Math.floor(arr[i+1]*yS) + y;
+
+    if(rotate) {
+      let z = newArr[i];
+      newArr[i] = 80 - newArr[i+1];
+      newArr[i+1] = z;
+    }
+  }
+  //console.log(JSON.stringify(newArr));
+  g.fillPoly(newArr, false);
+}
+
+/** DIGITS **/
+
+/* zero */
+let d0=new Uint8Array([
+  40,86,
+  35,91,
+  5,91,
+  0,86,
+  0,5,
+  5,0,
+  35,0,
+  40,5,
+  40,86,
+  30,86,
+  30,5,
+  10,5,
+  10,86,
+  ]);
+
+/* one */
+let d1=new Uint8Array([
+  7,5,
+  12,0,
+  22,0,
+  27,5,
+  27,91,
+  15,91,
+  15,5,
+  ]);
+
+/* two */
+let d2=new Uint8Array([
+  0,5,
+   5,0,
+   35,0,
+  40,5,
+  40,43,
+  35,48,
+  10,48,
+  10,86,
+  40,86,
+  35,91,
+  5,91,
+  0,86,
+  0,48,
+  5,43,
+  30,43,
+  30,5,
+  
+  ]);
+/* three */
+
+let d3=new Uint8Array([
+  0,5,
+  5,0,
+  35,0,
+  40,5,
+  40,86,
+  35,91,
+  5,91,
+  0,86,
+  28,86,
+  28,48,
+  0,48,
+  0,43,
+  28,43,
+  28,5
+]);
+
+/* four */
+let d4=new Uint8Array([
+ 0,5,
+  5,0,
+  10,0,
+  10,43,
+  30,43,
+  30,0,
+  35,0,
+  40,5,
+  40,91,
+  30,91,
+  30,48,
+  0,48,
+  
+]);
+
+let d5= new Uint8Array([
+  0,5,
+  5,0,
+  35,0,
+  40,5,
+  10,5,
+  10,43,
+  35,43,
+  40,48,
+  40,85,
+  35,90,
+  5,90,
+  0,85,
+  30,85,
+  30,48,
+  5,48,
+  0,43,
+  ]);
+               
+/* six */
+let d6 = new Uint8Array(
+[
+  0,5,
+  5,0,
+  35,0,
+  40,5,
+  12,5,
+  12,86,
+  28,86,
+  28,48,
+  12,48,
+  12,43,
+  35,43,
+  40,48,
+  40,86,
+  35,91,
+  5,91,
+  0,86,
+]);
+
+/* seven */
+let d7 = new Uint8Array([
+   0,5,
+  5,0,
+  35,0,
+  40,5,
+  40,90,
+  30,90,
+  30,5
+  ]);
+
+let d8 = new Uint8Array( [
+     0,5,
+  5,0,
+  35,0,
+  40,5,
+  40,43,
+  37,46,
+  12,46,
+  12,86,
+  28,86,
+  28,47,
+  37,47,
+  40,50,
+  40,85,
+  35,90,
+  5,90,
+  0,85,
+  0,47,
+  4,43,
+  28,43,
+  28,5,
+  12,5,
+  12,42,
+  6,42,
+  0,39,
+  
+   ]);
+                
+let d9 = new Uint8Array(
+  [ 
+   0,5,
+  5,0,
+  35,0,
+  40,5,
+    40,85,
+    35,90,
+    5,90,
+    0,85,
+    30,85,
+  30,5,
+    10,5,
+    10,43,
+    30,43,
+    30,48,
+    5,48,
+    0,43,
+    
+  ]);
+
+
+
+/** END DIGITS **/
+
+function drawDigit(pos, dig, nm) {
+  let x = nm ? nmX[pos] : startX[pos];
+  let y = nm ? nmY[pos] : startY[pos];
+
+  if(EMULATOR) x+= 80;
+  const digStrs = [ d0,d1,d2,d3,d4,d5,d6,d7,d8,d9];
+  drawScaledPoly(digStrs[dig],x,y);
+
+}
 /*
 ** END WATCH FACE
 */
@@ -322,15 +512,9 @@ var volts;
 var batt=battInfo();
 let lastTime = '';
 let EMULATOR = false; 
-let Sixay = "e6:a5";
-let Eebie = "eb:7b";
-let showClockTO = 0;
 
-//let buzzLock = 0;  // 0b10 = lockout, 0b01 = cancel
-let myName = NRF.getAddress().slice(-5);
-console.log(myName);
+let buzzLock = 0;  // 0b10 = lockout, 0b01 = cancel
 
-/*
 function buzzClock (h,m) {
   // skip if either lockout or canceled: 10 or 01 (i.e. not 0)
   if(buzzLock) {
@@ -358,187 +542,187 @@ function buzzClock (h,m) {
   buzzLock |= 0b10;
   setTimeout(function() { buzzLock &= 0b01; }, 60000);
 }
-*/
 
-let youThere = 0;
-let nm = false;
-
-function checkClock() {
+function drawClock(){
   let d=Date();
   let sec=d.getSeconds();
   d=d.toString().split(' ');
   var tm=d[4].substring(0,5);
   var hr=d[4].substr(0,2);
   var min=d[4].substr(3,2);
-
-  /*
-  if((hr > 20 || hr < 8) && myName == Eebie) {
+  let nm = false;
+  if(hr > 20 || hr < 8) {
     nm = true;
   }
-  */
   hr %= 12;
   if (hr === 0) hr = 12;
   min = parseInt(min);
   xmid = 40;
   if(EMULATOR) xmid=120;
 
-  //nm = true;
-
-  if(nm) {
-    if(sec%12 < 10) g.off(); 
-    else if(tm == lastTime) g.on();
-    else {
-      drawNightClock({hr:hr,min:min});
-      lastTime = tm;
-    }
-    return;
-  }
-
-  let xyz = accCoords();
-  //console.log(JSON.stringify(xyz));
-  if(xyz.x < 0 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20 || xyz.z > 0) {
-    g.off();
-    //buzzLock |= 1;
-    //console.log('Canceling buzz');
-    if(showClockTO) {
-      clearTimeout(showClockTO);
-      showClockTO = 0;
-      console.log('watch moved.. no show');
-      youThere = 0; //reset
-    }
-    return;
-  }
-  if(!showClockTO) {
-    showClockTO = setTimeout(drawDayClock, 1000,{hr:hr,min:min,dt:d[1]+" "+d[2]});
-    console.log("will show clock...");
-  } else {
-    // in case it's on too long...
-    if(youThere < 7) youThere++;
-    else {
-      console.log('youThere == 7');
+  nm = false;
+  if(!nm) {
+    let xyz = accCoords();
+    //console.log(JSON.stringify(xyz));
+    if(xyz.x < -2 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20) {
       g.off();
+      buzzLock |= 1;
+      //console.log('Canceling buzz');
+      return;
     }
   }
-}
-function drawDayClock(d) {
+  //nm=false;
+  if(nm && sec%15 < 10) { g.off(); return;}
   g.on();
-  /*
-  let d=Date();
-  let sec=d.getSeconds();
-  d=d.toString().split(' ');
-  var tm=d[4].substring(0,5);
-  d.hr=d[4].substr(0,2);
-  d.min=d[4].substr(3,2);
-  */
-  let tm=d.hr+':'+d.min;
   if (tm == lastTime) return;
   lastTime = tm;
   //console.log("here");
 
   g.clear();
   g.setFont("6x8");
+  if(!nm) {
+    g.setColor(8+2);
+    if(EMULATOR) g.setColor(0,1,0);
+    let batt = battInfo();
+    g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
+  } else {
+    g.setColor(4);
+    //g.setBrightness(120);
+    let b = battLevel();
+    for(let c=0; c<5; c++) {
+      if(b > c*20) g.fillCircle(14+12*c, 8, 4);
+      else g.drawCircle(14+12*c,8,4);
+    }
+  }
 
-  g.setColor(8+2);
-  if(EMULATOR) g.setColor(0,1,0);
-  let batt = battInfo();
-  g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
-
-  rotate = false;
-  g.setColor(8+7);
-  if(EMULATOR) g.setColor(1,1,1);
-  drawDigit(0,Math.floor(d.hr/10), false);
-  drawDigit(1,Math.floor(d.hr%10), false);
-  drawDigit(2,Math.floor(d.min/10), false);
-  drawDigit(3,Math.floor(d.min%10), false);
-
-  g.setFont("6x8",2); 
-  g.setColor(8+2);
-  if(EMULATOR) g.setColor(0,1,0);
-  
-  g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,146);
-  g.flip();
-  /*
-  console.log('buzing in 3...');
-  buzzLock &= 0b10;
-  setTimeout(buzzClock, 3000, hr, min);
-  */
-}
-
-function drawNightClock(d) {
-  g.clear();
-    g.on();
+  if(nm) {
     rotate = true;
     g.setColor(4);
     if(EMULATOR) g.setColor(0.5,0.5,0.5);
-  //console.log("draw1: "+d.hr);
-    if (d.hr>9) drawDigit(0,Math.floor(d.hr/10), true);
-    drawDigit(1,Math.floor(d.hr%10), true);
-  //console.log("draw2: "+d.min);
-    drawDigit(2,Math.floor(d.min/10), true);
-    drawDigit(3,Math.floor(d.min%10), true);
+    if (hr>9) drawDigit(0,Math.floor(hr/10), nm);
+    drawDigit(1,Math.floor(hr%10), nm);
+    drawDigit(2,Math.floor(min/10), nm);
+    drawDigit(3,Math.floor(min%10), nm);
     g.fillCircle(40, 80,2);
     g.fillCircle(24, 80,2);
-    let b = battLevel();
-    for(let c=0; c<5; c++) {
-      if(b > c*20) g.drawCircle(16+12*c, 8, 4);
-      //else g.drawCircle(14+12*c,8,4);
-    }
     g.flip();
+  } else {
+    rotate = false;
+    g.setColor(8+7);
+    if(EMULATOR) g.setColor(1,1,1);
+    drawDigit(0,Math.floor(hr/10), nm);
+    drawDigit(1,Math.floor(hr%10), nm);
+    drawDigit(2,Math.floor(min/10), nm);
+    drawDigit(3,Math.floor(min%10), nm);
+
+    g.setFont("6x8",2); 
+    g.setColor(8+2);
+    if(EMULATOR) g.setColor(0,1,0);
+    var dt=d[1]+" "+d[2];
+    g.drawString(dt,xmid-g.stringWidth(dt)/2,146);
+    g.flip();
+    console.log('buzing in 3...');
+    buzzLock &= 0b10;
+    setTimeout(buzzClock, 3000, hr, min);
+  }
 }
 
 function clock(){
   volts=0;
-  nm = !nm;
-  return setInterval(checkClock,777);
+  drawClock();
+  return setInterval(function(){
+    drawClock();
+},777);
 }
 
 function sleep(){
-
-  let x = setTimeout(()=>{g.off();}, 3000);
-  console.log("x=",x);
+  g.clear();//g.flip();
+  g.off();
   currscr=-1;
   return 0;
 }
 
-let nextScreen = () => {
-  currscr++;
-  if (currscr>=screens.length) currscr=0;
-  if (currint>0) clearInterval(currint);
-  g.on();
-  g.clear();
-  g.setFont("6x8",2);
-  g.setColor(15);
-  g.drawString(screenNames[currscr],20,72);
-  g.flip();
-  setTimeout(()=>{
-    currint=screens[currscr](); 
-  }, 2500);
-};
-
-let screenNames=["Night\nclock","Day\nwatch","Sleep"];
-var screens=[clock,clock,sleep];
-var currscr= 0;
-var currint=screens[currscr]();
-
-let longpressTO = 0;
+var screens=[clock,info,sleep];
+var currscr= -1;
+var currint=0;//screens[currscr]();
+let longpress = 0;
 
 const btnDown = (b) => {
-  //longpress = b.time;
-  longpressTO = setTimeout(nextScreen, 1500);
+  longpress = b.time;
   setWatch(btnUp, BTN1, { repeat:false, edge:'falling', debounce:25});
 };
 const btnUp = (b) => {
-  /* 
   if(b.time - longpress > 1.0) {
-    g.setBrightness(256);
-    setTimeout(function(){g.setBrightness(32);}, 10000);
-  }
-  */
-  if(longpressTO) {
-    clearTimeout(longpressTO);
+    currscr++;if (currscr>=screens.length) currscr=0;
+    if (currint>0) clearInterval(currint);
+    currint=screens[currscr]();
   }
   setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
 };
-btnUp(); // cheap start
-E.setTimeZone(-4);
 
+//setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
+/*
+setWatch(function(){
+  if (!g.isOn) g.on();
+  currscr++;if (currscr>=screens.length) currscr=0;
+  if (currint>0) clearInterval(currint);
+  currint=screens[currscr]();
+},BTN1,{ repeat:true, edge:'rising',debounce:25 }
+);
+*/
+
+
+var fc=new SPI(); // font chip - 2MB SPI flash
+D23.write(1);
+fc.setup({sck:D19,miso:D22,mosi:D20,mode:0});
+fc.send([0xb9],D23); //put to deep sleep
+
+// BMA 222E accelerometer on shared spi with fontchip, CS=D18
+D18.set();
+D31.set();
+function accRegRead(r){
+  return fc.send([0x80|r,0x00],D18)[1];
+}
+function accWriteReg(r,v){
+  fc.send([0x7f & r,v],D18);
+}
+function accSetBit(r,b){
+    var v = accRegRead(r);
+    accWriteReg(r,v | 1<<b);
+}
+function accResetBit(r,b){
+  var v = accRegRead(r);
+  accWriteReg(r,v & ~(1<<b));
+}
+function accLowPowerMode(b){
+  if (b)
+    accSetBit(0x11,6);
+  else
+    accResetBit(0x11,6);
+}
+
+function accCoords(){
+  var coords=Int8Array(fc.send([0x82,0,0,0,0,0,0],D18).buffer,2);
+  return ({x:coords[0],y:coords[2],z:coords[4]});
+}
+
+// auto launch
+currscr = 0;
+currint=screens[currscr]();
+
+/* try tap detection feature
+D17.mode("input_pulldown"); // irq2 pin
+accWriteReg(0x21,0x0E); // //latch irq for 50ms
+accSetBit(0x16,5); // single tap enable
+accSetBit(0x1b,5); // map it to int2
+accLowPowerMode(1);
+accWriteReg(0x2b,(3<<6)|4) //tap sensitivity  
+
+// values are 4=face tap, 2=side tap, 1=bottom or top side tap
+setWatch(()=>{
+      var rv = accRegRead(0x0b);
+      var v = (rv&0x7f)>>4;
+      v  = rv&0x80?-v:v;
+      print("tap ",v);
+},D17,{ repeat:true, debounce:false, edge:'rising' });
+*/
