@@ -1,8 +1,8 @@
 let EMULATOR = 0;
 
 if(! EMULATOR) {
-  let v = require('m_vatch');
-  require("m_knxt").add(Graphics);
+  let v = require('m_vatch.js');
+  require("knxt.fnt").add(Graphics);
   g.setFont('KNXT', 1);
 } else {
   g.setFontVector('18');
