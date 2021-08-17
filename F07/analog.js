@@ -1,65 +1,11 @@
-const EMULATOR = Bangle;
-if(EMULATOR) {
-  g.on = () => console.log('g.on()');
-  g.off = () => console.log('g.off()');
-} else {
-  let F07 = require('F07.min.js');
-  let g = F07.getGraphics();
-}
+const EMULATOR = false;
 let _Storage = require("Storage");
+
+eval(_Storage.read("F07.js"));
+require("omnigo.fnt").add(Graphics);
 
 const logD = (msg) => { console.log(msg); };
 
-
-
-let battVolts = ()=> { return EMULATOR?4.0:F07.battVolts();};
-let battLevel = ()=> { return EMULATOR?90:F07.battLevel();};
-function battInfo(){v=battVolts();return `${battLevel(v)}% ${v.toFixed(2)}V`;}
-
-/************ ALARMS ***********/
-let _Notes = "";
-let alarmTOs = [];
-let _alarmMsgs = [];
-
-
-function showAlarm() {
-  //setTimeout(F07.vibrate, 3000, 1, 1,200,0);
-  info("ALARM",_alarmMsgs.shift());
-}
-
-let reloadMsgs = () => {
-  _Notes = _Storage.readJSON('v.notes.json');
-  if(!_Notes) _Notes = 'Do training!';
-  logD('notes= '+_Notes);
-/*
-  let _Alarms =  _Storage.readJSON('v.alarms.json');
-  if(!_Alarms) _Alarms = [{"msg":"Weigh MORE","time":"2021-06-18T16:34:00"}];
-  // schedule
-  for(let idx=0; idx < alarmTOs.length; idx++) {
-    clearTimeout(alarmTOs[idx]);
-  }
-  for(let idx=0; idx < _Alarms.length; idx++) {
-    logD('idx = '+idx);
-    let tdiff = Date.parse(_Alarms[idx].time) - Date.now();
-    let msg = _Alarms[idx].msg;
-    if(tdiff > 0) {
-      logD(`will alarm ${msg} in ${tdiff}`);
-      alarmTOs.push(setTimeout(showAlarm, tdiff));
-      _alarmMsgs.push(_Alarms[idx].msg);
-    } else {
-      //expired
-      logD('tossing out' + idx);
-    }
-  }
-  */
-};
-reloadMsgs();
-
-let ogf = atob("AAAAAAAAB/QAAcAAAHAAAAKAPgCgD4AoAAAZgWQf8E0DMAAAQwUwKwC0A1AygwgAAM4LmE5BnAGwAAcAAAB8DjhAQAAQEOOB8AAAqAOAHAFQAAAQAIAfACABAAAABoA4AACABAAgAQAAAAYAMAAAHAeB4AAAP4MWERDRg/gAAIAP+AAAAAhwxoRkNiDhAAAggwYRENmDeAAAHAOgMQP+AEAAB4gkYSEJmEeAAA/g2YSEJmAeAABAAg4RwLgHAAAA3g2YRENmDeAAA8AzIQkM2D+AAAAAMwGYAAAAAzQZwAAAAAgA4A2AxgQQAABQAoAUAKAAAIIGMBsAcAEAAAIAMAEdDYA4AAAHwGMGDCchbQooXkEYDEA8AAAB4HwOIB0AOABwAAf8IiERCYg8wDwAAH8GDCAhAQwYIIAAH/CAhAQwIMMD8AAD/hEQiIREICAAD/hEAiARAIAAAB/BgwgIREMmCeAAB/wCABAAgAQD/gAAAAf8AAAAABAAwAIf4AAH/AYAeAZgYYIGAAD/gAQAIAEACAAD/gwAGABwBgDAD/gAA/4MABgAYADB/wAAP4MGEBCAhgwfwAAP+EICEBCAzAPAAAD+DBhBQg4YMH+AAAAB/wjARwIsGzBwgAAYQWMJiGbBHAAAgAQAP+EACAAAA/wAMACADADB/wAAeAB4AHAOAcA4AAAPAA4AHgeADAAcB4HgAABgwYwDgBwDGDBgAA4AHAA+AwBwBgAAAQcIaEZCYhYQ4IAAP+EBAAB4AHAA8AAEBD/gAAIAMAMAGABgAQAAAAEACABAAgAQAIAAMADAAAADgLYFEDiA/AAB/wEIGEDGA+AAAPgMYEEDGAiAAAPgMYGEBCH/AAAPgNYEkDSA4AAAIAf4aAIAAAAfAY0ISEbD/AAD/gMAMAGAB+AAC/gAAACADL/AAD/gGAHgGYCGAAD/gAAP4GACAA/AwAQAH4AAD+AgAwAYAH4AAB8BjAggYwHwAAD/hCAhgYwHwAAB8BjAhgQgP+AAD+AwAwAAAGIFkCaBGAAAQA/wEMAAB+ABgAwAQH8AABwAOABwDgHAAABwAOABwDgAcA4BwAAAYwGwBwBsBjAAAfgAaAJANh/gAARwJoFkDiAAAIA7ggIAAP+AACAg7gCAAACACABAAQAIAIAAAAAAAAAAAA==");
-let ogw = atob("AwIEBgYIBgIEBAUGAwUDBAYEBgYGBgYGBgYEBQYFBgYLBwcHBwcGBwcEBQcGCAcHBwcHBgYHBwkHBwcDBAMHBwMGBgYGBgUGBgIEBgIIBgYGBgQFBAYGCAYGBQQCBAc=");
-Graphics.prototype.setFontOmnigo = function() {
-  this.setFontCustom(ogf, 32, ogw, 256 + 13);
-};
 let myFont = "Omnigo";
 
 /*
@@ -92,9 +38,6 @@ function goDark(s) {
   to = setTimeout(sleep, s*1000);
 }
 
-function showNotes() {
-  info("Notes",_Notes);
-}
 
 function info(t,msg){
   g.clear();
@@ -209,7 +152,7 @@ function runScreen(){
 
 }
 
-var screens=[clock,showNotes,sleep];
+var screens=[clock,sleep];
 var currscr= -1;
 var currint=0;
 setWatch(runScreen, BTN1,{ repeat:true, edge:'rising',debounce:25 }
