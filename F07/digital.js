@@ -90,6 +90,7 @@ function checkClock() {
   var hr=d[4].substr(0,2);
   var min=d[4].substr(3,2);
   let nm = false;
+  E.getBattery(); // bring the average up!
 
   if((hr > 20 || hr < 8) && myName == Eebie) {
     nm = true;
@@ -129,7 +130,7 @@ function checkClock() {
     return;
   }
   if(!showClockTO) {
-    showClockTO = setTimeout(drawDayClock, 1000,{hr:hr,min:min,dt:(d[1]+" "+d[2]).toUpperCase()});
+    showClockTO = setTimeout(drawDayClock, 1000,{hr:hr,min:min,dt:(d[0]+' '+d[1]+' '+d[2])});
   } else {
     // in case it's on too long...
     if(youThere < 7) youThere++;
@@ -141,14 +142,6 @@ function checkClock() {
 }
 function drawDayClock(d) {
   g.on();
-  /*
-  let d=Date();
-  let sec=d.getSeconds();
-  d=d.toString().split(' ');
-  var tm=d[4].substring(0,5);
-  d.hr=d[4].substr(0,2);
-  d.min=d[4].substr(3,2);
-  */
   //console.log("here");
   let tm=d.hr+':'+d.min;
   if (tm == lastTime) return;
@@ -165,8 +158,8 @@ function drawDayClock(d) {
   let batt = Math.floor(E.getBattery()/5);
   g.sc(10);
   g.fillPoly([19,20,19+batt*3,20-batt,19+batt*3,20], true);
-  g.sc(9);
-  g.fillPoly([48,66,79,66,79,86],true);
+  g.sc(1);
+  g.fillPoly([0,66,79,66,79,96],true);
   //g.fillRect(0,66,79,98);
 
   g.sc(15);
@@ -175,7 +168,7 @@ function drawDayClock(d) {
   //g.fillCircle(73,6,6);
   //g.fillRect(6,0,73,12);
   //g.setColor(0);
-   g.drawString("F07",2,2);
+  g.drawString("F07",2,2);
   g.drawString("F07",3,2);
   //g.drawString(batt,79-g.stringWidth(batt),0);
   //g.drawString(getSteps(), 0, 0);
@@ -195,8 +188,8 @@ function drawDayClock(d) {
   //g.setColor(1);
   if(EMULATOR) g.setColor(0,1,0);
   //g.fillRect(0,140,79,159);
-  g.sc(14);
-  g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,141);
+  g.sc(11);
+  g.drawString(d.dt,0,141); //xmid-g.stringWidth(d.dt)/2,141);
   g.flip();
 
   /*
