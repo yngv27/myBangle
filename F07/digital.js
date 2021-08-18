@@ -5,11 +5,29 @@ eval(require("Storage").read("F07.js"));
 //require("Font8x12").add(Graphics);
 require("omnigo.fnt").add(Graphics);
 
-
+let fpal = new Uint16Array([0,1,2,3,4,5,6,7,8,9,10,11,0xf00,0xf0f,0xff0,0xfff]);
+var imgBkgd = {
+  width : 80, height : 24, bpp : 4,
+  transparent : 1,
+  xpalette : new Uint16Array([30540,65535,25373,65535,40190,61279,31677,57023,46494,50750,35933,48606,59167,52863,38046,42302]),
+  buffer : E.toArrayBuffer(atob("IiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIhERERERERERERECIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIRERERERERERERAAAiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIRERERERERERERAAAAIiZERERm+IhGpERE4iIiIiIiIiIiIiIiIiEREREREREREREQAAAAACIqMzMzRzMzN5MzM1IiIiIiIiIiIiIiIiEREREREREREREQAAAAAAAiKjOqqmM+ZDOqqrPCIiIiIiIiIiIiIhEREREREREREREAAAAAAAAAIio1IiIjNiYzIiJTQiIiIiIiIiIiIhEREREREREREREAAAAAAAAAACIqM3d+IzYmMyIkM2IiIiIiIiIiIRERERERERERERAAAAAAAAAAAAAiKjMzNCM2JjMiJzkiIiIiIiIiIRERERERERERERAAAAAAAAAAAAAAIio1IiIjNiYzImM2IiIiIiIiEREREREREREREQAAAAAAAAAAAAAAACIqNSIiIz2NMyKTciIiIiIiEREREREREREREQAAAAAAAAAAAAAAAAAiKjUiIi8zMzgmM0IiIiIhEREREREREREREAAAAAAAAAAAAAAAAAAAIiIiIiIiZmZiIiIiIiIhEREREREREREREAAAAAAAAAAAAAAAAAAAACIiIiIiIiIiIiIiIiIRERERERERERERAAAAAAAAAAAAAAAAAAAAAAAiIiIiIiIiIiIiIiIRERERERERERERAAAAAAAAAAAAAAAAAAAAAAAAIiIiIiIiIiIiIiEREREREREREREQAAAAAAAAAAAAAAAAAAAAAAAAACIiIiIiIiIiIiEREREREREREREQAAAAAAAAAAAAAAAAAAAAAAAAAAAiIiIiIiIiIhEREREREREREREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIiIiIiIiIhEREREREREREREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiIiIiIRERERERERERERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAiIiIiIRERERERERERERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIiIiEREREREREREREQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiEREREREREREREQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhEREREREREREREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))
+};
+function to12(c) {
+  let r = (c & 0xf000) >> 4;
+  let g = (c & 0x0780) >> 3;
+  let b = (c & 0x001e) >> 1;
+  //console.log((c).toString(2)+" to "+(r).toString(2)+':'+(g).toString(2)+':'+(b).toString(2)+" thus " + (r+g+b).toString(2));
+  return r+g+b;
+}
+function loadPal(custpal) {
+  for(let i=0;i<custpal.length;i++) {
+    pal[i] = to12(custpal[i]);
+  }
+}
 /*
 ** BEGIN WATCH FACE
 */
-const startX=[0,12,43,63],startY=[24,24,24,24],nmX=[4,42,88,126],nmY=[12,12,12,12];let xS=1,yS=1,rotate=!1;function drawScaledPoly(l,e,o){let d=[];for(let t=0;t<l.length;t+=2){var a;d[t]=Math.floor(l[t]*xS)+e,d[t+1]=Math.floor(l[t+1]*yS)+o,rotate&&(a=d[t],d[t]=80-d[t+1],d[t+1]=a)}g.fillPoly(d,!0)}
+const startX=[-14,16,48,66],startY=[32,32,32,32],nmX=[4,42,88,126],nmY=[12,12,12,12];let xS=1,yS=1,rotate=!1;function drawScaledPoly(l,e,o){let d=[];for(let t=0;t<l.length;t+=2){var a;d[t]=Math.floor(l[t]*xS)+e,d[t+1]=Math.floor(l[t+1]*yS)+o,rotate&&(a=d[t],d[t]=80-d[t+1],d[t+1]=a)}g.fillPoly(d,!0)}
 let lcdTopSeg=Uint8Array([0,0,29,0,29,9,0,9]);
 let lcdTopLeftSeg=Uint8Array([0,0,9,0,9,29,0,29]);
 let    lcdTopRightSeg=Uint8Array([20,0,29,0,29,29,20,29]);
@@ -79,6 +97,7 @@ function checkClock() {
   
   hr %= 12;
   if (hr === 0) hr = 12;
+
   min = parseInt(min);
   xmid = 40;
   if(EMULATOR) xmid=120;
@@ -115,7 +134,7 @@ function checkClock() {
     // in case it's on too long...
     if(youThere < 7) youThere++;
     else {
-      console.log('youThere == 7');
+      //console.log('youThere == 7');
       g.off();
     }
   }
@@ -137,24 +156,38 @@ function drawDayClock(d) {
 
   g.clear();
   g.setFont("Omnigo");
+  //g.drawImage(imgBkgd,0,0);
+  g.sc(13);
+  g.fillPoly([0,0,0,20,60,0],true);
+  g.sc(2);
+  g.fillPoly([79,0,79,20,19,20], true);
+  // get batt as x/20 : for pixel height of bar
+  let batt = Math.floor(E.getBattery()/5);
+  g.sc(10);
+  g.fillPoly([19,20,19+batt*3,20-batt,19+batt*3,20], true);
+  g.sc(9);
+  g.fillPoly([48,66,79,66,79,86],true);
+  //g.fillRect(0,66,79,98);
 
-  g.sc(2+8);
+  g.sc(15);
   if(EMULATOR) g.setColor(0,1,0);
   //g.fillCircle(6,6,6);
   //g.fillCircle(73,6,6);
   //g.fillRect(6,0,73,12);
   //g.setColor(0);
-  let batt = E.getBattery();
-  g.drawString(batt,79-g.stringWidth(batt),0);
-  g.drawString(getSteps(), 0, 0);
-  
+   g.drawString("F07",2,2);
+  g.drawString("F07",3,2);
+  //g.drawString(batt,79-g.stringWidth(batt),0);
+  //g.drawString(getSteps(), 0, 0);
+
   rotate = false;
-  g.sc(8+7);
+  g.sc(11);
   if(EMULATOR) g.setColor(1,1,1);
   xS=0.9;yS=0.9;
   if(d.hr>9) drawDigit(0,Math.floor(d.hr/10), false);
   drawDigit(1,Math.floor(d.hr%10), false);
   xS=0.5;yS=0.5;
+  g.sc(15);
   drawDigit(2,Math.floor(d.min/10), false);
   drawDigit(3,Math.floor(d.min%10), false);
 
@@ -165,6 +198,7 @@ function drawDayClock(d) {
   g.sc(14);
   g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,141);
   g.flip();
+
   /*
   console.log('buzing in 3...');
   buzzLock &= 0b10;
