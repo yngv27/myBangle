@@ -9,7 +9,7 @@ require("omnigo.fnt").add(Graphics);
 /*
 ** BEGIN WATCH FACE
 */
-const startX=[6,43,6,43],startY=[14,14,82,82],nmX=[4,42,88,126],nmY=[12,12,12,12];let xS=1,yS=1,rotate=!1;function drawScaledPoly(l,e,o){let d=[];for(let t=0;t<l.length;t+=2){var a;d[t]=Math.floor(l[t]*xS)+e,d[t+1]=Math.floor(l[t+1]*yS)+o,rotate&&(a=d[t],d[t]=80-d[t+1],d[t+1]=a)}g.fillPoly(d,!0)}
+const startX=[0,12,43,63],startY=[24,24,24,24],nmX=[4,42,88,126],nmY=[12,12,12,12];let xS=1,yS=1,rotate=!1;function drawScaledPoly(l,e,o){let d=[];for(let t=0;t<l.length;t+=2){var a;d[t]=Math.floor(l[t]*xS)+e,d[t+1]=Math.floor(l[t+1]*yS)+o,rotate&&(a=d[t],d[t]=80-d[t+1],d[t+1]=a)}g.fillPoly(d,!0)}
 let lcdTopSeg=Uint8Array([0,0,29,0,29,9,0,9]);
 let lcdTopLeftSeg=Uint8Array([0,0,9,0,9,29,0,29]);
 let    lcdTopRightSeg=Uint8Array([20,0,29,0,29,29,20,29]);
@@ -138,7 +138,7 @@ function drawDayClock(d) {
   g.clear();
   g.setFont("Omnigo");
 
-  g.setColor(2+8);
+  g.sc(2+8);
   if(EMULATOR) g.setColor(0,1,0);
   //g.fillCircle(6,6,6);
   //g.fillCircle(73,6,6);
@@ -149,10 +149,12 @@ function drawDayClock(d) {
   g.drawString(getSteps(), 0, 0);
   
   rotate = false;
-  g.setColor(8+7);
+  g.sc(8+7);
   if(EMULATOR) g.setColor(1,1,1);
-  drawDigit(0,Math.floor(d.hr/10), false);
+  xS=0.9;yS=0.9;
+  if(d.hr>9) drawDigit(0,Math.floor(d.hr/10), false);
   drawDigit(1,Math.floor(d.hr%10), false);
+  xS=0.5;yS=0.5;
   drawDigit(2,Math.floor(d.min/10), false);
   drawDigit(3,Math.floor(d.min%10), false);
 
@@ -160,7 +162,7 @@ function drawDayClock(d) {
   //g.setColor(1);
   if(EMULATOR) g.setColor(0,1,0);
   //g.fillRect(0,140,79,159);
-  g.setColor(14);
+  g.sc(14);
   g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,141);
   g.flip();
   /*
