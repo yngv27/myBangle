@@ -166,13 +166,6 @@ function start () {
   timeCheck();
 }
 
-Bangle.on('lcdPower', function (on) {
-  if (on) {
-    start();
-  } else {
-    stop();
-  }
-});
 
 function btn1Func() {
   logD("btn1Func");
@@ -296,13 +289,24 @@ exports.begin = function() {
     _Alarm.reload();
     _Alarm.scheduleAlarms();
   }
-  setWatch(btn1Func, BTN1, {repeat:true,edge:"falling"});
-  
-  if(_Options.useAlarms) {
-    setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
-  }
-  setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
+  // separate the Bangles now
+  const isB2 = g.getWidth() < 200;
 
+  if(!isB2) {
+    Bangle.on('lcdPower', function (on) {
+      if (on) {
+        start();
+      } else {
+        stop();
+      }
+    });  
+    setWatch(btn1Func, BTN1, {repeat:true,edge:"falling"});
+    
+    if(_Options.useAlarms) {
+      setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
+    }
+    setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
+  }
   reload();
   drawBackground(nightMode);
   start();

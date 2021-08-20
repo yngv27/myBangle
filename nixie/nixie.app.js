@@ -1,4 +1,26 @@
 
+// which Bangle?
+const isB2 = g.getWidth() < 200;
+
+// global coordinate system
+const wX = g.getWidth();
+const wY = g.getHeight();
+const midX = wX/2, midY = wY/2;
+// relative positioning: send 0 <= coord < 1
+function relX(x) { return Math.floor(x*wX); }
+function relY(y) { return Math.floor(y*wY); }
+
+// colors
+const col_bg = 0;
+const col_nm =isB2 ? 1 :"#206040";
+const col_sep = isB2 ? 6 :"#202020";
+const col_off = isB2 ? 1 : "#202020";
+const col_shad1 = isB2 ? 4 :"#FF0000";
+const col_shad2 = isB2 ? 6 :"#FF6000";
+const col_hi =isB2 ? 7 : "#FFC000";
+const col_data = isB2 ? 6 :"#C06000";
+
+g.setBgColor(col_bg);
 g.clear();
 
 require("Font8x12").add(Graphics);
@@ -9,8 +31,8 @@ let alarming = false;
 let nightMode = false;
 
 // our scale factor
-let xs = 0.5;
-let ys = 0.75;
+let xs = 0.5 * wX/240;
+let ys = 0.75 * wY/240;
 
 let prevH1 = -1;
 let prevH2 = -1;
@@ -212,7 +234,7 @@ pointsArray = [points0, points1, points2, points3, points4, points5, points6, po
 
 function eraseDigit(d, x, y) {
   if(d < 0 || d > 9) return;
-  g.setColor("#000000");
+  g.setColor(col_bg);
   if(nightMode) {
     drawPoints(pointsArray[d], x, y);
     return;
@@ -229,28 +251,28 @@ function eraseDigit(d, x, y) {
 
 function drawDigit(d, x, y) {
   if(nightMode) {
-    g.setColor("#206040");
+    g.setColor(col_nm);
     drawPoints(pointsArray[d], x, y);
     return;
   }
-  g.setColor("#202020");
+  g.setColor(col_off);
   for (let idx = pointsArray.length - 1; idx >= 0 ; idx--) {
     if(idx == d)  {
-      g.setColor("#FF0000");
+      g.setColor(col_shad1);
       drawPoints(pointsArray[d], x-2, y-2);
       drawPoints(pointsArray[d], x+2, y-2);
       drawPoints(pointsArray[d], x-2, y+2);
       drawPoints(pointsArray[d], x+2, y+2);
-      g.setColor("#FF6000");
+      g.setColor(col_shad2);
       drawPoints(pointsArray[d], x-1, y-1);
       drawPoints(pointsArray[d], x+1, y-1);
       drawPoints(pointsArray[d], x-1, y+1);
       drawPoints(pointsArray[d], x+1, y+1);
 
-      g.setColor("#FFC000");
+      g.setColor(col_hi);
       drawPoints(pointsArray[d], x, y);
 
-      g.setColor("#202020");
+      g.setColor(col_off);
     } else {
       drawPoints(pointsArray[idx], x, y);
     }
@@ -258,8 +280,8 @@ function drawDigit(d, x, y) {
 }
 
 function drawTime(d,nm) {
-  let dx = [ 10, 65, 135, 190];
-  let dy = [80,80,80,80];
+  const dx = [relX(0.042), relX(0.271), relX(0.55), relX(0.791)]; //[ 10, 65, 135, 190];
+  const dy = [relY(0.333),relY(0.333),relY(0.333),relY(0.333)];
   
   let h1 = Math.floor(d.hour / 10);
   let h2 = d.hour % 10;
@@ -293,26 +315,67 @@ function drawTime(d,nm) {
   prevM2 = m2;
 
 }
+
 function drawData(d) {
   if(!nightMode) {
-    g.setColor("#000000");
-    g.fillRect(0, 10, 240, 24);
-    g.fillRect(0, 222, 240, 240);
-    g.setColor("#202020");
-    g.drawLine(0, 24, 239, 24);
-    g.drawLine(0, 226, 239, 226);
-    g.setColor("#C06000");
+    g.setColor(col_bg);
+    g.fillRect(0, relY(0.042), wX, relY(0.1));
+    g.fillRect(0, relY(0.925), wX, wY);
+    g.setColor(col_sep);
+    g.drawLine(0, relY(0.11), wX, relY(0.11));
+    g.drawLine(0,  relY(0.93), wX,  relY(0.93));
+    g.setColor(col_data);
     g.setFontAlign(0, -1);
-    g.drawString(d.mon3 + " " + d.date, 120, 10);
+    g.drawString(d.mon3 + " " + d.date, wX/2, relX(0.042));
     g.setFontAlign(-1,-1);
-    g.drawString("STEP " + d.steps, 0, 230);
+    g.drawString("STEP " + d.steps, 0, relY(0.94));
     g.setFontAlign(1,-1);
-    g.drawString("BTY "+d.batt, 240, 230);
+    g.drawString("BTY "+d.batt, wX, relY(0.94));
   }
 }
+Bangle.setUI("clock");
+//setWatch(E.showLauncher, BTN1, {repeat:true,edge:"falling"});
+/*
+let d = new Date();
 
+let hour = d.getHours();
+let minute = d.getMinutes();
+
+let h1 = Math.floor(hour / 10);
+let h2 = hour % 10;
+let m1 = Math.floor(minute / 10);
+let m2 = minute % 10;
+
+let data = {
+  h1: h1,
+  h2: h2,
+  m1: m1,
+  m2: m2,
+  hour: hour,
+  min: minute,
+};
+drawTime(data, nightMode);
+const mstr="JanFebMarAprMayJunJulAugSepOctNovDec";
+const dowstr = "SunMonTueWedThuFriSat";
+
+let month = d.getMonth();
+let dow = d.getDay();
+data.month = month;
+data.date = d.getDate();
+
+data.mon3 = mstr.slice(month*3,month*3+3);
+data.dow = dowstr.substr(dow*3,3);
+data.dateStr = data.dow + " " + data.mon3 + " " + data.date;
+data.steps = 12345;
+data.batt = E.getBattery() + (Bangle.isCharging() ? "+" : "");
+data.charging = Bangle.isCharging();
+
+drawData(data);
+
+*/
 let v = require("m_vatch.js");
 v.setDrawTime(drawTime);
 v.setDrawBackground(()=>{g.clear();prevH1=-1;prevH2=-1;prevM1=-1;prevM2=-1;});
 v.setDrawData(drawData);
 v.begin();
+/**/
