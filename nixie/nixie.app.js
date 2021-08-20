@@ -1,3 +1,4 @@
+
 g.clear();
 
 require("Font8x12").add(Graphics);
@@ -257,6 +258,8 @@ function drawDigit(d, x, y) {
 }
 
 function drawTime(d,nm) {
+  let dx = [ 10, 65, 135, 190];
+  let dy = [80,80,80,80];
   
   let h1 = Math.floor(d.hour / 10);
   let h2 = d.hour % 10;
@@ -269,20 +272,20 @@ function drawTime(d,nm) {
   nightMode = nm;
 
   if(h1 != prevH1) {
-    eraseDigit(prevH1, 10, 80);
-    drawDigit(h1, 10, 80);
+    eraseDigit(prevH1, dx[0], dy[0]);
+    drawDigit(h1, dx[0], dy[0]);
   }
   if(h2 != prevH2) {
-    eraseDigit(prevH2, 65, 80);
-    drawDigit(h2, 65, 80);
+    eraseDigit(prevH2, dx[1], dy[1]);
+    drawDigit(h2, dx[1], dy[1]);
   }
   if(m1 != prevM1) {
-    eraseDigit(prevM1, 135, 80);
-    drawDigit(m1, 135, 80);
+    eraseDigit(prevM1, dx[2], dy[2]);
+    drawDigit(m1, dx[2], dy[2]);
   }
   if(m2 != prevM2) {
-    eraseDigit(prevM2, 190, 80);
-    drawDigit(m2, 190, 80);
+    eraseDigit(prevM2, dx[3], dy[3]);
+    drawDigit(m2, dx[3], dy[3]);
   }
   prevH1 = h1;
   prevH2 = h2;
@@ -310,8 +313,6 @@ function drawData(d) {
 
 let v = require("m_vatch.js");
 v.setDrawTime(drawTime);
-v.setDrawBackground(()=>{});
+v.setDrawBackground(()=>{g.clear();prevH1=-1;prevH2=-1;prevM1=-1;prevM2=-1;});
 v.setDrawData(drawData);
 v.begin();
-
-
