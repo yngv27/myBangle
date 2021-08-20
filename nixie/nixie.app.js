@@ -1,4 +1,4 @@
-
+const EMULATOR = false;
 // which Bangle?
 const isB2 = g.getWidth() < 200;
 
@@ -22,6 +22,15 @@ const col_data = isB2 ? 6 :"#C06000";
 
 g.setBgColor(col_bg);
 g.clear();
+
+var imgTube = {
+  width : 64, height : 128, bpp : 2,
+  buffer : require("heatshrink").decompress(atob("AE9AB7sQD54AOiFQB5tVsgPN0uoBxkByEFB5kGyIPNhVVB5tpLwKAMoJuOgNQggMJgtVDhsVqtEZ5cVrWlEBcFtWq1WlJxUaBwOq1IgJgIdCqoABEBEC1WVBwTkGKgUGFYIOCgIRDC4kaFoVUOQQKCQ4IgCB4YKDCYIgCq2QgEqHwJLIEoOkgFqB4KaIEoNkB4Z7JHQVqquqD5EVDYQPCVRIPE1IPKgsAtJTCAA8GyEBD4TrKqAPOgNRB5sRB5wfPgAPOiA/RP4IPaiD6BB5oCBB5kAdQIPNH5wPCvIPMBgIPMR4QPcL4QPNgIPQvS/MqtAB59+B9cVB91VL91BF91RF79RB4OVD5wPsH59BB51FB5sQB/0AD7xvPV4elD5wPLqIPOgJPeX/6//X8YPMH5wPPL74PfN55PQB6TfPB5afDB51/D57P/Z/7P/B97vOB5kAB58VoAA="))
+};
+var imgTubeBW = {
+  width : 46, height : 92, bpp : 1,
+  buffer : require("heatshrink").decompress(atob("AD0EAomAAgcCBQkQEykwAgcP/gFD/wKECok4AgcB4A7DgwQEjAFEsYWExg2DhkgAoVAE4kA8AEDgZqEhw+JgA+DCwIKEhhrJCyJELFqBbQIiByLIk6gWZyC3WOSItWOVq3nCywA="))
+};
 
 require("Font8x12").add(Graphics);
 g.setFont("8x12", 1);
@@ -279,9 +288,33 @@ function drawDigit(d, x, y) {
   }
 }
 
+function drawBkgd(nm) {
+  g.clear();
+  prevH1=-1;prevH2=-1;prevM1=-1;prevM2=-1;
+  let img = isB2 ? imgTubeBW : imgTube;
+  [relX(0),relX(0.25),relX(0.5),relX(0.75)].forEach((v,i,a) => {
+    g.drawImage(img,v,relY(0.225));
+  });
+
+  g.setColor(col_sep);
+  g.fillRect(0, relY(0.76),wX,relY(0.77));
+  g.setColor(col_shad2);
+  
+  g.moveTo(relX(0.125), 0);
+  g.lineTo(relX(0.25), relY(0.125));
+  g.lineTo(relX(0.75), relY(0.125));
+  g.lineTo(relX(0.875),0);
+  
+  g.moveTo(relX(0.125), wY);
+  g.lineTo(relX(0.25), relY(0.875));
+  g.lineTo(relX(0.75), relY(0.875));
+  g.lineTo(relX(0.875), wY);
+
+}
+  
 function drawTime(d,nm) {
-  const dx = [relX(0.042), relX(0.271), relX(0.55), relX(0.791)]; //[ 10, 65, 135, 190];
-  const dy = [relY(0.333),relY(0.333),relY(0.333),relY(0.333)];
+  const dx = [relX(0.042), relX(0.29), relX(0.55), relX(0.791)]; //[ 10, 65, 135, 190];
+  const dy = [relY(0.38),relY(0.38),relY(0.38),relY(0.38)];
   
   let h1 = Math.floor(d.hour / 10);
   let h2 = d.hour % 10;
@@ -318,64 +351,71 @@ function drawTime(d,nm) {
 
 function drawData(d) {
   if(!nightMode) {
+    /* erase bkgd for data
     g.setColor(col_bg);
     g.fillRect(0, relY(0.042), wX, relY(0.1));
     g.fillRect(0, relY(0.925), wX, wY);
-    g.setColor(col_sep);
-    g.drawLine(0, relY(0.11), wX, relY(0.11));
-    g.drawLine(0,  relY(0.93), wX,  relY(0.93));
+    */
     g.setColor(col_data);
     g.setFontAlign(0, -1);
-    g.drawString(d.mon3 + " " + d.date, wX/2, relX(0.042));
+    g.drawString(` ${d.dow}, ${d.mon3} ${d.date} `, wX/2, relX(0.042), true);
     g.setFontAlign(-1,-1);
-    g.drawString("STEP " + d.steps, 0, relY(0.94));
+    g.drawString("STEP ", 0, relY(0.825), true);
+    g.drawString(`${d.steps} `,0, relY(0.875), true);
     g.setFontAlign(1,-1);
-    g.drawString("BTY "+d.batt, wX, relY(0.94));
+    g.drawString(" BTY", relX(0.999), relY(0.825), true);
+    g.drawString(` ${d.batt}`, relX(0.999), relY(0.875), true);
+    g.setFontAlign(0,-1);
+    g.setColor(col_shad2);
+    g.drawString('BANGLE.JS', wX/2, relY(0.925));
   }
 }
-Bangle.setUI("clock");
+
 //setWatch(E.showLauncher, BTN1, {repeat:true,edge:"falling"});
-/*
-let d = new Date();
+if(EMULATOR) {
+  let d = new Date();
 
-let hour = d.getHours();
-let minute = d.getMinutes();
+  let hour = d.getHours();
+  let minute = d.getMinutes();
 
-let h1 = Math.floor(hour / 10);
-let h2 = hour % 10;
-let m1 = Math.floor(minute / 10);
-let m2 = minute % 10;
+  let h1 = Math.floor(hour / 10);
+  let h2 = hour % 10;
+  let m1 = Math.floor(minute / 10);
+  let m2 = minute % 10;
 
-let data = {
-  h1: h1,
-  h2: h2,
-  m1: m1,
-  m2: m2,
-  hour: hour,
-  min: minute,
-};
-drawTime(data, nightMode);
-const mstr="JanFebMarAprMayJunJulAugSepOctNovDec";
-const dowstr = "SunMonTueWedThuFriSat";
+  let data = {
+    h1: h1,
+    h2: h2,
+    m1: m1,
+    m2: m2,
+    hour: hour,
+    min: minute,
+  };
 
-let month = d.getMonth();
-let dow = d.getDay();
-data.month = month;
-data.date = d.getDate();
+  drawBkgd(nightMode);
 
-data.mon3 = mstr.slice(month*3,month*3+3);
-data.dow = dowstr.substr(dow*3,3);
-data.dateStr = data.dow + " " + data.mon3 + " " + data.date;
-data.steps = 12345;
-data.batt = E.getBattery() + (Bangle.isCharging() ? "+" : "");
-data.charging = Bangle.isCharging();
+  drawTime(data, nightMode);
+  const mstr="JanFebMarAprMayJunJulAugSepOctNovDec";
+  const dowstr = "SunMonTueWedThuFriSat";
 
-drawData(data);
+  let month = d.getMonth();
+  let dow = d.getDay();
+  data.month = month;
+  data.date = d.getDate();
 
-*/
-let v = require("m_vatch.js");
-v.setDrawTime(drawTime);
-v.setDrawBackground(()=>{g.clear();prevH1=-1;prevH2=-1;prevM1=-1;prevM2=-1;});
-v.setDrawData(drawData);
-v.begin();
-/**/
+  data.mon3 = mstr.slice(month*3,month*3+3);
+  data.dow = dowstr.substr(dow*3,3);
+  data.dateStr = data.dow + " " + data.mon3 + " " + data.date;
+  data.steps = 12345;
+  data.batt = E.getBattery() + (Bangle.isCharging() ? "+" : "");
+  data.charging = Bangle.isCharging();
+
+  drawData(data);
+} else { 
+  Bangle.setUI("clock");
+  let v = require("m_vatch.js");
+  v.setDrawTime(drawTime);
+  v.setDrawBackground(drawBkgd);
+  v.setDrawData(drawData);
+  v.begin();
+}
