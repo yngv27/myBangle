@@ -31,7 +31,7 @@ function reload() {
   _StepData =  _Storage.readJSON(stepFile);
   if(!_StepData) {
     _StepData = {
-      lastDate: '1999-09-09',
+      lastDate: '2020-01-01',
       stepCache: 0,
       lastStepCount: 0,
       updated: true,
@@ -162,7 +162,7 @@ function start () {
     clearInterval(interval);
   }
   // first time init
-  interval = setInterval(timeCheck, 10000);
+  interval = setInterval(timeCheck, 1000);
   timeCheck();
 }
 
@@ -284,7 +284,7 @@ exports.begin = function() {
   _Options = _Storage.readJSON(optsFile);
   if(!_Options) _Options = {
     autoNightMode: true,
-    useAlarms: true,
+    useAlarms: false,
     stepManager: true,
     debug: true,
   };
@@ -307,5 +307,4 @@ exports.begin = function() {
   drawBackground(nightMode);
   start();
 };
-
 
