@@ -295,13 +295,14 @@ function drawBkgd(nm) {
   
   if(!isB2) {
     // tube images
+    g.setColor(col_shad2);
+
     [relX(0),relX(0.25),relX(0.5),relX(0.75)].forEach((v,i,a) => {
       g.drawImage(imgTube,v,relY(0.225));
     });
     // something to sit on
-    g.setColor(col_sep);
-    g.fillRect(0, relY(0.76),wX,relY(0.77));
     g.setColor(col_shad2);
+    g.fillRect(0, relY(0.76),wX,relY(0.76));
   } else {
     // simple tubes
      [1,45,89,133].forEach((v,i,a) => {
@@ -311,7 +312,7 @@ function drawBkgd(nm) {
        g.clearRect(v+1,66,v+40,124);
      });
   }
-  
+  g.setColor(col_shad2);
   g.moveTo(relX(0.125), 0);
   g.lineTo(relX(0.25), relY(0.125));
   g.lineTo(relX(0.75), relY(0.125));

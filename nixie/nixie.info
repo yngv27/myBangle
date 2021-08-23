@@ -3,7 +3,8 @@
 "name":"Nixie Clock",
 "type":"clock",
 "src":"nixie.app.js",
-"sortorder":-9,
-"version":"0.1",
-"files":"nixie.info,nixie.app.js"
+"icon": "nixie.img",
+"sortorder":1,
+"version":"1.1",
+"files":"nixie.info,nixie.app.js,nixie.img, m_vatch.js"
 }

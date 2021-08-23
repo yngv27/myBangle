@@ -77,6 +77,7 @@ function timeCheck() {
   logD('Again, ' + JSON.stringify(_Options));
   logD('opt.nm = '+_Options.autoNightMode);
   if(_Options.autoNightMode) {
+    // this may vary by Bangle.. adjust to taste
     let a = Bangle.getAccel();
     a.x = Math.floor(a.x * 100);
     logD('a.x = ' + a.x);
@@ -220,9 +221,11 @@ Bangle.on('step', function(cnt) {
     } catch (err) {
       _Storage.write('err.txt',err);
     }
+    /* individual step files by date
     _Storage.write(_StepData.lastDate +'.steps', JSON.stringify(
       _StepData.stepCache +_StepData.lastStepCount
     ));
+    */
     _StepData.stepCache = 0 - cnt;
     _StepData.lastDate = getToday();
   }
