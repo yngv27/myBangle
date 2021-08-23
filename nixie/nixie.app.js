@@ -291,14 +291,26 @@ function drawDigit(d, x, y) {
 function drawBkgd(nm) {
   g.clear();
   prevH1=-1;prevH2=-1;prevM1=-1;prevM2=-1;
-  let img = isB2 ? imgTubeBW : imgTube;
-  [relX(0),relX(0.25),relX(0.5),relX(0.75)].forEach((v,i,a) => {
-    g.drawImage(img,v,relY(0.225));
-  });
-
-  g.setColor(col_sep);
-  g.fillRect(0, relY(0.76),wX,relY(0.77));
-  g.setColor(col_shad2);
+  if(nm) return;
+  
+  if(!isB2) {
+    // tube images
+    [relX(0),relX(0.25),relX(0.5),relX(0.75)].forEach((v,i,a) => {
+      g.drawImage(imgTube,v,relY(0.225));
+    });
+    // something to sit on
+    g.setColor(col_sep);
+    g.fillRect(0, relY(0.76),wX,relY(0.77));
+    g.setColor(col_shad2);
+  } else {
+    // simple tubes
+     [1,45,89,133].forEach((v,i,a) => {
+       g.setColor(col_shad1);
+       g.drawEllipse(v, 52, v+41, 90);
+       g.drawRect(v,66,v+41,125);
+       g.clearRect(v+1,66,v+40,124);
+     });
+  }
   
   g.moveTo(relX(0.125), 0);
   g.lineTo(relX(0.25), relY(0.125));
@@ -351,19 +363,14 @@ function drawTime(d,nm) {
 
 function drawData(d) {
   if(!nightMode) {
-    /* erase bkgd for data
-    g.setColor(col_bg);
-    g.fillRect(0, relY(0.042), wX, relY(0.1));
-    g.fillRect(0, relY(0.925), wX, wY);
-    */
     g.setColor(col_data);
     g.setFontAlign(0, -1);
     g.drawString(` ${d.dow}, ${d.mon3} ${d.date} `, wX/2, relX(0.042), true);
     g.setFontAlign(-1,-1);
-    g.drawString("STEP ", 0, relY(0.825), true);
+    g.drawString("STEP ", 0, relY(0.82), true);
     g.drawString(`${d.steps} `,0, relY(0.875), true);
     g.setFontAlign(1,-1);
-    g.drawString(" BTY", relX(0.999), relY(0.825), true);
+    g.drawString(" BTY", relX(0.999), relY(0.82), true);
     g.drawString(` ${d.batt}`, relX(0.999), relY(0.875), true);
     g.setFontAlign(0,-1);
     g.setColor(col_shad2);
