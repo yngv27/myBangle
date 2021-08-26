@@ -306,9 +306,10 @@ exports.begin = function() {
       setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
     }
     setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
+  } else {
+    Bangle.setUI("clock");
   }
   reload();
   drawBackground(nightMode);
   start();
 };
-
