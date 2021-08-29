@@ -45,7 +45,11 @@ const startX=[6,47,95,136],startY=[40,40,40,40],nmX=[16,42,88,126],nmY=[12,12,12
 let lastTime = '    ';
 let bgc = 7;
 let fgc = 0;
-let MONDRIAN = true;
+let MONDRIAN = Math.random() > 0.6;
+if(!MONDRIAN && Math.random() < 0.5) {
+  bgc = fgc;
+  fgc = 7;
+}
 
 function drawBkgd(nm) {
   g.setBgColor(bgc);
@@ -79,8 +83,6 @@ function checkClock() {
    //  nm = true;
   }
 
-  hr %= 12;
-  if (hr === 0) hr = 12;
   min = parseInt(min);
 
   if(nm) {
@@ -93,11 +95,15 @@ function checkClock() {
 }
 
 function drawDayClock(d, nm) {
-  //if(d.sec % 2 ) g.setColor(fgc); else g.setColor(bgc);
-  //g.fillCircle(88,  74, 3);
-  //g.fillCircle(88,  98, 3);
-  console.log(d);
-
+  if(!MONDRIAN) {
+    if(Date().getSeconds() % 2 ) g.setColor(fgc); else g.setColor(bgc);
+    g.fillCircle(88,  74, 3);
+    g.fillCircle(88,  98, 3);
+  }
+    //console.log(d);
+  d.hour %= 12;
+  if (d.hour === 0) d.hour = 12;
+  
   let tm=('0'+d.hour).slice(-2)+('0'+d.min).slice(-2);
   if (tm == lastTime) return;
   //console.log("tm/last= "+tm+" "+lastTime);
@@ -162,4 +168,3 @@ if(!EMULATOR) {
   v.setDrawData(drawData);
   v.begin();
 }
-
