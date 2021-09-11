@@ -8,7 +8,7 @@ let stepFile = 'v.steps.json';
 let stepArchiveFile = 'v.stephist.json';
 
 let _Options = {};
-let optsFile = 'm_vatch.opts.json';
+let optsFile = 'm_vatch.json';
 
 let _Alarm = {
   inAlarm: false,
@@ -279,7 +279,7 @@ exports.begin = function() {
     autoNightMode: true,
     useAlarms: false,
     stepManager: true,
-    debug: true,
+    debug: false,
   };
     
   console.log(JSON.stringify(_Options));
