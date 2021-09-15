@@ -2,6 +2,7 @@
 Copyright (c) 2015 Gordon Williams, Pur3 Ltd. See the file LICENSE for copying permission.
 
 Updated for use in Twatch by Jeff Magee
+Goofy test polygons by JV
  */
 
 function ST7789() {
@@ -75,7 +76,7 @@ function ST7789() {
         });
         g.lcd_sleep = function(){cmd(0x10);cmd(0x28);};
         g.lcd_wake = function(){cmd(0x29);cmd(0x11);};
-        dispinit(rst, ()=>{g.clear().setFont("Vector",24).drawString("P8 Expruino",40,100);});
+        dispinit(rst, ()=>{g.clear().setFont("Vector",24).drawString("PINETIME",40,100);});
         return g;
     }
 
@@ -92,7 +93,7 @@ function brightness(v) {
 }
 
 E.showMessage = function(msg,title) {
-    if (!P8.awake) P8.wake();
+    //if (!P8.awake) P8.wake();
     g.clear(1); // clear screen
     g.reset().setFont("Vector",24).setFontAlign(0,0);
     var W = g.getWidth();
@@ -109,9 +110,29 @@ E.showMessage = function(msg,title) {
   };
   
 var g = ST7789();
-g.lcd_wake();
-g.clear();
-g.setRotation(1);
-g.drawString("Hello",0,0);
-g.setFontVector(20);
-g.setColor(0,0.5,1);
+setTimeout(()=>{
+  brightness(7);
+  g.lcd_wake();
+  g.clear();
+  //g.setRotation(1);
+  g.drawString("Hello",0,0);
+  g.setFontVector(20);
+  g.setColor(0,0.5,1);
+  let R=Math.random;
+  for(let n=0; n < 1000; n++) {
+    g.setColor(R(),R(),R());
+    switch(n%3) {
+      case 0:
+        g.drawCircle(R()*240,R()*240,R()*100);
+        break;
+      case 1:
+        g.drawRect(R()*120,R()*120,120+R()*120,120+R()*120);
+        break;
+      case 2:
+        g.drawPoly(R()*240,R()*240,R()*240,R()*240,R()*240,R()*240);
+        break;
+    }
+  }
+}, 1000);
+           
+           
