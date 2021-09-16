@@ -43,11 +43,17 @@ const startX=[6,47,95,136],startY=[40,40,40,40],nmX=[16,42,88,126],nmY=[12,12,12
 */
 
 let lastTime = '    ';
+let WHITE = isB2 ? 7 : '#ffffff';
+let BLACK = 0;
 let bgc = 7;
 let fgc = 0;
-let MONDRIAN = true;
+// set to true for some playful color blocks
+let MONDRIAN = false;
+
 
 function drawBkgd(nm) {
+  if(nm ) { bgc = BLACK; fgc = WHITE; }
+  else { bgc = WHITE; fgc = BLACK; }
   g.setBgColor(bgc);
   g.clear();
   if(MONDRIAN) {
@@ -75,45 +81,42 @@ function checkClock() {
   let min=dt.getMinutes();
   let nm = false;
 
-  if((hr > 20 || hr < 8)) {
-   //  nm = true;
+  if((hr > 17 || hr < 7)) {
+   nm = true;
   }
 
-  hr %= 12;
-  if (hr === 0) hr = 12;
-  min = parseInt(min);
-
-  if(nm) {
-    drawNightClock({hr:hr,min:min});
-    lastTime = tm;
-    return;
-  }
-
-  drawDayClock({ hr:hr, min:min, mon:dt.getMonth(), dt:dt.getDate(), dow:dt.getDay(), sec:sec });
+  drawClock({ hr:hr, min:min, mon:dt.getMonth(), dt:dt.getDate(), dow:dt.getDay(), sec:sec }, nm);
 }
 
-function drawDayClock(d, nm) {
-  //if(d.sec % 2 ) g.setColor(fgc); else g.setColor(bgc);
-  //g.fillCircle(88,  74, 3);
-  //g.fillCircle(88,  98, 3);
-  console.log(d);
-
+function drawClock(d, nm) {
+  if(d.hour > 17 || d.hour < 7) { 
+    nm = true;
+  }
+  if(!MONDRIAN) {
+    if(Date().getSeconds() % 2 ) g.setColor(fgc); else g.setColor(bgc);
+    g.fillCircle(midX,  relY(0.42), 3);
+    g.fillCircle(midX,  relY(0.56), 3);
+  }
+    //console.log(d);
+  d.hour %= 12;
+  if (d.hour === 0) d.hour = 12;
+  
   let tm=('0'+d.hour).slice(-2)+('0'+d.min).slice(-2);
   if (tm == lastTime) return;
   //console.log("tm/last= "+tm+" "+lastTime);
 
-
+  drawBkgd(nm);
   rotate = false;
   for(let i=0; i<4; i++) {
     //console.log(tm[i],lastTime[i]);
-    if(tm[i] != lastTime[i]) {
+    //if(tm[i] != lastTime[i]) {
       g.setColor(bgc);
       g.fillRect(
         startX[i],startY[i],startX[i]+36*xS,startY[i]+70*yS);
       g.setColor(fgc);
       drawDigit(i,tm[i], false);
-      g.flip();
-    }
+      //g.flip();
+    //}
   }
   lastTime = tm;
 }
@@ -126,21 +129,24 @@ function drawData(d, nm) {
   g.setFont("Omnigo",1);
 
   g.setColor(fgc);
+  g.setFontAlign(1,-1);
   //let batt = ' '+Math.floor(E.getBattery())+'%';
-  g.drawString(d.batt,175-g.stringWidth(d.batt),2,true);
-  g.drawString(d.dateStr,4,2,true);
+  g.drawString(d.batt, wX, 2,true);
+  g.setFontAlign(-1,-1);
+  g.drawString(d.dateStr, 4, 2,true);
   g.flip();
   
-  g.drawImage(imgCalorie, 30, 125);
-  g.drawImage(imgStep, 80, 125);
-  g.drawImage(imgPulse, 130, 125);
+  g.drawImage(imgCalorie, relX(0.17), relY(0.71));
+  g.drawImage(imgStep, relX(0.454),  relY(0.71));
+  g.drawImage(imgPulse, relX(0.739),  relY(0.71));
   
   if(MONDRIAN) g.setBgColor(1);
-  g.setColor(7);
-  g.drawString(' 000 ', 28, 148, false);
-  g.drawString(' '+('00000'+d.steps).slice(-5)+' ', 74, 148, true);
+  
+  g.setFontAlign(0,-1); // center X, top Y
+  g.drawString(' 000 ', relX(0.21), relY(0.84), false);
+  g.drawString(' '+('00000'+d.steps).slice(-5)+' ', relX(0.5), relY(0.84), true);
   g.setColor(fgc);
-  g.drawString('000', 131, 148, false);
+  g.drawString('000', relX(0.8), relY(0.84), false);
   g.setBgColor(bgc);
   
   g.flip();
@@ -158,8 +164,7 @@ let getSteps = () => {return (SCcnt);};
 if(!EMULATOR) {
   let v = require("m_vatch.js");
   v.setDrawBackground(drawBkgd);
-  v.setDrawTime(drawDayClock);
+  v.setDrawTime(drawClock);
   v.setDrawData(drawData);
   v.begin();
 }
-
