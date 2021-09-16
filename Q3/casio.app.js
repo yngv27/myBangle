@@ -1,4 +1,4 @@
-let EMULATOR = true;
+let EMULATOR = false;
 
 g.setBgColor(0);
 g.clear();
@@ -27,10 +27,10 @@ function logD(str) {
   console.log(str);
 }
 
-const startX = [dix(0.1),  dix(0.27), dix(0.43), dix(0.6) ];
-const startY = [diy(0.21),  diy(0.21),diy(0.21),diy(0.21) ];
-let xS = 0.5;
-let yS = 0.5;
+const startX = [dix(0.08),  dix(0.21), dix(0.38), dix(0.51) ];
+const startY = [diy(0.3),  diy(0.3),diy(0.3),diy(0.3) ];
+let xS = 0.3;
+let yS = 0.3;
 
 let lastH1 = -1;
 let lastH2 = -1;
@@ -158,7 +158,7 @@ function drawBkgd(nm) {
 function drawTime(d, nmode) {
 
   logD(d);
-  setScale(0.75, 0.75);
+  setScale(0.6, 0.6);
   
   if(d.hour > 12) {
     d.hour -= 12;
@@ -213,6 +213,7 @@ if (EMULATOR ) {
   drawTime(d, false);
   drawData(d, false);
 } else {
+  v = require('m_vatch.js');
   v.setDrawBackground(drawBkgd);
   v.setDrawTime(drawTime);
   v.setDrawData(drawData);
