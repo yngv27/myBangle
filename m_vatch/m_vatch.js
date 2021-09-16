@@ -291,7 +291,7 @@ exports.begin = function() {
     _Alarm.scheduleAlarms();
   }
   // separate the Bangles now
-  const isB2 = g.getWidth() < 200;
+  const isB2 = (process.env.BOARD === 'BANGLEJS2');
 
   if(!isB2) {
     Bangle.on('lcdPower', function (on) {

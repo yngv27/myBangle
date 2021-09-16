@@ -1,9 +1,21 @@
+let EMULATOR = false;
+// which Bangle?
+const isB2 = (process.env.BOARD == 'BANGLEJS2');
+
+const MY_HEIGHT = 70;  // in inches..  divide by 2.54 if cm
+const MY_WEIGHT = 170; // in pounds.. multipley by 2.2 if kg
+// calories / step == 0.57 * weight(lb) * height(in) / 126720
+const MY_BURN_RATE = 0.57 * MY_WEIGHT * MY_HEIGHT / 126720;
+
+// global coordinate system
+const wX = g.getWidth();
+const wY = g.getHeight();
+const midX = wX/2, midY = wY/2;
+// relative positioning: send 0 <= coord < 1
+function relX(x) { return Math.floor(x*wX); }
+function relY(y) { return Math.floor(y*wY); }
 
 require("omnigo.fnt").add(Graphics);
-
-
-let battInfo = () => { return "99"; };
-let battLevel = () => { return "98"; };
 
 const imgCalorie = {
   width : 16, height : 22, bpp : 3,
@@ -26,6 +38,31 @@ const imgPulse = {
   buffer : require("heatshrink").decompress(atob("kmAAQOSoEAiVJBQMBBYUAyQXGghBokAHGIIQAEyVIAwhNBJQ1JkmQC4oIBL4QXDBAIHCgQFBBAI7CggOCGQYXERIQXEHYQXEHYUJBwgCFoA="))
 };
 
+function drawBattery(x,y) {
+  // x,y is top/left
+  g.setColor(fgc);
+  let segX = isB2 ? 2 : 3;
+  let segY = isB2 ? 12 : 18;
+  let yinc = segY / 4;
+  let xinc = (segX + 3) * 4;
+  g.drawPoly([
+    x,y,
+    x+xinc,y,
+    x+xinc,y+yinc,
+    x+xinc+segX,y+yinc,
+    x+xinc+segX,y+yinc*3,
+    x+xinc,y+yinc*3,
+    x+xinc, y+yinc*4,
+    x, y+yinc*4
+    ], true);
+  g.fillRect(x+2, y+2, x+2+segX, y+relY(0.068)-2);
+  x+=segX; x+=2;
+  g.fillRect(x+2, y+2, x+2+segX, y+relY(0.068)-2);
+  x+=segX; x+=2;
+  g.fillRect(x+2, y+2, x+2+segX, y+relY(0.068)-2);
+  x+=segX; x+=2;
+  g.fillRect(x+2, y+2, x+2+segX, y+relY(0.068)-2);
+}
 /*
 ** BEGIN WATCH FACE
 */
@@ -34,53 +71,72 @@ const startX=[6,47,95,136],startY=[40,40,40,40],nmX=[16,42,88,126],nmY=[12,12,12
 /*
 ** END WATCH FACE
 */
+
 let lastTime = '    ';
-let bgc = 7;
-let fgc = 0;
+let WHITE = isB2 ? 7 : '#ffffff';
+let BLACK = 0;
+let bgc = WHITE;
+let fgc = BLACK;
+// set to true for some playful color blocks
+let MONDRIAN = false;
 
-function checkClock() {
-  let dt=Date();
-  let sec=dt.getSeconds();
-  let hr=dt.getHours();
-  let min=dt.getMinutes();
-  let nm = false;
-
-  if((hr > 20 || hr < 8)) {
-   //  nm = true;
+// adjust coords by Bangle
+if(isB2) {
+  xS = 1; yS = 1;
+} else {
+  xS = 1.36; yS = 1.36;
+  for(let i=0; i<4; i++) {
+    startX[i] *= xS;
+    startY[i] *= yS;
   }
-
-  hr %= 12;
-  if (hr === 0) hr = 12;
-  min = parseInt(min);
-
-  if(nm) {
-    drawNightClock({hr:hr,min:min});
-    lastTime = tm;
-    return;
-  }
-
-  drawDayClock({ hr:hr, min:min, mon:dt.getMonth(), dt:dt.getDate(), dow:dt.getDay(), sec:sec });
 }
 
-function drawDayClock(d) {
-  if(d.sec % 2 ) g.setColor(fgc); else g.setColor(bgc);
-  //g.fillCircle(88,  74, 3);
-  //g.fillCircle(88,  98, 3);
-  
+if(MONDRIAN) {
+  for(let i=0; i<4; i++) {
+    startX[i] *= 0.6;
+    startY[i] *= 0.6;
+  }
+  xS *= 0.6; yS *= 0.8;
+}
 
-  let tm=('0'+d.hr).slice(-2)+('0'+d.min).slice(-2);
+function drawBkgd(nm) {
+  // Bangle1 and B2 if night mode
+  bgc = BLACK; fgc = WHITE; 
+  if(!nm && isB2)  { bgc = WHITE; fgc = BLACK; }
+  g.setBgColor(bgc);
+  g.clear();
+
+  if(MONDRIAN) {
+    g.setColor(0);
+    g.fillRect(110,0,117,175);
+    g.fillRect(0,110,175,117);
+    g.setColor(4);
+    g.fillRect(118,0,175,109);
+    g.setColor(1);
+    g.fillRect(0,118,109,175);
+    g.setColor(6);
+    g.fillRect(118,118,175,176);
+  }
+}
+
+function drawClock(d, nm) {
+  if(d.hour > 17 || d.hour < 7) { 
+    nm = true;
+  }
+  if(!MONDRIAN) {
+    if(Date().getSeconds() % 2 ) g.setColor(fgc); else g.setColor(bgc);
+    g.fillCircle(midX,  relY(0.42), 3);
+    g.fillCircle(midX,  relY(0.56), 3);
+  }
+  //console.log(d);
+  d.hour %= 12;
+  if (d.hour === 0) d.hour = 12;
+  
+  let tm=('0'+d.hour).slice(-2)+('0'+d.min).slice(-2);
   if (tm == lastTime) return;
   //console.log("tm/last= "+tm+" "+lastTime);
-  let s = "SUNMONTUEWEDTHUFRISAT".substr(d.dow*3,3) + ' ' + d.dt;
 
-  g.setFont("Omnigo",1);
-
-  g.setColor(fgc);
-  let batt = ' '+Math.floor(E.getBattery())+'%';
-  g.drawString(batt,175-g.stringWidth(batt),2,true);
-  g.drawString(s,8,2,true);
-  g.flip();
-
+  //drawBkgd(nm);
   rotate = false;
   for(let i=0; i<4; i++) {
     //console.log(tm[i],lastTime[i]);
@@ -90,54 +146,53 @@ function drawDayClock(d) {
         startX[i],startY[i],startX[i]+36*xS,startY[i]+70*yS);
       g.setColor(fgc);
       drawDigit(i,tm[i], false);
-      g.flip();
+      //g.flip();
     }
   }
   lastTime = tm;
+}
 
+// uses constants from top; set to your own
+function calcCalories(steps) {
+  // calories / step == 0.57 * weight(lb) * height(in) / 126720
+  return MY_BURN_RATE * steps;
+}
+
+function drawData(d, nm) {
   g.setColor(fgc);
+  g.setFont("Omnigo",isB2 ? 1 : 2);
+  let dy = isB2 ? 2 : 20;
 
-  g.drawImage(imgCalorie, 30, 125);
-  g.drawImage(imgStep, 80, 125);
-  g.drawImage(imgPulse, 130, 125);
+  g.setFontAlign(1,-1);
+  g.drawString(d.batt, wX, dy, true);
+  g.setFontAlign(-1,-1);
+  g.drawString(d.dateStr, 0, dy, true);
+  //g.flip();
   
-  g.setBgColor(1);
-  g.setColor(7);
-  g.drawString(' 000 ', 28, 148, false);
-  g.drawString(' '+('00000'+getSteps()).slice(-5)+' ', 74, 148, true);
+  g.drawImage(imgCalorie, relX(0.17), relY(0.71));
+  g.drawImage(imgStep, relX(0.454),  relY(0.71));
+  g.drawImage(imgPulse, relX(0.739),  relY(0.71));
+  
+  if(MONDRIAN) g.setBgColor(1);
+  
+  g.setFontAlign(0,-1); // center X, top Y
+  g.drawString(' 000 ', relX(0.21), relY(0.84), false);
+  g.drawString(' '+('00000'+d.steps).slice(-5)+' ', relX(0.5), relY(0.84), true);
   g.setColor(fgc);
-  g.drawString('000', 131, 148, false);
+  g.drawString(' '+('0000'+calcCalories(d.steps)).slice(-4)+' ', relX(0.8), relY(0.84), false);
   g.setBgColor(bgc);
   
   g.flip();
 }
 
-g.setBgColor(bgc);
-g.clear();
 
-let SCstate = 0;
-let SCcnt = 0;
-let SCprev, SCcurr;
-
-Bangle.on("step",(s)=>{SCcnt=s;});
-
-let getSteps = () => {return (SCcnt);};
-
-g.setColor(0);
-g.fillRect(110,0,117,175);
-g.fillRect(0,110,175,117);
-g.setColor(4);
-g.fillRect(118,0,175,109);
-g.setColor(1);
-g.fillRect(0,118,109,175);
-g.setColor(6);
-g.fillRect(118,118,175,176);
-for(let i=0; i<4; i++) {
-  startX[i] *= 0.6;
-  startY[i] *= 0.6;
+if(!EMULATOR) {
+  let v = require("m_vatch.js");
+  v.setDrawBackground(drawBkgd);
+  v.setDrawTime(drawClock);
+  v.setDrawData(drawData);
+  v.begin();
+} else {
+  drawBkgd();
+  drawClock({dow:3, hr:12, min: 34, mon:5, dt:31, sec:56}, false);
 }
-xS = 0.6; yS = 0.8;
-
-setInterval(checkClock, 500);
-
-
