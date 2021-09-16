@@ -67,7 +67,7 @@ function drawBattery(x,y) {
 ** BEGIN WATCH FACE
 */
 
-const startX=[6,47,95,136],startY=[40,40,40,40],nmX=[16,42,88,126],nmY=[12,12,12,12];let rotate=!1,xS=1,yS=1;function setScale(t,r){xS=t,yS=r}function drawScaledPoly(r,n,a){let d=[];for(let t=0;t<r.length;t+=2){var e;d[t]=Math.floor(r[t]*xS)+n,d[t+1]=Math.floor(r[t+1]*yS)+a,rotate&&(e=d[t],d[t]=80-d[t+1],d[t+1]=e)}g.fillPoly(d,!1)}let d0=new Uint8Array([0,4,4,0,32,0,36,4,36,65,25,65,25,5,11,5,11,65,36,65,36,66,32,70,4,70,0,66]),d1=new Uint8Array([7,4,11,0,20,0,24,4,24,70,13,70,13,5,7,5]),d2=new Uint8Array([0,4,4,0,32,0,36,4,36,34,32,38,11,38,11,65,36,65,36,66,32,70,0,70,0,36,4,32,25,32,25,5,0,5]),d3=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38,0,32,25,32,25,5,0,5]),d4=new Uint8Array([0,4,4,0,11,0,11,32,25,32,25,0,32,0,36,4,36,70,25,70,25,38,0,38]),d5=new Uint8Array([0,0,32,0,36,4,36,5,11,5,11,32,32,32,36,36,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38]),d6=new Uint8Array([0,4,4,0,32,0,36,4,36,5,11,5,11,65,25,65,25,38,11,38,11,32,32,32,36,36,36,66,32,70,4,70,0,66]),d7=new Uint8Array([0,4,4,0,32,0,36,4,36,70,25,70,25,5,0,5]),d8=new Uint8Array([0,4,4,0,32,0,36,4,36,32,33,35,36,38,36,66,32,70,18,70,18,65,25,65,25,38,18,38,18,32,25,32,25,5,11,5,11,32,18,32,18,38,11,38,11,65,18,65,18,70,4,70,0,66,0,38,3,35,0,32]),d9=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,65,0,65,25,65,25,5,11,5,11,32,25,32,25,38,4,38,0,34]);function drawDigit(t,r,n){let a=(n?nmX:startX)[t];t=(n?nmY:startY)[t];drawScaledPoly([d0,d1,d2,d3,d4,d5,d6,d7,d8,d9][r],a,t)}
+const startX=[6,47,95,136],startY=[40,40,40,40],nmX=[16,42,88,126],nmY=[12,12,12,12];let xS=1,yS=1;function setScale(t,r){xS=t,yS=r}function drawScaledPoly(r,n,a){let d=[];for(let t=0;t<r.length;t+=2){var e;d[t]=Math.floor(r[t]*xS)+n,d[t+1]=Math.floor(r[t+1]*yS)+a}g.fillPoly(d,!1)}let d0=new Uint8Array([0,4,4,0,32,0,36,4,36,65,25,65,25,5,11,5,11,65,36,65,36,66,32,70,4,70,0,66]),d1=new Uint8Array([7,4,11,0,20,0,24,4,24,70,13,70,13,5,7,5]),d2=new Uint8Array([0,4,4,0,32,0,36,4,36,34,32,38,11,38,11,65,36,65,36,66,32,70,0,70,0,36,4,32,25,32,25,5,0,5]),d3=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38,0,32,25,32,25,5,0,5]),d4=new Uint8Array([0,4,4,0,11,0,11,32,25,32,25,0,32,0,36,4,36,70,25,70,25,38,0,38]),d5=new Uint8Array([0,0,32,0,36,4,36,5,11,5,11,32,32,32,36,36,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38]),d6=new Uint8Array([0,4,4,0,32,0,36,4,36,5,11,5,11,65,25,65,25,38,11,38,11,32,32,32,36,36,36,66,32,70,4,70,0,66]),d7=new Uint8Array([0,4,4,0,32,0,36,4,36,70,25,70,25,5,0,5]),d8=new Uint8Array([0,4,4,0,32,0,36,4,36,32,33,35,36,38,36,66,32,70,18,70,18,65,25,65,25,38,18,38,18,32,25,32,25,5,11,5,11,32,18,32,18,38,11,38,11,65,18,65,18,70,4,70,0,66,0,38,3,35,0,32]),d9=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,65,0,65,25,65,25,5,11,5,11,32,25,32,25,38,4,38,0,34]);function drawDigit(t,r,n){let a=(n?nmX:startX)[t];t=(n?nmY:startY)[t];drawScaledPoly([d0,d1,d2,d3,d4,d5,d6,d7,d8,d9][r],a,t)}
 /*
 ** END WATCH FACE
 */
@@ -105,6 +105,7 @@ function drawBkgd(nm) {
   if(!nm && isB2)  { bgc = WHITE; fgc = BLACK; }
   g.setBgColor(bgc);
   g.clear();
+  lastTime = '    ';
 
   if(MONDRIAN) {
     g.setColor(0);
@@ -133,20 +134,25 @@ function drawClock(d, nm) {
   if (d.hour === 0) d.hour = 12;
   
   let tm=('0'+d.hour).slice(-2)+('0'+d.min).slice(-2);
-  if (tm == lastTime) return;
-  //console.log("tm/last= "+tm+" "+lastTime);
+  if (tm == lastTime) {
+    //console.log(`no change: last time = [${lastTime}]`);
+    return;
+  }
+  console.log("tm/last= "+tm+"/"+lastTime);
 
   //drawBkgd(nm);
-  rotate = false;
   for(let i=0; i<4; i++) {
-    //console.log(tm[i],lastTime[i]);
+    console.log(`${tm[i]}:${lastTime[i]}`);
     if(tm[i] != lastTime[i]) {
       g.setColor(bgc);
       g.fillRect(
         startX[i],startY[i],startX[i]+36*xS,startY[i]+70*yS);
       g.setColor(fgc);
+      console.log(`calling dD: ${i} ${tm[i]}`);
       drawDigit(i,tm[i], false);
       //g.flip();
+    } else {
+      console.log('skipping digit '+i);
     }
   }
   lastTime = tm;
@@ -155,10 +161,20 @@ function drawClock(d, nm) {
 // uses constants from top; set to your own
 function calcCalories(steps) {
   // calories / step == 0.57 * weight(lb) * height(in) / 126720
-  return MY_BURN_RATE * steps;
+  return Math.floor(MY_BURN_RATE * steps);
 }
 
+let lastHR = 72;
+Bangle.on('HRM', function(hrm) { 
+  if(hrm.confidence > 50) {
+    lastHR = hrm.bpm;
+    Bangle.setHRMPower(false);
+  }
+});
+//setInterval(Bangle.setHRMPower, 900000, false, "dk08");
+
 function drawData(d, nm) {
+  //console.log(d);
   g.setColor(fgc);
   g.setFont("Omnigo",isB2 ? 1 : 2);
   let dy = isB2 ? 2 : 20;
@@ -176,10 +192,10 @@ function drawData(d, nm) {
   if(MONDRIAN) g.setBgColor(1);
   
   g.setFontAlign(0,-1); // center X, top Y
-  g.drawString(' 000 ', relX(0.21), relY(0.84), false);
+  g.drawString(' '+('0000'+calcCalories(d.steps)).slice(-4)+' ', relX(0.21), relY(0.84), false);
   g.drawString(' '+('00000'+d.steps).slice(-5)+' ', relX(0.5), relY(0.84), true);
   g.setColor(fgc);
-  g.drawString(' '+('0000'+calcCalories(d.steps)).slice(-4)+' ', relX(0.8), relY(0.84), false);
+  g.drawString(' '+('000'+lastHR).slice(-3)+' ', relX(0.8), relY(0.84), false);
   g.setBgColor(bgc);
   
   g.flip();
