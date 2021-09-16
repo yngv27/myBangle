@@ -27,8 +27,8 @@ function logD(str) {
   console.log(str);
 }
 
-const startX = [dix(0.08),  dix(0.21), dix(0.38), dix(0.51) ];
-const startY = [diy(0.3),  diy(0.3),diy(0.3),diy(0.3) ];
+const startX = [dix(0.08),  dix(0.21), dix(0.38), dix(0.51), dix(0.69), dix(0.77) ];
+const startY = [diy(0.3),  diy(0.3),diy(0.3),diy(0.3),diy(0.42),diy(0.42) ];
 let xS = 0.3;
 let yS = 0.3;
 
@@ -157,8 +157,9 @@ function drawBkgd(nm) {
 
 function drawTime(d, nmode) {
 
-  logD(d);
+  //logD(d);
   setScale(0.6, 0.6);
+  d.sec = Date().getSeconds();
   
   if(d.hour > 12) {
     d.hour -= 12;
@@ -168,6 +169,8 @@ function drawTime(d, nmode) {
   }
   d.m1 = Math.floor(d.min/10);
   d.m2 = d.min%10;
+  d.s1 = Math.floor(d.sec/10);
+  d.s2 = d.sec%10;
   g.setColor(bgColor);
   if(d.h1 != lastH1) {
     g.setColor(bgColor);
@@ -193,6 +196,15 @@ function drawTime(d, nmode) {
     g.setColor(fgColor2);
     drawSegments(startX[3], startY[3], d.m2);
   }
+  // always seconds
+  setScale(0.36, 0.38);
+  g.setColor(bgColor);
+  drawSegments(startX[4], startY[4], 8);
+  drawSegments(startX[5], startY[5], 8);
+  g.setColor(fgColor2);
+  drawSegments(startX[4], startY[4], d.s1);
+  drawSegments(startX[5], startY[5], d.s2);
+  
   
   lastH1 = d.h1;
   lastH2 = d.h2;
