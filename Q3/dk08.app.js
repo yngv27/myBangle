@@ -1,5 +1,4 @@
 
-
 require("omnigo.fnt").add(Graphics);
 
 
@@ -36,8 +35,8 @@ const startX=[6,47,95,136],startY=[40,40,40,40],nmX=[16,42,88,126],nmY=[12,12,12
 ** END WATCH FACE
 */
 let lastTime = '    ';
-let bgc = 0;
-let fgc = 7;
+let bgc = 7;
+let fgc = 0;
 
 function checkClock() {
   let dt=Date();
@@ -65,8 +64,8 @@ function checkClock() {
 
 function drawDayClock(d) {
   if(d.sec % 2 ) g.setColor(fgc); else g.setColor(bgc);
-  g.fillCircle(88,  74, 3);
-  g.fillCircle(88,  98, 3);
+  //g.fillCircle(88,  74, 3);
+  //g.fillCircle(88,  98, 3);
   
 
   let tm=('0'+d.hr).slice(-2)+('0'+d.min).slice(-2);
@@ -102,16 +101,19 @@ function drawDayClock(d) {
   g.drawImage(imgStep, 80, 125);
   g.drawImage(imgPulse, 130, 125);
   
-  g.drawString(' 000 ', 28, 148, true);
+  g.setBgColor(1);
+  g.setColor(7);
+  g.drawString(' 000 ', 28, 148, false);
   g.drawString(' '+('00000'+getSteps()).slice(-5)+' ', 74, 148, true);
-  g.drawString('000', 131, 148, true);
+  g.setColor(fgc);
+  g.drawString('000', 131, 148, false);
+  g.setBgColor(bgc);
   
   g.flip();
 }
 
 g.setBgColor(bgc);
 g.clear();
-setInterval(checkClock, 500);
 
 let SCstate = 0;
 let SCcnt = 0;
@@ -120,4 +122,22 @@ let SCprev, SCcurr;
 Bangle.on("step",(s)=>{SCcnt=s;});
 
 let getSteps = () => {return (SCcnt);};
+
+g.setColor(0);
+g.fillRect(110,0,117,175);
+g.fillRect(0,110,175,117);
+g.setColor(4);
+g.fillRect(118,0,175,109);
+g.setColor(1);
+g.fillRect(0,118,109,175);
+g.setColor(6);
+g.fillRect(118,118,175,176);
+for(let i=0; i<4; i++) {
+  startX[i] *= 0.6;
+  startY[i] *= 0.6;
+}
+xS = 0.6; yS = 0.8;
+
+setInterval(checkClock, 500);
+
 

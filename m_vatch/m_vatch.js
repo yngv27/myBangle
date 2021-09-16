@@ -105,9 +105,7 @@ function timeCheck() {
   let m2 = minute % 10;
   
   logD("lastH1 = "+lastH1+": lastM2 = "+lastM2);
-  if(h1 == lastH1 && h2 == lastH2 && m1 == lastM1 && m2 == lastM2) {
-    return;
-  }
+  //if(h1 == lastH1 && h2 == lastH2 && m1 == lastM1 && m2 == lastM2)   return;
   
   logD("drawing time");
   let data = {

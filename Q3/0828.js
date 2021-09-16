@@ -37,7 +37,7 @@ const imgPulse = {
 ** BEGIN WATCH FACE
 */
 
-const startX = [  relX(0.1), relX(0.26), relX(0.48), relX(0.64) ];
+const startX = [  relX(0.18), relX(0.34), relX(0.56), relX(0.72) ];
 const startY = [  relY(0.25), relY(0.25), relY(0.25), relY(0.25) ];
 let xS = 0.75;
 let yS = 0.75;
@@ -140,16 +140,22 @@ let fgc = 0;
 function drawBkgd(nm) {
   g.setBgColor(bgc);
   g.clear();
-
+  g.setColor(fgc);
+  g.fillRect(0,12,wX,12+2);
+  g.fillRect(0,relY(0.3),wX,relY(0.3)+2);
+  g.fillRect(0,relY(0.75),wX,relY(0.75)+2);
+  for(let x =0; x < 200; x+=4) {
+    g.drawLine(x, 12, x-12, 24);
+  }
 }
 let blinky = false;
 
 function drawTime(d, nm) {
   g.setColor(blinky ? fgc : bgc);
   blinky = !blinky;
-  console.log(blinky);
-  g.fillCircle(midX,midY, 2);
-  g.fillCircle(midX,midY+16, 2);
+  //console.log(blinky);
+  g.fillCircle(relX(0.58),midY, 2);
+  g.fillCircle(relX(0.58),midY+16, 2);
    
   let tm=('0'+d.hour).slice(-2)+('0'+d.min).slice(-2);
   if (tm == lastTime) return;
@@ -176,6 +182,3 @@ if(!EMULATOR) {
   v.setDrawData(drawData);
   v.begin();
 }
-
-Bangle.setUI("clock");
-
