@@ -15,7 +15,8 @@ const midX = wX/2, midY = wY/2;
 function relX(x) { return Math.floor(x*wX); }
 function relY(y) { return Math.floor(y*wY); }
 
-require("omnigo.fnt").add(Graphics);
+require("knxt.fnt").add(Graphics);
+g.setFont("KNXT",isB2 ? 1 : 1);
 
 const imgCalorie = {
   width : 16, height : 22, bpp : 3,
@@ -176,13 +177,12 @@ Bangle.on('HRM', function(hrm) {
 function drawData(d, nm) {
   //console.log(d);
   g.setColor(fgc);
-  g.setFont("Omnigo",isB2 ? 1 : 2);
   let dy = isB2 ? 2 : 20;
 
   g.setFontAlign(1,-1);
-  g.drawString(d.batt, wX, dy, true);
+  g.drawString(' '+d.batt+' ', wX, dy, true);
   g.setFontAlign(-1,-1);
-  g.drawString(d.dateStr, 0, dy, true);
+  g.drawString(' '+d.dateStr+' ', 0, dy, true);
   //g.flip();
   
   g.drawImage(imgCalorie, relX(0.17), relY(0.71));
@@ -192,10 +192,10 @@ function drawData(d, nm) {
   if(MONDRIAN) g.setBgColor(1);
   
   g.setFontAlign(0,-1); // center X, top Y
-  g.drawString(' '+('0000'+calcCalories(d.steps)).slice(-4)+' ', relX(0.21), relY(0.84), false);
+  g.drawString(' '+('0000'+calcCalories(d.steps)).slice(-4)+' ', relX(0.21), relY(0.84), true);
   g.drawString(' '+('00000'+d.steps).slice(-5)+' ', relX(0.5), relY(0.84), true);
   g.setColor(fgc);
-  g.drawString(' '+('000'+lastHR).slice(-3)+' ', relX(0.8), relY(0.84), false);
+  g.drawString(' '+('000'+lastHR).slice(-3)+' ', relX(0.8), relY(0.84), true);
   g.setBgColor(bgc);
   
   g.flip();
