@@ -121,9 +121,21 @@ function drawBkgd(nm) {
   }
 }
 
+let b2NightMode = false;
 function drawClock(d, nm) {
-  if(d.hour > 17 || d.hour < 7) { 
-    nm = true;
+  // ignore the watch position nightmode for B2
+  if(isB2) {
+    if(d.hour > 17 || d.hour < 7) { 
+      if(!b2NightMode) {
+        b2NightMode = true;
+        drawBkgd(b2NightMode);
+      }
+    } else {
+      if(b2NightMode) {
+        b2NightMode = false;
+        drawBkgd(b2NightMode);
+      }
+    }
   }
   if(!MONDRIAN) {
     if(Date().getSeconds() % 2 ) g.setColor(fgc); else g.setColor(bgc);
@@ -165,14 +177,7 @@ function calcCalories(steps) {
   return Math.floor(MY_BURN_RATE * steps);
 }
 
-let lastHR = 72;
-Bangle.on('HRM', function(hrm) { 
-  if(hrm.confidence > 50) {
-    lastHR = hrm.bpm;
-    Bangle.setHRMPower(false);
-  }
-});
-//setInterval(Bangle.setHRMPower, 900000, false, "dk08");
+
 
 function drawData(d, nm) {
   //console.log(d);
@@ -195,7 +200,7 @@ function drawData(d, nm) {
   g.drawString(' '+('0000'+calcCalories(d.steps)).slice(-4)+' ', relX(0.21), relY(0.84), true);
   g.drawString(' '+('00000'+d.steps).slice(-5)+' ', relX(0.5), relY(0.84), true);
   g.setColor(fgc);
-  g.drawString(' '+('000'+lastHR).slice(-3)+' ', relX(0.8), relY(0.84), true);
+  g.drawString(' '+('000'+d.hrm).slice(-3)+' ', relX(0.8), relY(0.84), true);
   g.setBgColor(bgc);
   
   g.flip();
