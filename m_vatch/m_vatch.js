@@ -19,6 +19,7 @@ let _Alarm = {
 };
 
 let _StepData = {};
+let lastHR = 72;
 
 const pad0 = (n) => (n > 9) ? n : ("0"+n); 
 
@@ -58,13 +59,6 @@ function logD(str) {
   if(_Options.debug) console.log(str);
 }
 
-
-let lastH1 = -1;
-let lastH2 = -1;
-let lastM1 = -1;
-let lastM2 = -1;
-
-
 let drawBackground = () => {};
 let drawTime = () => {};
 let drawData = () => {};
@@ -98,15 +92,13 @@ function timeCheck() {
 
   let hour = d.getHours();
   let minute = d.getMinutes();
+  let sec = d.getSeconds();
 
   let h1 = Math.floor(hour / 10);
   let h2 = hour % 10;
   let m1 = Math.floor(minute / 10);
   let m2 = minute % 10;
-  
-  logD("lastH1 = "+lastH1+": lastM2 = "+lastM2);
-  //if(h1 == lastH1 && h2 == lastH2 && m1 == lastM1 && m2 == lastM2)   return;
-  
+
   logD("drawing time");
   let data = {
     h1: h1,
@@ -115,15 +107,12 @@ function timeCheck() {
     m2: m2,
     hour: hour,
     min: minute,
+    sec: sec,
   };
   drawTime(data, nightMode);
   
-  lastH1 = h1;
-  lastH2 = h2;
-  lastM1 = m1;
-  lastM2 = m2;
-
-  if(!nightMode && !_Alarm.inAlarm) {
+  // only push data if not in night mode, alarming; only 1x per minute
+  if(!nightMode && !_Alarm.inAlarm && !sec) {
     logD("drawing data...");
     const mstr="JanFebMarAprMayJunJulAugSepOctNovDec";
     const dowstr = "SunMonTueWedThuFriSat";
@@ -137,7 +126,8 @@ function timeCheck() {
     data.dow = dowstr.substr(dow*3,3);
     data.dateStr = data.dow + " " + data.mon3 + " " + data.date;
     data.steps = _StepData.stepCache + _StepData.lastStepCount;
-    data.batt = E.getBattery() + (Bangle.isCharging() ? "+" : "");
+    data.hrm = lastHR;
+    data.batt = E.getBattery();
     data.charging = Bangle.isCharging();
 
     drawData(data);
@@ -182,16 +172,12 @@ function btn1Func() {
 
 function redrawScreen() {
   logD("redrawScreen");
-  
+
   if(nightMode) {
     g.setRotation(1,0);
   } else {
     g.setRotation(0,0);
   }
-  lastM1 = -1;
-  lastM2 = -1;
-  lastH1 = -1;
-  lastH2 = -1;
   drawBackground(nightMode);
   timeCheck();
 }
@@ -230,6 +216,18 @@ Bangle.on('step', function(cnt) {
   _StepData.lastStepCount = cnt;
   _StepData.updated = true;
 });
+
+
+Bangle.on('HRM', function(hrm) { 
+  lastHR = hrm.bpm;
+});
+
+function collectHRMfor30() {
+  Bangle.setHRMPower(true, "dk08");
+  setInterval(Bangle.setHRMPower, 30000, false, "dk08");
+}
+// every 15 minutes, collect 30 sec of data
+setInterval(collectHRMfor30, 900000);
 
 /*
 ** Advertise a writeable characteristic. Accepts text (in 20 char
@@ -274,8 +272,8 @@ exports.setDrawTime = function(dTime) {
 exports.setDrawData = function( dData) {
   drawData = dData;
 };
-exports.begin = function() {
-  _Options = _Storage.readJSON(optsFile);
+exports.begin = function(opts) {
+  _Options = opts ? opts :_Storage.readJSON(optsFile);
   if(!_Options) _Options = {
     autoNightMode: true,
     useAlarms: false,
@@ -303,10 +301,10 @@ exports.begin = function() {
     });  
     setWatch(btn1Func, BTN1, {repeat:true,edge:"falling"});
     
-    if(_Options.useAlarms) {
+    if(BTN2 && _Options.useAlarms) {
       setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
     }
-    setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
+    if(BTN3) setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
   } else {
     Bangle.setUI("clock");
   }
