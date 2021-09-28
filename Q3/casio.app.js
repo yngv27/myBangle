@@ -153,6 +153,11 @@ function drawBkgd(nm) {
   buffer : require("heatshrink").decompress(atob("AH4A7n/6AQIBB/kLgP/+AMBg///EH/kDAgN8n//4ANBv//8E/AIP/8fh///BgIVB/+BAIX/j8f//8GoXV/kfvkfwH4/H9k/ggEBGgPg/Pw/kCg/P4ASBgEPwEIh+Pwf1oE+n0A/AoBvgCCFAP/8Pz+AjBIYICBg/h+BDBx+fwAcBgEfAQM+h5RB/gfBIAIKBAQOh//+gEX+fn8BABEoPgj+fR4UPz4jBIAU/yX8GYPfwH8NgMvIAMABQPvFAKaB8/HSoawB/w9B/YEBnymBIYRnB+49B5//+PwDwJDBGwP+jcAnVf/0NMQLZCAH4AsA="))
 };
   g.drawImage(img,33,10);
+  Bangle.buzz(900);
+  lastH1 = -1;
+  lastH2 = -1;
+  lastM1 = -1;
+  lastM2 = -1;
 }
 
 function drawTime(d, nmode) {
