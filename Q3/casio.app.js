@@ -153,6 +153,13 @@ function drawBkgd(nm) {
   buffer : require("heatshrink").decompress(atob("AH4A7n/6AQIBB/kLgP/+AMBg///EH/kDAgN8n//4ANBv//8E/AIP/8fh///BgIVB/+BAIX/j8f//8GoXV/kfvkfwH4/H9k/ggEBGgPg/Pw/kCg/P4ASBgEPwEIh+Pwf1oE+n0A/AoBvgCCFAP/8Pz+AjBIYICBg/h+BDBx+fwAcBgEfAQM+h5RB/gfBIAIKBAQOh//+gEX+fn8BABEoPgj+fR4UPz4jBIAU/yX8GYPfwH8NgMvIAMABQPvFAKaB8/HSoawB/w9B/YEBnymBIYRnB+49B5//+PwDwJDBGwP+jcAnVf/0NMQLZCAH4AsA="))
 };
   g.drawImage(img,33,10);
+  
+  var imgDOW = {
+  width : 130, height : 10, bpp : 1,
+  buffer : require("heatshrink").decompress(atob("/4Ae/lu3e9xvch2HtsIvEdu8A705g3r03mrs37ev7de9+3rvd692u/O9W5y9V+3r+lX3fsi93uvntv53WuyvVvu6n1Mt37uvcod87d712z0t1z9u3+Tve+7t3u9d6Hfjlu99ju/csPu4Uf29jIAON26Bf+A="))
+};
+  g.drawImage(imgDOW,23,57);
+  
   Bangle.buzz(900);
   lastH1 = -1;
   lastH2 = -1;
