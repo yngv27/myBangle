@@ -154,13 +154,13 @@ function drawDayClock(d) {
   g.clear();
   g.setFont("6x8");
 
-  g.setColor(8+2);
+  g.sc(8+2);
   if(EMULATOR) g.setColor(0,1,0);
   let batt = battInfo();
   g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
 
   rotate = false;
-  g.setColor(8+7);
+  g.sc(8+7);
   if(EMULATOR) g.setColor(1,1,1);
   drawDigit(0,Math.floor(d.hr/10), false);
   drawDigit(1,Math.floor(d.hr%10), false);
@@ -168,7 +168,7 @@ function drawDayClock(d) {
   drawDigit(3,Math.floor(d.min%10), false);
 
   g.setFont("6x8",2); 
-  g.setColor(8+2);
+  g.sc(8+3);
   if(EMULATOR) g.setColor(0,1,0);
   
   g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,146);
