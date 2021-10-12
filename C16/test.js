@@ -676,119 +676,16 @@ function battLevel(v){
 }
 function battInfo(v){v=v?v:battVolts();return `${battLevel(v)|0}% ${v.toFixed(2)}V`;}
 
-function randomLines(){
-  g.clear();
-  var cols=(bpp==1)?14:(1<<bpp)-1,w=g.getWidth(),h=g.getHeight(),r=Math.random;
-  return setInterval(function(){
-    g.setColor(1+r()*cols);
-    g.drawLine(r()*w,r()*h,r()*w,r()*h);
-      g.flip();
-  },5);
-}
-
-
-function randomShapes(){
-  g.clear();
-  var cols=(bpp==1)?14:(1<<bpp)-1,w=g.getWidth()-10,h=g.getHeight()-10,r=Math.random;
-  return setInterval(function(){
-    g.setBgColor(0);
-    g.setColor(1+r()*cols);
-    x1=r()*w;x2=10+r()*w;
-    y1=r()*h;y2=10+r()*h;
-    if (bpp==1 && ((x1&31)==1)) g.clear(); // for bpp==1 clear sometimes so we can see ellipses again
-    if (x1&1)
-      g.fillEllipse(Math.min(x1,x2), Math.min(y1,y2),Math.max(x1,x2), Math.max(y1,y2));
-    else
-      g.fillRect(Math.min(x1,x2), Math.min(y1,y2),Math.max(x1,x2), Math.max(y1,y2));
-    g.flip();
-  },5);
-}
-
-// cube from https://www.espruino.com/Pixl.js+Cube+Badge
-var rx = 0, ry = 0, cc = 1;
-// Draw the cube at rotation rx and ry
-function drawCube(xx,yy,zz) {
-  // precalculate sin&cos for rotations
-  var rcx=Math.cos(rx), rsx=Math.sin(rx);
-  var rcy=Math.cos(ry), rsy=Math.sin(ry);
-  // Project 3D into 2D
-  function p(x,y,z) {
-    var t;
-    t = x*rcy + z*rsy;
-    z = z*rcy - x*rsy;
-    x=t;
-    t = y*rcx + z*rsx;
-    z = z*rcx - y*rsx;
-    y=t;
-    z += 4;
-    return [xx + zz*x/z, yy + yy*y/z];
-  }
-  var a,b;
-  // -z
-  a = p(-1,-1,-1); b = p(1,-1,-1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(1,1,-1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  b = p(-1,1,-1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(-1,-1,-1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  // z
-  a = p(-1,-1,1); b = p(1,-1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(1,1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  b = p(-1,1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(-1,-1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  // edges
-  a = p(-1,-1,-1); b = p(-1,-1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(1,-1,-1); b = p(1,-1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(1,1,-1); b = p(1,1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-  a = p(-1,1,-1); b = p(-1,1,1);
-  g.drawLine(a[0],a[1],b[0],b[1]);
-}
-
-function stepCube() {
-  rx += 0.1;
-  ry += 0.1;
-  g.setColor(0);g.fillRect(60,60,180,180);g.setColor(1+cc);cc=(cc+1)%15;
-  drawCube(120,120,120);
-  // update the whole display
-  g.flip();
-}
 
 //require("Font6x8").add(Graphics);
 //require("Font6x12").add(Graphics);
 //require("Font8x12").add(Graphics);
-require("Font8x16").add(Graphics);
+//require("Font8x16").add(Graphics);
 
-function info(){
-  g.clear();
-  g.setFont("6x8",2);g.setColor(10);
-  g.drawString("Espruino "+process.version,30,20);
-  if (bpp==1) g.flip();
-  g.setFont("6x8",1);g.setColor(14);
-  g.drawString("ST7789 12 bit mode, 32Mbps SPI with DMA",6,42);
-  if (bpp==1) g.flip();
-  for (var c=0;c<8;c++){
-    g.setColor(c+8);g.fillRect(20+25*c,185,45+25*c,205);
-    if (bpp==1) g.flip();
-  }
-  for ( c=0;c<8;c++) {g.setColor(c);g.fillRect(20+25*c,210,45+25*c,230);
-    if (bpp==1) g.flip();
-  }
-  g.flip();
-  return setInterval(function(){
-    stepCube();
-  },5);
-}
-
-
+// Bangle up
+E.getBattery = battLevel;
+if(typeof Bangle == 'undefined') var Bangle;
+Bangle.buzz = (dur,intns) => vibrate(intns,1,dur?dur:200,25);
 
 
 /**********************************************/
