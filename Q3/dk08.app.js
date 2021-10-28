@@ -15,8 +15,8 @@ const midX = wX/2, midY = wY/2;
 function relX(x) { return Math.floor(x*wX); }
 function relY(y) { return Math.floor(y*wY); }
 
-require("knxt.fnt").add(Graphics);
-g.setFont("KNXT",isB2 ? 1 : 1);
+require("blocky.fnt").add(Graphics);
+g.setFont("Blocky",isB2 ? 1 : 1);
 
 const imgCalorie = {
   width : 16, height : 22, bpp : 3,
