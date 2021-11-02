@@ -4,8 +4,10 @@ eval(_Storage.read("F07.js"));
 // chill out that green
 pal[2] = 0x050;
 
-require("m_dylex13").add(Graphics);
-//require("m_knxt").add(Graphics);
+require("dylex7x13.fnt").add(Graphics);
+g.setFont("Dylex7x13");
+//require("blocky.fnt").add(Graphics);
+//g.setFont("Blocky");
 
 let logD = (msg) => { console.log(msg); };
 
@@ -60,7 +62,8 @@ let showMsg = (title, msg) => {
   logD('showMsg START');
   inAlarm = true;
   
-  g.setFont("Dylex7x13");
+  //g.setFont("Dylex7x13");
+  
   g.sc(1);
   g.fillRect(0,0,79,159);
   g.sc(15);
@@ -97,7 +100,6 @@ let showMsg = (title, msg) => {
 */
 
 function showAlarm(msg) {
-  if(!msg) msg = _alarmMsgs.shift();
   console.log(`alarming w ${msg}`);
   showMsg('ALARM', msg);
   // remove the TO from the list, so we don't kill something by accident
@@ -108,6 +110,7 @@ let scheduleAlarms = () => {
   for(let idx=0; idx < alarmTOs.length; idx++) {
     clearTimeout(alarmTOs[idx]);
   }
+  alarmTOs = [];
   for(let idx=0; idx < _Alarms.length; idx++) {
     logD('idx = '+idx);
     let tdiff = Date.parse(_Alarms[idx].time) - Date.now();
@@ -233,7 +236,7 @@ function drawDayClock(d) {
   console.log("DrawClock: time to draw");
 
   // TOP BAR
-  g.setFont("Dylex7x13");
+  //g.setFont("Dylex7x13");
   g.setFontAlign(0,-1);
   g.sc(2);
   /* pill
