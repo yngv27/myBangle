@@ -1,16 +1,22 @@
 [
-    {"msg":"|GIT UP!|Git on up|...","time":"2021-11-01T07:00:00"},
    
-    {"msg":"1 on 1|Don't|friggin'|miss it!","time":"2021-10-29T09:50:00"},
-    {"msg":"CSS POC|Sandeep,|Chloe","time":"2021-10-29T10:25:00"},
-    {"msg":"3:00 PM|UX Weekly","time":"2021-10-29T14:55:00"},
-   
-    {"msg":"|Let's be honest|This is a tiny|screen. You'd|be lucky to fit|all this on|there, no?","time":"2021-10-29T15:52:00"},
-    {"msg":"|SCRM FY22|Features|Enhances","time":"2021-11-01T15:50:00"},
-    {"msg":"|Figma/Qt|Roadmap|","time":"2021-11-01T14:50:00"},
-    {"msg":"|UX Daily|","time":"2021-11-01T15:50:00"},
+    {"time":"2021-11-08T15:55:00","msg":"|4:00 PM|UX Weekly"},
+    {"time":"2021-11-08T10:25:00","msg":"|10:30 AM|Config tool?"},
+    
+    {"time":"2021-11-09T07:50:00", "msg":"|8 AM|R & R|NOT the|good kind"},
+    {"time":"2021-11-09T14:50:00", "msg":"|3 PM|SCRM|X-func|"},
 
-    {"msg":"|SCRM FY22|Features|Enhances","time":"2021-10-29T17:15:00"},
-    {"msg":"|Figma/Qt|Roadmap|","time":"2021-10-29T17:30:00"},
-    {"msg":"|UX Daily|","time":"2021-10-29T17:50:00"}
+    {"time":"2021-11-10T13:50:00", "msg":"|2 PM|Progressa"},
+    {"time":"2021-11-10T15:50:00", "msg":"|4 PM|UX Market|"},        
+
+    {"time":"2021-11-11T07:50:00", "msg":"|8 AM|R & R|NOT the|good kind"},
+    {"time":"2021-11-11T09:50:00", "msg":"|10 AM|Seymour|Service|workflows|w Ken"},
+    
+    {"time":"2021-11-05T09:50:00","msg":"|1 on 1|Don't|friggin'|miss it!"},
+    {"time":"2021-11-05T10:25:00","msg":"|CSS POC|Sandeep,|Chloe"},
+    {"time":"2021-11-05T10:50:00","msg":"|11 AM|UX Market|"},
+    {"time":"2021-11-05T12:50:00","msg":"|1 PM|Smart Alarms|Intro|"},
+
+    {"msg":"|GIT UP!|Git on up|...","time":"2021-11-08T06:30:00"}
+
 ]
