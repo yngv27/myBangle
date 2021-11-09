@@ -61,7 +61,8 @@ function notify() {
     setTimeout(analogWrite, x*800+200, VIB, 0);
   }
   */
-  vibrate(lvl, 5, 800, 200);
+  vibrate(0.8, 5, 800, 200);
+
   logD('notify END');
 }
 
@@ -159,7 +160,7 @@ function buzzClock (h,m) {
   vibrate(lvl, m%5, SHORTBZ, 200);
   // lockout for one minute
   buzzLock |= 0b10;
-  setTimeout(function() { buzzLock &= 0b01; }, 60000);
+  setTimeout(function() { buzzLock &= 0b01; digitalWrite(VIB, 0);}, 60000);
 }
 
 
@@ -202,8 +203,8 @@ function checkClock() {
   }
   
   let realHour = hr;
-  //hr %= 12;
-  //if (hr === 0) hr = 12;
+  hr %= 12;
+  if (hr === 0) hr = 12;
   min = parseInt(min);
   xmid = 40;
 
