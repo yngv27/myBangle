@@ -55,10 +55,13 @@ let loadAlarms = () => {
 
 function notify() {
   logD('notify START');
+  /*
   for(let x=0; x < 5; x++) {
     setTimeout(analogWrite, x*800, VIB, 0.999);
     setTimeout(analogWrite, x*800+200, VIB, 0);
   }
+  */
+  vibrate(lvl, 5, 800, 200);
   logD('notify END');
 }
 
