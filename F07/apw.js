@@ -6,8 +6,6 @@ pal[2] = 0x050;
 
 require("dylex7x13.fnt").add(Graphics);
 g.setFont("Dylex7x13");
-//require("blocky.fnt").add(Graphics);
-//g.setFont("Blocky");
 
 let logD = (msg) => { console.log(msg); };
 
@@ -15,8 +13,19 @@ let logD = (msg) => { console.log(msg); };
 /*
 ** BEGIN WATCH FACE
 */
-
 const startX=[10,45,10,45],startY=[18,18,80,80],nmX=[16,42,88,126],nmY=[12,12,12,12];let rotate=!1,xS=.8,yS=.8;function setScale(t,r){xS=t,yS=r}function drawScaledPoly(r,n,a){let d=[];for(let t=0;t<r.length;t+=2){var e;d[t]=Math.floor(r[t]*xS)+n,d[t+1]=Math.floor(r[t+1]*yS)+a,rotate&&(e=d[t],d[t]=80-d[t+1],d[t+1]=e)}g.fillPoly(d,!1)}let d0=new Uint8Array([0,4,4,0,32,0,36,4,36,65,25,65,25,5,11,5,11,65,36,65,36,66,32,70,4,70,0,66]),d1=new Uint8Array([7,4,11,0,20,0,24,4,24,70,13,70,13,5,7,5]),d2=new Uint8Array([0,4,4,0,32,0,36,4,36,34,32,38,11,38,11,65,36,65,36,66,32,70,0,70,0,36,4,32,25,32,25,5,0,5]),d3=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38,0,32,25,32,25,5,0,5]),d4=new Uint8Array([0,4,4,0,11,0,11,32,25,32,25,0,32,0,36,4,36,70,25,70,25,38,0,38]),d5=new Uint8Array([0,0,32,0,36,4,36,5,11,5,11,32,32,32,36,36,36,66,32,70,4,70,0,66,0,65,25,65,25,38,0,38]),d6=new Uint8Array([0,4,4,0,32,0,36,4,36,5,11,5,11,65,25,65,25,38,11,38,11,32,32,32,36,36,36,66,32,70,4,70,0,66]),d7=new Uint8Array([0,4,4,0,32,0,36,4,36,70,25,70,25,5,0,5]),d8=new Uint8Array([0,4,4,0,32,0,36,4,36,32,33,35,36,38,36,66,32,70,18,70,18,65,25,65,25,38,18,38,18,32,25,32,25,5,11,5,11,32,18,32,18,38,11,38,11,65,18,65,18,70,4,70,0,66,0,38,3,35,0,32]),d9=new Uint8Array([0,4,4,0,32,0,36,4,36,66,32,70,4,70,0,65,0,65,25,65,25,5,11,5,11,32,25,32,25,38,4,38,0,34]);function drawDigit(t,r,n){let a=(n?nmX:startX)[t];t=(n?nmY:startY)[t];EMULATOR&&(a+=80),drawScaledPoly([d0,d1,d2,d3,d4,d5,d6,d7,d8,d9][r],a,t)}
+
+function pct2col(r,g,b,p) {
+  let r1 = Math.floor(r*32*p);
+  if(r1 > 31) r1 = 31;
+    let g1 = Math.floor(g*32*p);
+  if(g1 > 31) g1 = 31;
+    let b1 = Math.floor(b*32*p);
+  if(b1 > 31) b1 = 31;
+  //r1 *= p; g1 *= p; b1 *= p;
+  return (r1 << 11) + (g1 << 6) + b1;
+}
+
 /*
 ** END WATCH FACE
 */
@@ -81,16 +90,7 @@ let showMsg = (title, msg) => {
     logD(`l:${lines[l]}`);
     y += g.getFontHeight();
   }
-  //if(! title) return;
-  //g.flip();
 
-  /*
-  setTimeout(notify, 800);
-  setTimeout(notify, 1600);
-  setTimeout(notify, 2400);
-  setTimeout(notify, 3200);
-  setTimeout(notify, 4000);
-  */
   notify();
   logD('showMsg END');
 };
@@ -130,7 +130,7 @@ var la = loadAlarms;
 ********************************************* END ALARMS *******************************
 */
 
-/*
+var buzzLock = 0;
 function buzzClock (h,m) {
   // skip if either lockout or canceled: 10 or 01 (i.e. not 0)
   if(buzzLock) {
@@ -158,9 +158,11 @@ function buzzClock (h,m) {
   buzzLock |= 0b10;
   setTimeout(function() { buzzLock &= 0b01; }, 60000);
 }
-*/
+
 
 let youThere = 0;
+
+let pad0 = (n) => {return ('0'+n).slice(-2);};
 
 function checkClock() {
   //logD('checkClock START');
@@ -171,10 +173,23 @@ function checkClock() {
   var hr=d[4].substr(0,2);
   var min=d[4].substr(3,2);
   let sec=d[4].substr(6,2);
+  
+  /*TEMP: COUNTDOWN TO...
+  let d2 = Date('2021-11-07T12:00:00').getTime()/1000;
+  let d1 = Math.floor(Date().getTime()/1000);
+  let timeLeft = d2 - d1;
+  hr = Math.floor(timeLeft / 3600);
+  timeLeft -= 3600 * hr;
+  min = Math.floor(timeLeft / 60);
+  timeLeft -= 60 * min;
+  sec = timeLeft;
 
+  //console.log(`d1:${d1} d2:${d2} h:${hr} m:${min} s:${sec}`);
+  if(!hr) { hr=min, min=sec };
+  */
   let nm = false;
   
-  if((hr > 20 || hr < 8)) { // && myName == Eebie) {
+  if((hr > 20 || hr < 8) && myName != Eebie) {
     nm = true;
     g.setBrightness(1);
   } else if( hr > 10 && hr < 18) {
@@ -182,9 +197,10 @@ function checkClock() {
   } else {
     g.setBrightness(32);
   }
+  
   let realHour = hr;
-  hr %= 12;
-  if (hr === 0) hr = 12;
+  //hr %= 12;
+  //if (hr === 0) hr = 12;
   min = parseInt(min);
   xmid = 40;
 
@@ -244,7 +260,7 @@ function drawDayClock(d) {
   g.fillCircle(73,6,6);
   g.fillRect(6,0,73,12);
   */
-  let batt = battInfo();
+  let batt = battInfo(); //process.env.VERSION; //battInfo();
   // full bkgd
   //g.fillPoly([0,0,8,12,71,12,79,0],true);
   // par'l bkgd
@@ -257,12 +273,16 @@ function drawDayClock(d) {
   
   rotate = false;
   g.sc(8+3);
+  //g.sc(5);
   if(EMULATOR) g.setColor(1,1,1);
   drawDigit(0,Math.floor(d.hr/10), false);
   drawDigit(1,Math.floor(d.hr%10), false);
+  g.flip();
   g.sc(8+7);
+  //g.sc(8+5);
   drawDigit(2,Math.floor(d.min/10), false);
   drawDigit(3,Math.floor(d.min%10), false);
+  g.flip();
 
   // BOTTOM BAR 
   g.sc(1);
@@ -273,11 +293,13 @@ function drawDayClock(d) {
   g.drawString(d.dt,xmid/*-g.stringWidth(d.dt)/2*/,143);
 
   g.flip();
-  /*
-  console.log('buzing in 3...');
-  buzzLock &= 0b10;
-  setTimeout(buzzClock, 3000, hr, min);
-  */
+  
+  if(myName == Eebie) {
+    console.log('buzzing in 3...');
+    buzzLock &= 0b10;
+    setTimeout(buzzClock, 3000, d.hr, d.min);
+  }
+  
 }
 
 function drawNightClock(d) {
