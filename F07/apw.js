@@ -304,12 +304,13 @@ function drawDayClock(d) {
   g.drawString(d.dt,xmid/*-g.stringWidth(d.dt)/2*/,143);
 
   g.flip();
-  
+  /*
   if(myName == Eebie) {
     console.log('buzzing in 3...');
     buzzLock &= 0b10;
     setTimeout(buzzClock, 3000, d.hr, d.min);
   }
+  */
   
 }
 
