@@ -48,27 +48,34 @@ let _Alarms = [];
 let inAlarm = false;
 let loadAlarms = () => {
   _Alarms =  _Storage.readJSON('alarms.json');
-  if(!_Alarms) _Alarms = [{"msg":"16:00|Stop|working|today","time":"2021-10-28T17:13:00"}];
+  if(!_Alarms) _Alarms = [{"msg":"13:53|Stop|working|today","time":"2021-12-21T13:53:00"}];
   //_Alarms.sort((a,b) => {return(a.time > b.time);});
   scheduleAlarms();
 };
 
+function vibrat(lvl, cnt, onms, offms) {
+  let tout = 0;
+  digitalWrite(VIB, 0);
+  for(let x=0; x < cnt; x++) {
+    setTimeout(analogWrite, tout, VIB, lvl);
+    tout += onms;
+    setTimeout(analogWrite, tout, VIB, 0);
+    tout += offms;
+  }
+  
+}
 function notify() {
   logD('notify START');
-  /*
-  for(let x=0; x < 5; x++) {
-    setTimeout(analogWrite, x*800, VIB, 0.999);
-    setTimeout(analogWrite, x*800+200, VIB, 0);
-  }
-  */
-  vibrate(0.8, 5, 800, 200);
+
+  vibrat(0.8, 5, 600, 200);
 
   logD('notify END');
 }
 
 function buzz() {
-    analogWrite(VIB, 0.999);
-    setTimeout(analogWrite, 200, VIB, 0);
+    //analogWrite(VIB, 0.999);
+    //setTimeout(analogWrite, 200, VIB, 0);
+    vibrat(0.6, 1, 500, 250);
 }
 
 let showMsg = (title, msg) => {
@@ -214,7 +221,7 @@ function checkClock() {
   //console.log(JSON.stringify(xyz));
   if(xyz.x < 0 || xyz.x > 58 || xyz.y < -12 || xyz.y > 20 || xyz.z > 0) {
     g.off();
-    //buzzLock |= 1;
+    buzzLock |= 1;
     //console.log('Canceling buzz');
     if(showClockTO) {
       clearTimeout(showClockTO);
@@ -361,6 +368,7 @@ let nextScreen = () => {
   currint = screens[currscr]();
   buzz();
 };
+
 const btnDown = (b) => {
   //longpress = b.time;
   longpressTO = setTimeout(function(){
