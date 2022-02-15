@@ -1,30 +1,11 @@
-eval(require("Storage").read("F07.js"));
+const _Storage = require('Storage');
+eval(_Storage.read("F07.js"));
 
-require("Font6x8").add(Graphics);
-//require("Font6x12").add(Graphics);
-//require("Font8x12").add(Graphics);
-//require("Font8x16").add(Graphics);
+require("m_dylex13").add(Graphics);
+//require("m_knxt").add(Graphics);
 
-function info(){
-  g.clear();
-  g.setFont("4x6",1/*2*/);g.setColor(10);
-  g.drawString("Espruino "+process.version,5,10);
-  if (bpp==1) g.flip();
-  g.setFont("4x6",1);g.setColor(14);
-  g.drawString("ST7735 12 bit mode\n8Mbps SPI with DMA",4,22);
-  if (bpp==1) g.flip();
-  for (var c=0;c<8;c++){
-    g.setColor(c+8);g.fillRect(8+8*c,130,16+8*c,138);
-    if (bpp==1) g.flip();
-  }
-  for ( c=0;c<8;c++) {g.setColor(c);g.fillRect(8+8*c,142,16+8*c,150);
-    if (bpp==1) g.flip();
-  }
-  g.flip();
-  return setInterval(function(){
-    stepCube();
-  },5);
-}
+let logD = (msg) => { console.log(msg); };
+
 
 /*
 ** BEGIN WATCH FACE
@@ -45,6 +26,83 @@ let showClockTO = 0;
 //let buzzLock = 0;  // 0b10 = lockout, 0b01 = cancel
 let myName = NRF.getAddress().slice(-5);
 console.log(myName);
+
+/**** BEGIN ALARMS *******/
+
+
+let _Alarms = [];
+let inAlarm = false;
+let loadAlarms = () => {
+  _Alarms =  _Storage.readJSON('alarms.json');
+  if(!_Alarms) _Alarms = [{"msg":"16:00|Stop|working|today","time":"2021-10-28T17:13:00"}];
+  scheduleAlarms();
+};
+
+function notify() {
+  analogWrite(VIB, 0.95);
+  setTimeout(analogWrite,200,VIB,0);
+}
+
+let showMsg = (title, msg) => {
+  inAlarm = true;
+  g.clear();
+  
+  g.setFont("Dylex7x13");
+  g.sc(15);
+  g.clear();  
+  g.setFontAlign(0,-1);
+  let y = 4;
+  if(title) {
+    g.drawString('* '+title+' *', 40, y);
+    g.drawString('* '+title+' *', 41, y);
+    y = 20; //g.getFontHeight();
+  }
+  let lines = msg.split("|");
+  for(let l = 0; l < lines.length; l++) {
+    g.drawString(lines[l], 40, y);
+    y += g.getFontHeight();
+  }
+  //if(! title) return;
+
+  setTimeout(notify, 800);
+  setTimeout(notify, 1600);
+  setTimeout(notify, 2400);
+  setTimeout(notify, 3200);
+  setTimeout(notify, 4000);
+};
+
+/*
+** alarms are in order, pop the top and show it
+*/
+let _alarmMsgs = [];
+function showAlarm(msg) {
+  if(!msg) msg = _alarmMsgs.shift();
+  showMsg('ALARM', msg);
+}
+
+let alarmTOs = [];
+let scheduleAlarms = () => {
+  for(let idx=0; idx < alarmTOs.length; idx++) {
+    clearTimeout(alarmTOs[idx]);
+  }
+  for(let idx=0; idx < _Alarms.length; idx++) {
+    logD('idx = '+idx);
+    let tdiff = Date.parse(_Alarms[idx].time) - Date.now();
+    let msg = _Alarms[idx].msg;
+    if(tdiff > 0) {
+      logD(`will alarm ${msg} in ${tdiff}`);
+      alarmTOs.push(setTimeout(showAlarm, tdiff,_Alarms[idx].msg));
+      //_alarmMsgs.push(`foo${idx}`/*_Alarms[idx].msg*/);
+    } else {
+      //expired
+      logD('tossing out' + idx);
+    }
+  }
+};
+loadAlarms();
+/*
+********************************************* END ALARMS *******************************
+*/
 
 /*
 function buzzClock (h,m) {
@@ -77,7 +135,6 @@ function buzzClock (h,m) {
 */
 
 let youThere = 0;
-let nm = false;
 
 function checkClock() {
   let d=Date();
@@ -86,29 +143,19 @@ function checkClock() {
   var tm=d[4].substring(0,5);
   var hr=d[4].substr(0,2);
   var min=d[4].substr(3,2);
-
-  /*
-  if((hr > 20 || hr < 8) && myName == Eebie) {
+  let nm = false;
+  
+  if((hr > 20 || hr < 8)) { // && myName == Eebie) {
     nm = true;
+    g.setBrightness(1);
   }
-  */
+  let realHour = hr;
   hr %= 12;
   if (hr === 0) hr = 12;
   min = parseInt(min);
   xmid = 40;
-  if(EMULATOR) xmid=120;
 
   //nm = true;
-
-  if(nm) {
-    if(sec%12 < 10) g.off(); 
-    else if(tm == lastTime) g.on();
-    else {
-      drawNightClock({hr:hr,min:min});
-      lastTime = tm;
-    }
-    return;
-  }
 
   let xyz = accCoords();
   //console.log(JSON.stringify(xyz));
@@ -125,39 +172,37 @@ function checkClock() {
     return;
   }
   if(!showClockTO) {
-    showClockTO = setTimeout(drawDayClock, 1000,{hr:hr,min:min,dt:d[1]+" "+d[2]});
-    console.log("will show clock...");
+    showClockTO = setTimeout(drawDayClock, 1000,{hr24: realHour,hr:hr,min:min,dt:(d[1]+" "+d[2]).toUpperCase()});
   } else {
     // in case it's on too long...
     if(youThere < 7) youThere++;
     else {
-      console.log('youThere == 7');
+      //console.log('youThere == 7');
       g.off();
     }
   }
 }
 function drawDayClock(d) {
   g.on();
-  /*
-  let d=Date();
-  let sec=d.getSeconds();
-  d=d.toString().split(' ');
-  var tm=d[4].substring(0,5);
-  d.hr=d[4].substr(0,2);
-  d.min=d[4].substr(3,2);
-  */
+  if(inAlarm) return;
+  
   let tm=d.hr+':'+d.min;
   if (tm == lastTime) return;
   lastTime = tm;
-  //console.log("here");
+  console.log("here");
 
   g.clear();
-  g.setFont("6x8");
-
-  g.sc(8+2);
+  g.setBrightness(Math.sin(d.hr24/24*Math.PI)*250+1);
+  g.setFont("Dylex7x13");
+  g.setFontAlign(0,-1);
+  g.sc(2);
   if(EMULATOR) g.setColor(0,1,0);
+  g.fillCircle(6,6,6);
+  g.fillCircle(73,6,6);
+  g.fillRect(6,0,73,12);
+  g.sc(0);
   let batt = battInfo();
-  g.drawString(batt,xmid-g.stringWidth(batt)/2,0);
+  g.drawString(batt,xmid/*-g.stringWidth(batt)/2*/,0);
 
   rotate = false;
   g.sc(8+7);
@@ -167,11 +212,12 @@ function drawDayClock(d) {
   drawDigit(2,Math.floor(d.min/10), false);
   drawDigit(3,Math.floor(d.min%10), false);
 
-  g.setFont("6x8",2); 
-  g.sc(8+3);
+  //g.setFont("KNXT"); 
+  g.sc(1);
   if(EMULATOR) g.setColor(0,1,0);
-  
-  g.drawString(d.dt,xmid-g.stringWidth(d.dt)/2,146);
+  g.fillRect(0,140,79,159);
+  g.sc(14);
+  g.drawString(d.dt,xmid/*-g.stringWidth(d.dt)/2*/,141);
   g.flip();
   /*
   console.log('buzing in 3...');
@@ -204,59 +250,61 @@ function drawNightClock(d) {
 
 function clock(){
   volts=0;
-  nm = !nm;
-  return setInterval(checkClock,777);
+  return setInterval(function(){
+    checkClock();
+},777);
 }
 
 function sleep(){
-
-  let x = setTimeout(()=>{g.off();}, 3000);
-  console.log("x=",x);
-  currscr=-1;
+  g.clear();//g.flip();
+  g.off();
+  inAlarm = false;
+  //currscr=-1;
   return 0;
 }
 
-let screenNames=["Night\nclock","Day\nwatch","Sleep"];
-var screens=[clock,clock,sleep];
+g.setBrightness(32);
+var screens=[clock,sleep];
 var currscr= 0;
 var currint=screens[currscr]();
+//let longpress = 0;
 let longpressTO = 0;
-
-
-let nextScreen = () => {
-  currscr++;
-  if (currscr>=screens.length) currscr=0;
-  if (currint>0) clearInterval(currint);
-  g.on();
-  g.clear();
-  g.setFont("6x8",2);
-  g.setColor(15);
-  g.drawString(screenNames[currscr],20,72);
-  g.flip();
-  setTimeout(()=>{
-    // the timeout has run, don't try to clear it again
-    longpressTO = 0;
-    currint=screens[currscr](); 
-  }, 2500);
-};
-
 
 const btnDown = (b) => {
   //longpress = b.time;
-  longpressTO = setTimeout(nextScreen, 1500);
+  longpressTO = setTimeout(function(){
+    // long press behaviour
+    //g.setBrightness(256);
+    currscr = currscr ? 0 : 1; // easy enough when there's only two
+    if (currint > 0) clearInterval(currint);
+    logD(`Running screen ${currscr}`);
+    currint = screens[currscr]();
+    longpressTO = 0;
+    notify();
+  }, 1000);
   setWatch(btnUp, BTN1, { repeat:false, edge:'falling', debounce:25});
 };
 const btnUp = (b) => {
-  /* 
+  /*
   if(b.time - longpress > 1.0) {
     g.setBrightness(256);
     setTimeout(function(){g.setBrightness(32);}, 10000);
   }
   */
   if(longpressTO) {
+    // short press behaviour
     clearTimeout(longpressTO);
+  } else {
+    // long press (post)
+    //setTimeout(()=>{g.setBrightness(32);},10000);
   }
   setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
 };
-btnUp(); // cheap start
-E.setTimeZone(-4);
+
+setWatch(btnDown, BTN1, { repeat:false, edge:'rising', debounce:25});
+
+/* screen switching
+ currscr++;if (currscr>=screens.length) currscr=0;
+    if (currint>0) clearInterval(currint);
+    currint=screens[currscr]();
+*/

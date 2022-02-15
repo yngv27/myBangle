@@ -1,3 +1,6 @@
+
+eval(require("Storage").read("DK08.js"));
+
 let bgc=15,fgc=0;
 var img = {
   width : 176, height : 176, bpp : 2,
@@ -37,15 +40,7 @@ var ihr = {
   buffer : require("heatshrink").decompress(atob("AHMqgVWktWytaqtpqulA34Gg3NYh3wV/4A/ABIA="))
 }
 ;
-require("omnigo2.fnt").add(Graphics);
-
-let battAvg = [0,0,0,0,0,0,0,0,0,0,0,0];
-function battLevelAvg() {
-  battAvg.push(Math.floor(battLevel()));
-  battAvg.shift();
-  let sum = battAvg.reduce((a, b) => a + b, 0);
-  return Math.floor(sum / battAvg.length) || 0;
-}
+require("omnigo.fnt").add(Graphics);
 
 // d contains hours, mins and each digit, nm == night mode (set when BTN1 is pushed)
 let drawTime = (d, nm) => {
@@ -61,7 +56,7 @@ let drawTime = (d, nm) => {
   //console.log(d.dow, s);
   g.drawString(s, 164-g.stringWidth(s), 84);
   g.drawString(s, 163-g.stringWidth(s), 84);
-  s=battLevelAvg();
+  s=E.getBattery();
   let y = (d.hour >= 17 && d.hour <= 19) ? 58 : 118;
   g.drawString(s,88-g.stringWidth(s)/2, y);
 
@@ -75,8 +70,6 @@ let drawTime = (d, nm) => {
   g.flip();
 };
 
-
-eval(require("Storage").read("dk08.js"));
 
 
 function thing() {

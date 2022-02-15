@@ -8,7 +8,7 @@ let stepFile = 'v.steps.json';
 let stepArchiveFile = 'v.stephist.json';
 
 let _Options = {};
-let optsFile = 'm_vatch.opts.json';
+let optsFile = 'm_vatch.json';
 
 let _Alarm = {
   inAlarm: false,
@@ -19,6 +19,7 @@ let _Alarm = {
 };
 
 let _StepData = {};
+let lastHR = 72;
 
 const pad0 = (n) => (n > 9) ? n : ("0"+n); 
 
@@ -31,7 +32,7 @@ function reload() {
   _StepData =  _Storage.readJSON(stepFile);
   if(!_StepData) {
     _StepData = {
-      lastDate: '1999-09-09',
+      lastDate: '2020-01-01',
       stepCache: 0,
       lastStepCount: 0,
       updated: true,
@@ -58,13 +59,6 @@ function logD(str) {
   if(_Options.debug) console.log(str);
 }
 
-
-let lastH1 = -1;
-let lastH2 = -1;
-let lastM1 = -1;
-let lastM2 = -1;
-
-
 let drawBackground = () => {};
 let drawTime = () => {};
 let drawData = () => {};
@@ -77,6 +71,7 @@ function timeCheck() {
   logD('Again, ' + JSON.stringify(_Options));
   logD('opt.nm = '+_Options.autoNightMode);
   if(_Options.autoNightMode) {
+    // this may vary by Bangle.. adjust to taste
     let a = Bangle.getAccel();
     a.x = Math.floor(a.x * 100);
     logD('a.x = ' + a.x);
@@ -97,17 +92,13 @@ function timeCheck() {
 
   let hour = d.getHours();
   let minute = d.getMinutes();
+  let sec = d.getSeconds();
 
   let h1 = Math.floor(hour / 10);
   let h2 = hour % 10;
   let m1 = Math.floor(minute / 10);
   let m2 = minute % 10;
-  
-  logD("lastH1 = "+lastH1+": lastM2 = "+lastM2);
-  if(h1 == lastH1 && h2 == lastH2 && m1 == lastM1 && m2 == lastM2) {
-    return;
-  }
-  
+
   logD("drawing time");
   let data = {
     h1: h1,
@@ -116,15 +107,12 @@ function timeCheck() {
     m2: m2,
     hour: hour,
     min: minute,
+    sec: sec,
   };
   drawTime(data, nightMode);
   
-  lastH1 = h1;
-  lastH2 = h2;
-  lastM1 = m1;
-  lastM2 = m2;
-
-  if(!nightMode && !_Alarm.inAlarm) {
+  // only push data if not in night mode, alarming; only 1x per minute
+  if(!nightMode && !_Alarm.inAlarm && !sec) {
     logD("drawing data...");
     const mstr="JanFebMarAprMayJunJulAugSepOctNovDec";
     const dowstr = "SunMonTueWedThuFriSat";
@@ -138,7 +126,8 @@ function timeCheck() {
     data.dow = dowstr.substr(dow*3,3);
     data.dateStr = data.dow + " " + data.mon3 + " " + data.date;
     data.steps = _StepData.stepCache + _StepData.lastStepCount;
-    data.batt = E.getBattery() + (Bangle.isCharging() ? "+" : "");
+    data.hrm = lastHR;
+    data.batt = E.getBattery();
     data.charging = Bangle.isCharging();
 
     drawData(data);
@@ -162,17 +151,10 @@ function start () {
     clearInterval(interval);
   }
   // first time init
-  interval = setInterval(timeCheck, 10000);
+  interval = setInterval(timeCheck, 1000);
   timeCheck();
 }
 
-Bangle.on('lcdPower', function (on) {
-  if (on) {
-    start();
-  } else {
-    stop();
-  }
-});
 
 function btn1Func() {
   logD("btn1Func");
@@ -190,16 +172,12 @@ function btn1Func() {
 
 function redrawScreen() {
   logD("redrawScreen");
-  
+
   if(nightMode) {
     g.setRotation(1,0);
   } else {
     g.setRotation(0,0);
   }
-  lastM1 = -1;
-  lastM2 = -1;
-  lastH1 = -1;
-  lastH2 = -1;
   drawBackground(nightMode);
   timeCheck();
 }
@@ -227,15 +205,29 @@ Bangle.on('step', function(cnt) {
     } catch (err) {
       _Storage.write('err.txt',err);
     }
+    /* individual step files by date
     _Storage.write(_StepData.lastDate +'.steps', JSON.stringify(
       _StepData.stepCache +_StepData.lastStepCount
     ));
+    */
     _StepData.stepCache = 0 - cnt;
     _StepData.lastDate = getToday();
   }
   _StepData.lastStepCount = cnt;
   _StepData.updated = true;
 });
+
+
+Bangle.on('HRM', function(hrm) { 
+  lastHR = hrm.bpm;
+});
+
+function collectHRMfor30() {
+  Bangle.setHRMPower(true, "dk08");
+  setInterval(Bangle.setHRMPower, 30000, false, "dk08");
+}
+// every 15 minutes, collect 30 sec of data
+setInterval(collectHRMfor30, 900000);
 
 /*
 ** Advertise a writeable characteristic. Accepts text (in 20 char
@@ -280,13 +272,13 @@ exports.setDrawTime = function(dTime) {
 exports.setDrawData = function( dData) {
   drawData = dData;
 };
-exports.begin = function() {
-  _Options = _Storage.readJSON(optsFile);
+exports.begin = function(opts) {
+  _Options = opts ? opts :_Storage.readJSON(optsFile);
   if(!_Options) _Options = {
     autoNightMode: true,
-    useAlarms: true,
+    useAlarms: false,
     stepManager: true,
-    debug: true,
+    debug: false,
   };
     
   console.log(JSON.stringify(_Options));
@@ -296,16 +288,27 @@ exports.begin = function() {
     _Alarm.reload();
     _Alarm.scheduleAlarms();
   }
-  setWatch(btn1Func, BTN1, {repeat:true,edge:"falling"});
-  
-  if(_Options.useAlarms) {
-    setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
-  }
-  setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
+  // separate the Bangles now
+  const isB2 = (process.env.BOARD === 'BANGLEJS2');
 
+  if(!isB2) {
+    Bangle.on('lcdPower', function (on) {
+      if (on) {
+        start();
+      } else {
+        stop();
+      }
+    });  
+    setWatch(btn1Func, BTN1, {repeat:true,edge:"falling"});
+    
+    if(BTN2 && _Options.useAlarms) {
+      setWatch(btn2Func, BTN2, {repeat:true,edge:"falling"});
+    }
+    if(BTN3) setWatch(Bangle.showLauncher, BTN3, {repeat:false,edge:"falling"});
+  } else {
+    Bangle.setUI("clock");
+  }
   reload();
   drawBackground(nightMode);
   start();
 };
-
-
