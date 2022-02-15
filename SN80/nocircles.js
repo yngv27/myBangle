@@ -1,75 +1,26 @@
-/* Copyright (c) 2020 Akos Lukacs, based on code by Gordon Williams and https://github.com/Bodmer/TFT_eSPI. See the file LICENSE for copying permission. */
-/*
-Module for the ST7789 135x240 LCD controller
 
-Just:
-*/
 
-// ST7789 demo code on TTGO T-Display
-ST7789_NOP = 0x00;
-ST7789_SWRESET = 0x01;
-ST7789_RDDID = 0x04;
-ST7789_RDDST = 0x09;
+D17.mode('output');
+D17.set();
+D9.mode('input');
 
-ST7789_SLPIN = 0x10;
-ST7789_SLPOUT = 0x11;
-ST7789_PTLON = 0x12;
-ST7789_NORON = 0x13;
+const logD = console.log;
 
-ST7789_INVOFF = 0x20;
-ST7789_INVON = 0x21;
-ST7789_DISPOFF = 0x28;
-ST7789_DISPON = 0x29;
 
-ST7789_CASET = 0x2A;
-ST7789_RASET = 0x2B;
-ST7789_RAMWR = 0x2C;
-ST7789_RAMRD = 0x2E;
-
-ST7789_PTLAR = 0x30;
-ST7789_MADCTL = 0x36;
-ST7789_COLMOD = 0x3A;
-
-ST7789_FRMCTR1 = 0xB1;
-ST7789_FRMCTR2 = 0xB2;
-ST7789_FRMCTR3 = 0xB3;
-ST7789_INVCTR = 0xB4;
-ST7789_DISSET5 = 0xB6;
-
-ST7789_GCTRL = 0xB7;
-ST7789_GTADJ = 0xB8;
-ST7789_VCOMS = 0xBB;
-
-ST7789_LCMCTRL = 0xC0;
-ST7789_IDSET = 0xC1;
-ST7789_VDVVRHEN = 0xC2;
-ST7789_VRHS = 0xC3;
-ST7789_VDVS = 0xC4;
-ST7789_VMCTR1 = 0xC5;
-ST7789_FRCTRL2 = 0xC6;
-ST7789_CABCCTRL = 0xC7;
-
-ST7789_RDID1 = 0xDA;
-ST7789_RDID2 = 0xDB;
-ST7789_RDID3 = 0xDC;
-ST7789_RDID4 = 0xDD;
-
-ST7789_GMCTRP1 = 0xE0;
-ST7789_GMCTRN1 = 0xE1;
-
-ST7789_PWCTR6 = 0xFC;
-
-var spi = new SPI();
-spi.setup({sck:D2,mosi:D3,mode:0}); //spi.send([0xab],D5); 
+//var spi = new SPI();
+SPI1.setup({sck:D2,mosi:D3,baud:8000000,mode:0}); //spi.send([0xab],D5); 
 
 const LCD_WIDTH = 240;
 const LCD_HEIGHT = 240;
 const COLSTART = 0;
 const ROWSTART = 0;
+const INVERSE = 0;
 
+const cmd = lcd_spi_unbuf.command;
 
-function init(spi, dc, ce, rst, callback) {
-  function cmd(c, d) {
+function dispinit(spi, dc, ce, rst, callback) {
+  /*
+  function xcmd(c, d) {
       dc.reset();
       spi.write(c, ce);
       if (d !== undefined) {
@@ -77,6 +28,7 @@ function init(spi, dc, ce, rst, callback) {
           spi.write(d, ce);
       }
   }
+  */
 
   if (rst) {
       digitalPulse(rst, 0, 10);
@@ -137,10 +89,10 @@ function init(spi, dc, ce, rst, callback) {
   [0x74,[0x10,0x80,0x80,0,0,0x4E,0]],
   [0x35,0],
   [0x21],
+  [0x13],
     ];
 
     setTimeout(function () {
-        //cmd(0x11); //Exit Sleep
         setTimeout(function () {
             ST7789_INIT_CODE.forEach(function (e) {
                 cmd(e[0], e[1]);
@@ -149,6 +101,7 @@ function init(spi, dc, ce, rst, callback) {
               cmd(0x11); }, 120);
             setTimeout(()=>{    //delay_0(120);
               cmd(0x29);}, 240);
+          
             setTimeout(()=>{  //delay_0(120);
               cmd(0x2A,[0,0,0,0xEF]);
               cmd(0x2B,[0,0,0,0xEF]);
@@ -161,30 +114,22 @@ function init(spi, dc, ce, rst, callback) {
 }
 
 
-let connect = function (spi, dc, ce, rst, callback) {
-    var g = Graphics.createCallback(LCD_WIDTH, LCD_HEIGHT, 16, {
-        setPixel: function (x, y, c) {
-            ce.reset();
-            spi.write(0x2A, dc);
-            spi.write((COLSTART + x) >> 8, COLSTART + x, (COLSTART + x) >> 8, COLSTART + x);
-            spi.write(0x2B, dc);
-            spi.write((ROWSTART + y) >> 8, ROWSTART + y, (ROWSTART + y) >> 8, (ROWSTART + y));
-            spi.write(0x2C, dc);
-            spi.write(c >> 8, c);
-            ce.set();
-        },
-        fillRect: function (x1, y1, x2, y2, c) {
-            ce.reset();
-            spi.write(0x2A, dc);
-            spi.write((COLSTART + x1) >> 8, COLSTART + x1, (COLSTART + x2) >> 8, COLSTART + x2);
-            spi.write(0x2B, dc);
-            spi.write((ROWSTART + y1) >> 8, ROWSTART + y1, (ROWSTART + y2) >> 8, (ROWSTART + y2));
-            spi.write(0x2C, dc);
-            spi.write({ data: String.fromCharCode(c >> 8, c), count: (x2 - x1 + 1) * (y2 - y1 + 1) });
-            ce.set();
-        }
+let connect = function (spi, dc, cs, rst, callback) {
+   //var spi=options.spi, dc=options.dc, ce=options.cs, rst=options.rst;
+    var g = lcd_spi_unbuf.connect(spi, {
+        dc: dc,
+        cs: cs,
+        height: LCD_HEIGHT,
+        width: LCD_WIDTH,
+        colstart: 0,
+        rowstart: 0
     });
-    init(spi, dc, ce, rst, callback);
+    g.lcd_sleep = function(){dc.reset(); spi.write(0x10,cs);};
+    g.lcd_wake = function(){dc.reset(); spi.write(0x11,cs);};
+    g.dispinit = dispinit(spi, dc, cs, rst, ()=>{g.clear().setFont("6x8",2).drawString("SN80 Espruino",50,100);});
+    g.cmd = cmd;
+
+    //init(spi, dc, ce, rst, callback);
     return g;
 };
 /*
@@ -200,39 +145,31 @@ var img = {
   palette : new Uint16Array([0,65535,6339,61277]),
   buffer : require("heatshrink").decompress(atob("AE8LqoAD8AyrgXVGQdWM1ktMwlwM2NXwBmxvBm/M34ASgYyEM1s1GYlYGVcLGQlVM1m1GQlcM2XgM2NeM35m/ACUJMwtgGdeVGQlWGVcNM2MC6oyEq+AGdUlMwt4GVUDGQtV4Azq2ouBr/1AYNcGVULZAP+1W/aQPgEzuoBZUC6tf1QFB1X1q+ABgWqAAIGDACUJXJQyBvwlDgQzB3AFBh////+Ga2cZhdeEggzBrqbCagNVvxmhlqSEAAMK6oICg6ZB394M0ELGQwzCrwEBF4WtNoRmdZgIiHhdVuBmBH4W3M0G1RJEtqxmEgXYMz8tR4QAE0A9DMwctdRRmUgXXZg0uBQhzD7xmf2rMGhYHBhpxBMwcJbw5mXhtcBA24HwVwMwmeMzyZIl4HBBYRmDhrNfmtgHYyPCTQRmCgXcMz0LEwKZIbIRmDOARmdTJBqDqxmDhbTBMzsteQYACgaZCBgRmChXeGShmJLISZJOYV61Wq+54DhWu1EC0ABBBoIWD1XqwEqMwkq/+oBwU1LwaZGSgNYgv///1vQyD/tf9G+CgOv//6DYf1/+C+BmDlfVCoKRCrxuGHQm14FfGYP9vwOC746B9fggV9v/9XIUvv//72nMwcLv/r+onCEoKZKhde06LB1W9EwW31Eq+5mBkv+BgIjBhd+0Grv1wMwUC72gCoK3BRgKZGYQanBv4uCIwImBloCBNIJmBr2AgQ4BFIIbBlt3Mwe3BAMK7wfCFYiZGgVVq4ODDQMLHQRzBMwIVBgYJBm4TClpmDJAQVBBAMJK4YAClAFEktVBwcC/BZBAwQhBgQNCk+AhIpCgXXMwQODIAeXMwoyFMwwsBloGDG4IvBCQPYA4RdEMwO3EQYPBhpmFhegMxUA3xQEhZmBFAI/BwDoEm5mChPq1QAB1rUB65mF3RmLgdgEII5DMwJWDVAIZD+BmCy//AAR0BZo0CaYpmGmw0BMx8vMwdVAAbbBZow0B1BmLmwSDnxmGIwZmEzyZC1QnBhdYZouA3/oMy8nMxBhBAAm1Mws4l2qBAUDq/3ZreeGQsLrgGEgeCIQm19RmE3yNEZphEBMwIQBGYs1A4s4DAhABg4GDhvgRohmGgHeDIY9BMwO2GQsDrwGFZoIlDU4LtE/ECEwctMwzEEy5mCgYcDlzzCMw0C3wzCht4Mwm3KoIdChZNBMws3CYUtMwZEBCoVgCQPXEgZmCgG4D4QMBJIetDQOnAQMC6pmGOYcru5mCgCKCBgZZBMwo/BCQJzCMwevCQJJD2/+Mw0LvwCB75mDgQIBgX3EAW1TQkDxWA3jaEr////9SwfX9X19ZmGAQN/1/f05mDhdf1f3FwQmCMwku1Y/CyvAgtVAAP6B4Ur6tV/G+Mw0A3tVr+iMwcAl4cB9AcClqaEgeC34/CBYWqAAQQDlf//UKMwLxDVYf/0A9BhQIC1f/GQcAW4RmDgWoDwVXOQgATgakCABELTQkDHAjZFACk2BhaaFnAKJACCACLIJNLgXVBoZmETK0JEAfeCJYoBFwcoHolgGam+AYUvXQiaIZwjMEMysCvRYCWhu1Bw8tqqyLABMvvWq1aZMSAX4DQ1VJZoAI3v///fTJh1BqvoA4krqpLNKhO9qtX0ASNltXSIkr6trJZoAJlf+DJ7FB/QSBgWvTC4AU2tV/2q1X9qteGVUDqtVr//+oEBTC4ATmouBAAdYGVUCGQtXM1ctGYtwGVUA6oyEqwyrhJmFsAzryoyErwyrhZmF8Azr2pm/M1dcM2WAM2NYGVcDGQlXM1k1GYl4GVcC6pmxlpm/M1dwM2QyrMw1gGdm1GQdeBQg="))
 };
-/**/
-var g = connect(spi, D18, D25, D26, function() {
+
+var g = connect(SPI1, D18, D25, D26);
+
+setTimeout( function() {
   digitalWrite(D23,0);
   g.clear();
   //g.setRotation(1);
  // g.drawString("Hello",0,0);
-  //g.setFontVector(20);
+  g.setFontVector(20);
   
   g.setColor(0.5,1,1);
-  g.setFont("6x8",1);
   
   g.setFontAlign(0,0);
-  g.drawString("Espruino",120,20);
-  g.setFontVector(12);
-  g.drawString("Espruino",120,40);
-  
-  g.drawCircle(60,40,20);
-  g.fillCircle(180,40,20);
+  g.drawString("Espruino",120,120);
+  g.drawCircle(120,120,40);
   g.setColor(1,0,1);
-  g.drawRect(40,75,80,100);
-  g.fillRect(160,75,200,100);
+  g.drawCircle(120,120,80);
   g.setColor(1,1,0);
-  g.drawPoly([70,130,80,110,90,130,100,110,110,130, 110,140,70,140], true);
-  g.fillPoly([130,130,140,110,150,130,160,110,170,130, 170,140,130,140], true);
-  g.setColor(0.5,0.5,1);
-  for(let x = 90; x < 120; x+=5) {
-    g.drawLine(x, 60, x, 90);
-  }
-  for(let y = 60; y < 90; y+=5) {
-    g.drawLine(125, y, 155, y);
-  }
-  g.drawImage(img,20,144);
-  });
+  g.drawCircle(120,120,119);
+  
+  //g.drawImage(img,17,72);
+  
+  }, 1000);
+
+
 
 
 
