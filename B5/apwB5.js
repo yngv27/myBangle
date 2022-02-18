@@ -275,6 +275,7 @@ function drawDayClock() {
   const darr = [d0,d1,d2,d3,d4,d5,d6,d7,d8,d9];
   //hr = 12;
   //min = 34;
+  /*
   g.setColor(8);
   for(let r=10; r < 40; r+=4) {
     g.drawCircle(40,80,r);
@@ -282,21 +283,51 @@ function drawDayClock() {
   }
   g.setColor(7);
   g.drawCircle(40+cx(min)/2, 80+cy(min)/2, 4);
+  */
   
-  g.sc(11);
-  if(Math.floor(hr/10) > 0) {
-    setScale(0.6,0.8);
-    drawScaledPoly(d1,0,52);
-    drawScaledPoly(darr[hr%10],18,52);
-  } else {
-    setScale(0.8,0.8);
-    drawScaledPoly(darr[hr],8,52);
+  hr = 10;
+  
+  function drawHour(hr, offset) {
+    let scaleFactor = offset ? 0.5 : 1;
+    g.sc(offset ? 8 : 7);
+    let y = offset ? 30 : 20;
+
+    if(Math.floor(hr/10) > 0) {
+      setScale(0.5*scaleFactor,0.55*scaleFactor);
+      let xScaleDiff = offset ? 10 : 20;
+      drawScaledPoly(d1,22+offset,y);
+      drawScaledPoly(darr[hr%10],22+xScaleDiff+offset,y);
+    } else {
+      setScale(0.66*scaleFactor,0.55*scaleFactor);
+      drawScaledPoly(darr[hr],30+offset,y);
+    }
   }
-  g.sc(15);
-  setScale(0.5,0.55);
-  drawScaledPoly(darr[Math.floor(min/10)], 42,52);
-  drawScaledPoly(darr[Math.floor(min%10)], 62,52);
-  g.flip();
+  function drawMinute(min, offset) {
+    let y = offset ? 80 : 64;
+    let xScaleDiff = offset ? 18 : 36;
+    if(offset) {
+      g.sc(8);
+      setScale(0.4,0.4);
+    } else {
+      g.sc(15);
+      setScale(0.8,0.8);
+    }
+    drawScaledPoly(darr[Math.floor(min/10)], 10+offset, y);
+    drawScaledPoly(darr[Math.floor(min%10)], 10+xScaleDiff+offset, y);
+    g.flip();
+  }
+  
+  let alt = (hr == 1) ? 12 : hr-1;
+  drawHour(alt, -24);
+  alt = (hr == 12) ? 1 : hr +1;
+  drawHour(alt, 40);
+  drawHour(hr, 0);
+  
+  alt = (min == 0) ? 59 : min-1;
+  drawMinute(alt, -10);
+  alt = (min == 59) ? 0 : min+1;
+  drawMinute(alt, 40);
+  drawMinute(min, 0);
 
     // TOP BAR
   //g.setFont("Dylex7x13");
