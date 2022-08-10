@@ -49,7 +49,7 @@ var c = gebi("canvas");
 var ctx = c.getContext("2d");
 c.width = window.innerWidth;
 c.height = window.innerHeight;
-var imgURL = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/131045/colorful-triangles.jpg';
+var imgURL = 'montserrat.png'; //'https://s3-us-west-2.amazonaws.com/s.cdpn.io/131045/colorful-triangles.jpg';
 
 loadImage(imgURL);
 
@@ -96,12 +96,13 @@ function process() {
     options.rgbaOut = rgba;
     options.width = c2.width;
     options.height = c2.height;
+    // we expect black on white text, but need white on black
     options.inverted = true;
-	options.compression = true;
+    options.compression = false;
     options.mode = 'opt4bit'; //'1bit'; //opt4bit';
     let res = imageconverter.RGBAtoString(rgba, options)+",\n";
     // bug in Espruino
-    res = res.replace('(atob','atob');
+    //res = res.replace('(atob','atob');
     imgstr += res;
   }
   imgstr += "][d];\n}"
