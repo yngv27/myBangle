@@ -99,6 +99,7 @@ function process() {
     // we expect black on white text, but need white on black
     options.inverted = true;
     options.compression = false;
+    options.output = "string";
     options.mode = 'opt4bit'; //'1bit'; //opt4bit';
     let res = imageconverter.RGBAtoString(rgba, options)+",\n";
     // bug in Espruino
