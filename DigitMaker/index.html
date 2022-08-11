@@ -112,7 +112,7 @@ let
     let res = imageconverter.RGBAtoString(rgba, options);
     imgstr += res+";\n";
     imgstr += "if(WRITE)_S.write(filename, digit, offset, filesize);\n";
-    imgstr += "print(`_S.read("${filename}", ${offset}, ${digit.length}); //${cnt++}`);\n";
+    imgstr += "print(`_S.read('${filename}', ${offset}, ${digit.length}); //${cnt++}`);\n";
     imgstr += "offset += digit.length;\n";
     imgstr += "offstr += `${offset}, `;";
     imgstr += "lenstr += `${digit.length}, `;";
