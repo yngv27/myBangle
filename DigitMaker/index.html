@@ -111,11 +111,11 @@ let
     options.mode = 'opt4bit'; //'1bit'; //opt4bit';
     let res = imageconverter.RGBAtoString(rgba, options);
     imgstr += res+";\n";
-    imgstr += "if(WRITE)_S.write(filename, digit, offset, filesize);\n";
+    imgstr += "if(WRITE)_S.write(filename, digit, offset" + (d ? ", filesize);\n" : ");\n");
     imgstr += "print(`_S.read('${filename}', ${offset}, ${digit.length}); //${cnt++}`);\n";
-    imgstr += "offset += digit.length;\n";
     imgstr += "offstr += `${offset}, `;";
     imgstr += "lenstr += `${digit.length}, `;";
+    imgstr += "offset += digit.length;\n";
   }
   imgstr += "print(`Filesize: ${offset}`);\n";
   imgstr += "print(`Offsets: [${offstr}]`);\n";
