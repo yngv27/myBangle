@@ -23,7 +23,7 @@ table {
     </td>
   </tr>
 </table>
-<textarea id="resdata" cols=80></textarea>
+<textarea id="resdata" cols=80 rows=16></textarea>
  
  <script>
  function gebi(id) {
@@ -85,9 +85,17 @@ function loadImage(src){
 }
 
 function process() {
-  let options = {}, imgstr = "function getDigit(d) {\n return [";
+  let options = {}, imgstr = `let WRITE = false;
+let offset=0;
+let cnt=0;
+let filename = "mmmmm";
+let filesize = ????;
+let offstr = "";
+let lenstr = "";
+let 
+`;
   for(let d=0; d<10; d++) {
-    //imgstr += `return `;
+    imgstr += `digit = `;
     gebi('idx').value = d;
     update();
     var imageData = ctx2.getImageData(0, 0,  c2.width, c2.height);
@@ -101,12 +109,17 @@ function process() {
     options.compression = false;
     options.output = "string";
     options.mode = 'opt4bit'; //'1bit'; //opt4bit';
-    let res = imageconverter.RGBAtoString(rgba, options)+",\n";
-    // bug in Espruino
-    //res = res.replace('(atob','atob');
-    imgstr += res;
+    let res = imageconverter.RGBAtoString(rgba, options);
+    imgstr += res+";\n";
+    imgstr += "if(WRITE)_S.write(filename, digit, offset, filesize);\n";
+    imgstr += "print(`_S.read("${filename}", ${offset}, ${digit.length}); //${cnt++}`);\n";
+    imgstr += "offset += digit.length;\n";
+    imgstr += "offstr += `${offset}, `;";
+    imgstr += "lenstr += `${digit.length}, `;";
   }
-  imgstr += "][d];\n}"
+  imgstr += "print(`Filesize: ${offset}`);\n";
+  imgstr += "print(`Offsets: [${offstr}]`);\n";
+  imgstr += "print(`Lengths: [${lenstr}]`);\n";
   gebi('resdata').value = imgstr;
 }
 
@@ -126,8 +139,6 @@ gebi('imgEnd').addEventListener('change', () => {
 })
 
 console.log('Code With ❤ Always, @tmrDevelops');
-
-
- </script>
+</script>
 </body>
 </html>
