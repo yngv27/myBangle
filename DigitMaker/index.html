@@ -84,7 +84,7 @@ function loadImage(src){
   img.src = src;
 }
 
-function process() {
+function process_binary() {
   let options = {}, imgstr = `let WRITE = false;
 let offset=0;
 let cnt=0;
@@ -121,6 +121,32 @@ let
   imgstr += "print(`Filesize: ${offset}`);\n";
   imgstr += "print(`Offsets: [${offstr}]`);\n";
   imgstr += "print(`Lengths: [${lenstr}]`);\n";
+  gebi('resdata').value = imgstr;
+}
+	 
+function process() {
+  let options = {}, imgstr = "function getDigit(d) {\n return [";
+  for(let d=0; d<10; d++) {
+    //imgstr += `return `;
+    gebi('idx').value = d;
+    update();
+    var imageData = ctx2.getImageData(0, 0,  c2.width, c2.height);
+
+    var rgba = imageData.data;
+    options.rgbaOut = rgba;
+    options.width = c2.width;
+    options.height = c2.height;
+    options.inverted = true;
+    options.compression = false;
+    options.output = "object";
+    options.transparent = true;
+    options.mode = 'opt4bit'; //'1bit'; //opt4bit';
+    let res = imageconverter.RGBAtoString(rgba, options)+",\n";
+    // bug in Espruino
+    //res = res.replace('(atob','atob');
+    imgstr += res;
+  }
+  imgstr += "][d];\n}"
   gebi('resdata').value = imgstr;
 }
 
