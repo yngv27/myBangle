@@ -3,8 +3,10 @@ let battLevel = () => {return 0;};
 
 eval(_S.read("lcd.js"));
 g = GC9A01();
+eval(_S.read("accel.js"));
+ACCEL.init();
 
-E.setTimeZone(-5);
+E.setTimeZone(-4);
 // Bangle up
 let batLo = 0.542, batHi = 0.721;
 E.getBattery = () => {
@@ -34,9 +36,6 @@ Graphics.prototype.setFontBlocky = function() {
     this.setFontCustom(E.toString(font2), 32, E.toString(widths2), 256 + 15);
 };
 
-let EMULATOR = false;
-// which Bangle?
-const isB2 = (process.env.BOARD == 'BANGLEJS2');
 
 const MY_HEIGHT = 70;  // in inches..  divide by 2.54 if cm
 const MY_WEIGHT = 170; // in pounds.. multipley by 2.2 if kg
@@ -52,8 +51,8 @@ function relX(x) { return Math.floor(x*wX); }
 function relY(y) { return Math.floor(y*wY); }
 
 //require("knxt.fnt").add(Graphics);
-//g.setFont("Omnigo",isB2 ? 1 : 2);
-g.setFont("Blocky",isB2 ? 1 : 1);
+g.setFont("Omnigo", 1);
+//g.setFont("Blocky", 1);
 
 const imgCalorie = {
   width : 16, height : 22, bpp : 3,
@@ -79,8 +78,8 @@ const imgPulse = {
 function drawBattery(x,y) {
   // x,y is top/left
   g.setColor(fgc);
-  let segX = isB2 ? 2 : 3;
-  let segY = isB2 ? 12 : 18;
+  let segX = 3;
+  let segY = 18;
   let yinc = segY / 4;
   let xinc = (segX + 3) * 4;
   g.drawPoly([
@@ -143,7 +142,7 @@ function drawBkgd(nm) {
   // Bangle1 and B2 if night mode
   print(`dBkgd ${nm}`);
   bgc = BLACK; fgc = WHITE; 
-  if(!nm && isB2)  { bgc = WHITE; fgc = BLACK; }
+  
   g.setBgColor(bgc);
   g.clear();
   g.drawImage(imgCalorie, relX(0.17), relY(0.68));
@@ -157,20 +156,6 @@ function drawBkgd(nm) {
 let b2NightMode = false;
 
 function drawClock(d, nm) {
-  // ignore the watch position nightmode for B2
-  if(isB2) {
-    if(d.hour > 17 || d.hour < 7) { 
-      if(!b2NightMode) {
-        b2NightMode = true;
-        drawBkgd(b2NightMode);
-      }
-    } else {
-      if(b2NightMode) {
-        b2NightMode = false;
-        drawBkgd(b2NightMode);
-      }
-    }
-  }
 
   // console.log("colon time");
   if(d.sec % 2 ) g.setColor(fgc); else g.setColor(bgc);
@@ -216,7 +201,7 @@ function calcCalories(steps) {
 
 function drawData(d, nm) {
   //console.log(d);
-  let dy = isB2 ? 2 : 20;
+  let dy = 20;
 
   g.setColor('#ffff80');
   g.setFontAlign(1,-1);
@@ -276,7 +261,10 @@ var currscr= -1;
 var currint=0;
 
 function timeOn(){
-  if (g.isOn) return;
+  if (g.isOn || !ACCEL.isFaceUp()) {
+    //print("Sorry.");
+    return;
+  }
   g.lcd_wake(); 
   g.isOn =true;
   analogWrite(D24, 0.75);
@@ -288,17 +276,15 @@ function timeOn(){
 
 setWatch(timeOn,BTN1,{ repeat:true, edge:'rising',debounce:25 });
 
-/*
+
 ACCEL.on('faceup',()=>{
-  print('FACE UP');
-  timeOn();
+  //print('FACE UP');
+  setTimeout(timeOn, 400);
 });
-*/
+
 /*
 setInterval(ACCEL.isFaceUp, 1300);
 */
 
 drawBkgd(false);
 timeOn();
-
-
