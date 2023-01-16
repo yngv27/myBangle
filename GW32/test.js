@@ -265,15 +265,31 @@ function GC9A01(CS, IO, CLK, DC, RST) {
     D40, D41, D42, D43, D44, D45, D46, D47
     ];
 
+let plbl = '';
+function makeLabels() {
+  for(let p=0; p<pins.length; p++) {
+    plbl += (' '+pins[p].toString()).slice(-3);
+  }
+}
 
-  
-  let plbl = 
-   " D1,  D2,  D3,  D4,  D5,  D6,  D9, "+
-   "D10, D11, D12, D13, D17, D18, D19, "+
-   "D20, D21, D23, D26, D27, D28, D29, "+
-   "D30, D31, D33, D34, D35, D39, "+
-   "D40, D41, D42, D43, D44, D45, D46, D47, "
-    ;
+function h() {
+  makeLabels();
+  out1 = '';
+  out2 = '';
+  out3 = '';
+  for(let p=0; p < pins.length; p++) {
+    if(p%4 == 0) {
+      out1 += ' ';
+      out2 += ' ';
+      out3 += ' ';
+    }
+    out1 += plbl.charAt(p*3);
+    out2 += plbl.charAt(p*3+1);
+    out3 += plbl.charAt(p*3+2);
+
+  }
+  print (out1); print(out2); print(out3);
+}
 
   let out1 = '';
   let out2 = '';
@@ -370,23 +386,7 @@ function GC9A01(CS, IO, CLK, DC, RST) {
   
   
     
-    function h() {
-      out1 = '';
-      out2 = '';
-      out3 = '';
-      for(let p=0; p < pins.length; p++) {
-        if(p%4 == 0) {
-          out1 += ' ';
-          out2 += ' ';
-          out3 += ' ';
-        }
-        out1 += plbl.charAt(p*5);
-        out2 += plbl.charAt(p*5+1);
-        out3 += plbl.charAt(p*5+2);
-    
-      }
-      print (out1); print(out2); print(out3);
-    }
+
     
     function d() {
       out1 = '';
@@ -523,15 +523,6 @@ function delay(ms) {
       out3 = ' ';
     }
   }
-let pins = [
-    D0, D1, D2, D3, D5, D6, D9,
-    D10, D11, D12, D13, D17, D18, D19,
-    D20, D21, D23, D26, D28, D29,
-    D30, D33, D34, D35, D39,
-    //D40, D41, 
-    D42, D43, D45, D46, D47,
-    D16, D37, D38, D36
-    ];
 
 
 
@@ -598,15 +589,6 @@ function detect(i2c,first, last) {
 // ESP8266 
 //I2C1.setup({sda: D2, scl: D4} );
 //console.log('I2C detect as array:',detect(I2C1));
-
-// Usage
-let pinBusy = [];
-  
-  function resetBusy() {
-    for(let i = 0; i< pins.length; i++) {
-      pinBusy[i] = false;
-    }
-  }
 
 // NEXT: 3rd loop, go through another round of pins, setting and resetting
 /*
@@ -713,6 +695,48 @@ for(let CS=5; CS < 6; CS++) {
           print(`CS:${pins[CS]} SO:${pins[SO]} SI:${pins[SI]} CLK:${pins[CLK]}`);
           print(`90=${cmd90}`);
           print(`9f=${cmd9f}`);
+        }
+        delay(99);
+        pinBusy[CLK] = false;
+      }
+      pinBusy[SO] = false;
+    }
+    pinBusy[SI] = false;
+  }
+  pinBusy[CS] = false;
+}
+
+for(let CS=0; CS < pins.length; CS++) {
+  resetBusy();
+  pinBusy[CS] = true;
+  //print(`CS=${CS}`);
+  for(let SI= 0 ; SI < pins.length; SI++) {
+    if(pinBusy[SI]) continue;
+    pinBusy[SI] = true;
+    print(`${Date().toString().substring(16,24)} CS=${CS} SI = ${SI}`);
+    for(let SO=0; SO < pins.length; SO++) {
+      if(pinBusy[SO]) continue;
+      pinBusy[SO] = true;
+      for(let CLK=0; CLK < pins.length; CLK++) {
+        if(pinBusy[CLK]) continue;
+        pinBusy[CLK] = true;
+        //print(`CLK = ${CLK}`);
+        var spif=new SPI(); 
+        pins[CS].set();
+        spif.setup({sck:pins[CLK],miso:pins[SO],mosi:pins[SI],mode:0});
+        //spif.send([0xb9],cs); //put to deep sleep
+
+        spif.send([0xab],pins[CS]); // wake from deep sleep
+        delay(20);
+        cmdAB = spif.send([0xab,0,0,0,0],pins[CS]);
+        cmd90 = spif.send([0x90,0,0,1,0,0],pins[CS]);
+        cmd9f = spif.send([0x9f,0,0,0],pins[CS]);
+
+        if((cmd9f[3] > 16 && cmd9f[3] < 32) || cmd9f[1] == 0x68) {
+          Bangle.buzz();
+          print(`CS:${pins[CS]} SO:${pins[SO]} SI:${pins[SI]} CLK:${pins[CLK]}  AB=${cmdAB}`);
+          print(`90=${cmd90}`);
+          print(`9F=${cmd9f}`);
         }
         delay(99);
         pinBusy[CLK] = false;

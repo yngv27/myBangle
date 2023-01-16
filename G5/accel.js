@@ -1,4 +1,4 @@
-/KXTJ3   
+//KXTJ3   
 
 //var ACCELPIN = D8;
 let ACCELADDR = 0x0e;

@@ -1,0 +1,149 @@
+<html>
+<head>
+<style>
+#data {
+  font-size: 8pt;
+}
+table {
+  paddiing: 16px;
+  width: 360px;
+}
+</style>
+</head>
+
+<body>
+    <div id='dataBlock'>
+      <span id="dataLabel">Data: <br/></span>
+  <textarea id='data' cols='128' rows='16'></textarea>
+    </div>
+    <table border="0"><tr>
+      <td>Img width:<br/><INPUT TYPE="NUMBER" MIN="0" MAX="1024" STEP="1" VALUE="16" SIZE="32" name="imgWidth" id="imgWidth"></td>
+      <td>Image BPP: <span id="lblbpp">?</span><br/><input type="range" min="0" max="5" value="0" name="bpp" id="bpp"></td>
+      <td><input type="button" onclick="process()" value="Process"/></td>
+    </tr></table>
+    <div id="results"></div> 
+	<script>
+const bppVals = [1,2,4,8,16,24];
+function gebi(id) {
+  return document.getElementById(id);
+}
+
+function hideData() {
+  //alert("onload");
+  let dataEl = gebi('data');
+  if(dataEl.rows == 1) dataEl.rows = 16;
+  else dataEl.rows = 1;
+}
+
+function p16top24(c16) {
+   return ((c16 & 0xf800) << 8) + ((c16 & 0x7e0) << 5) + ((c16 & 0x1f) << 3);
+}
+function pal16() {
+  let r2 = 16 << 11, g2 = 32 << 5, b2 = 16;
+  let rf = r2 * 2 - 1, gf = g2 * 2 - 1, bf = b2 * 2 - 1;
+  return [
+      0,b2,g2,b2+g2, r2, r2+b2, r2+g2, r2+g2+b2,
+      bf, gf, bf+gf, rf, rf+bf, rf+gf, rf+bf+gf
+    ];
+}
+
+function isBit(val, bit) {
+  return(val & (128 >> bit) ? 1 : 0);
+}	
+
+function getVal124(buf, pixoff, bpp) {
+  bufidx = Math.floor(pixoff * bpp / 8);
+  bit = pixoff % (8/bpp) * bpp;
+  col = isBit(buf.charCodeAt(bufidx), bit);
+  if(bpp > 1)
+    col += col + isBit(buf.charCodeAt(bufidx), ++bit);
+  if(bpp > 2) {
+    col += col+ isBit(buf.charCodeAt(bufidx), ++bit);
+    col += col+ isBit(buf.charCodeAt(bufidx), ++bit);
+   }
+  return col;
+}
+
+function getColor(buf, pixidx, bpp) {
+  bpp = bpp * 1;
+  let bufidx = 0;
+  //alert(bpp);
+  switch(bpp) {
+    case 1:
+      return (getVal124(buf, pixidx, bpp) == 1) ? 0xffffff : 0;
+    case 2:
+      return [ 0, 0x404040, 0x808080, 0xffffff][getVal124(buf, pixidx, bpp) ];
+    case 4:
+      return p16top24(pal16()[getVal124(buf, pixidx,bpp) ]);
+    case 8:
+      let wsc = [0, 0x33, 0x66, 0x99, 0xcc, 0xff];
+      let v = buf.charCodeAt(pixidx);
+      return (wsc[Math.floor(v/36)] << 16) + (wsc[Math.floor((v%36)/6)] << 8) + wsc[v%6];
+      //alert(v+': 0x'  +r.toString(16));
+    case 16:
+      bufidx = bpp/8 * pixidx;
+      //console.log(bufidx +":");
+      let c16 = buf.charCodeAt(bufidx) * 256 + buf.charCodeAt(bufidx+1);
+      // 16 to 24 bit conversion
+      return(p16top24(c16)); 
+	case 24:
+      bufidx = bpp/8 * pixidx;
+      let c24 = buf.charCodeAt(bufidx);
+      c24 = c24 *= 256 +  buf.charCodeAt(++bufidx);
+      c24 = c24 *= 256 +  buf.charCodeAt(++bufidx);
+      return(c24);
+      break;
+   }
+   return "woops";
+}
+	  
+
+function process() {
+  let txt = gebi('data').value;
+  let dataStr = '';
+  let lines = txt.split("\n");
+  for(let l = 0; l < lines.length; l++) {
+    if (lines[l].indexOf(' ') > 0 ) {
+      lines[l] = lines[l].split(' ')[3];
+    }
+    if(lines[l].length > 0)
+      dataStr += atob(lines[l]);
+  }
+  //alert(dataStr.length + ": "+dataStr);
+  let bpp = bppVals[gebi('bpp').value];
+  let imgWidth = gebi('imgWidth').value;
+  //alert(`${bpp} : ${imgWidth}`);
+  if(bpp == "" || imgWidth == "") {
+    alert('need bpp and img width');
+    return;
+  }
+  let imgHeight = (dataStr.length * 8 / bpp) / imgWidth;
+  //alert(`new canvas:  ${imgWidth} x ${imgHeight}`);
+  gebi('results').innerHTML = `<canvas id="myCanvas" width="${imgWidth*2}" height="${imgHeight*2}" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.
+</canvas>`;
+  let ctx = gebi('myCanvas').getContext("2d"); 
+  // loop through all the canvas pixels
+  for(let y=0; y< imgHeight; y++) {
+    var imgData = ctx.createImageData(imgWidth, 1);
+    for(let x=0; x < imgWidth; x++) {
+      let pixidx = y * imgWidth + x;
+      let col = getColor(dataStr, pixidx, bpp);
+      //if((x % 8) == 0) console.log(pixidx + ': 0x'+ col.toString(16)); 
+      ctx.fillStyle = `rgba(${Math.floor(col / 0x10000)},${Math.floor((col % 0x10000) / 0x100)},${col % 0x100},1`;
+      ctx.fillRect( x*2, y*2, 2, 2 );
+      /**/
+    }
+  //ctx.putImageData(imgData, 0, y);
+  }
+}
+ 
+gebi('dataLabel').addEventListener('click', hideData, false);
+gebi('bpp').addEventListener('change', () => {
+  gebi('lblbpp').innerHTML= bppVals[gebi('bpp').value];
+  process();
+});
+gebi('imgWidth').addEventListener('change', process);
+	</script>
+  </body>
+</html>
