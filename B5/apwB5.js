@@ -1,3 +1,5 @@
+Modules.addCached("FontDylex7x13",function(){var a=atob("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"),
+b=atob("AwIEBgYIBwIEBAYGAwYCBgYGBgYHBgYGBgYCAwUGBQYIBwcHBwcGBwcEBgcGBwcHBgcHBwgHBwgHCAcEBgQGCAMGBgYGBgYGBgMFBgMIBgYGBgYGBgYGCAYGBgYCBggABwADBgQGBgYGBwcECAAHAAADAwUFBgYIBQgGBAgABggAAgYGCAgCBgQIBQYFAAgIBQYFBQMIBwQDBAUGBwcIBgcHBwcHBwgHBgYGBgQEBAQIBwcHBwcHBgcHBwcHCAYIBgYGBgYGCAYGBgYGAwMEBAYGBgYGBgYGBgYGBgYGBgY=");exports.add=function(c){c.prototype.setFontDylex7x13=function(){this.setFontCustom(a,32,b,13)}}});
 const _Storage = require('Storage');
 eval(_Storage.read("B5.driver.js"));
 setTimeout(ACCEL.init, 2000);
@@ -81,7 +83,7 @@ function vibrat(lvl, cnt, onms, offms) {
 }
 function notify() {
   logD('notify START');
-  vibrat(0.5, 4, 400, 200);
+  vibrat(0.5, 3, 300, 150);
   logD('notify END');
 }
 
@@ -99,11 +101,11 @@ let showMsg = (title, msg) => {
   g.fillRect(0,0,79,159);
   g.sc(15);
   g.setFontAlign(0,-1);
-  let y = 4;
+  let y = 8 +  g.getFontHeight();
   if(title) {
-    g.drawString('* '+title+' *', 40, y);
-    g.drawString('* '+title+' *', 41, y);
-    y = 20; //g.getFontHeight();
+    g.drawString('=== '+title+' ===', 40, y);
+    g.drawString('=== '+title+' ===', 41, y);
+    y += g.getFontHeight();
     logD(`t:${title}`);
   }
   let lines = msg.split("|");
@@ -148,6 +150,8 @@ let scheduleAlarms = () => {
 };
 //loadAlarms();
 var la = loadAlarms;
+let schAls = (als) => {_Alarms = als; scheduleAlarms(); };
+
 /*
 ********************************************* END ALARMS *******************************
 */
@@ -207,10 +211,6 @@ ACCEL.on("faceup", ()=>{
 
 function drawDayClock() {
   g.on();
-  if(inAlarm) {
-    logD(`inAlarm - returning`);
-    return;
-  }
   //logD('checkClock START');
   let d=Date();
   let dt=d.toString().substr(0,10);
@@ -224,7 +224,17 @@ function drawDayClock() {
     logD(`clock unchanged - returning`);
     return;
   }
+  lastTime = tm;
+
   logD(`tm = ${tm}; lastTime = ${lastTime}`);
+  
+  if(inAlarm) {
+    g.setBgColor(0);
+    g.drawString(`  ${tm}  `, 40, 4, false);
+    g.drawString(`  ${tm}  `, 41, 4, true).flip();
+    return;
+  }
+
 
   let nm = false;
   
@@ -243,7 +253,6 @@ function drawDayClock() {
   xmid = g.getWidth()/2;
 
   g.clear();
-  lastTime = tm;
   console.log("DrawClock: time to draw");
 
   rotate = false;
@@ -275,6 +284,7 @@ function drawDayClock() {
   const darr = [d0,d1,d2,d3,d4,d5,d6,d7,d8,d9];
   //hr = 12;
   //min = 34;
+  /* silly animation
   g.setColor(8);
   for(let r=10; r < 40; r+=4) {
     g.drawCircle(40,80,r);
@@ -282,6 +292,7 @@ function drawDayClock() {
   }
   g.setColor(7);
   g.drawCircle(40+cx(min)/2, 80+cy(min)/2, 4);
+  */
   
   g.sc(11);
   if(Math.floor(hr/10) > 0) {
@@ -350,7 +361,7 @@ function drawNightClock(d) {
 function clock(){
   volts=0;
   showClockTO = 0;
-  return setInterval(checkFaceup,777);
+  return setInterval(checkFaceup,555);
 }
 
 function sleep(){
@@ -447,7 +458,4 @@ BUTTON.on('dbltap',()=>{
   console.log('dbltap');
   nextScreen();
 });
-
-
-
-
+Bangle = { buzz:buzz};
