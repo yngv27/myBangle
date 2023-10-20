@@ -118,7 +118,7 @@ function clock() {
   W.drawData(dt);
 }
 
-const scrs=[ "watch1.js"]; //, "watch2.js", "night.js", "analog1.js"];
+const scrs=[ "watch1.js", "analog1.js"];
 let scridx = -1;
 let W={};
 
@@ -135,14 +135,15 @@ let nextScreen = () => {
   showNotes();
 };
 // make sure it's ready
-nextScreen();
-
-
+setTimeout(nextScreen, 500);
 
 let ival1 = 0; 
 let ival2 = 0;
 
-wOS.on("wake", clock);
+// for rgular LCD
+// wOS.on("wake", clock);
+// for always-on
+setInterval(()=>{clock(); g.flip();}, 60000);
 
 // IF NOT NIGHT MODE
 ival2 = setInterval(()=> {
