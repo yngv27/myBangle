@@ -1,0 +1,131 @@
+  <html>
+<head>
+  <script src="https://espruino.com/js/heatshrink.js"></script>
+  <script src="https://espruino.com/js/imageconverter.js"></script>
+  <style>
+  body {
+  background-color: #e0e0e0;
+}
+table {
+  border: 4px solid #808080;
+}
+  </style>
+</head>
+<body>
+<table border=1>
+  <tr><td><canvas id='canvas'></canvas></td>
+  <td>
+      Index (digit): <span id="lblidx">0</span><br/><input type="range" min="0" max="9" value="0" name="bpp" id="idx"><br/>
+    Img start:<br/><INPUT TYPE="NUMBER" MIN="0" MAX="840" STEP="1" VALUE="0" SIZE="32"  id="imgStart"><br/>
+    Img end:<br/><INPUT TYPE="NUMBER" MIN="0" MAX="840" STEP="1" VALUE="0" SIZE="32"  id="imgEnd"><br/>
+    <canvas id="digit"></canvas><br/>
+      <input type="button" onclick="process()" value="Process"/><br/>
+    </td>
+  </tr>
+</table>
+<textarea id="resdata" cols=80></textarea>
+ 
+ <script>
+ function gebi(id) {
+  return document.getElementById(id);
+}
+
+function update() {
+  let idx = gebi('idx').value;
+  s= digitStart[idx];
+  e = digitEnd[idx];
+  h = c.height;
+  imgStart.value = s;
+  imgEnd.value = e;
+  c2 = gebi('digit');
+  c2.width = e - s;
+  c2.height = h;
+  ctx2 = c2.getContext('2d');
+  ctx2.drawImage(c, s, 0, e-s, h, 0, 0, e-s, h)
+}
+
+let digitStart = [], digitEnd = [];
+var c = gebi("canvas");
+var ctx = c.getContext("2d");
+c.width = window.innerWidth;
+c.height = window.innerHeight;
+var imgURL = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/131045/colorful-triangles.jpg';
+
+loadImage(imgURL);
+
+window.addEventListener('paste', function(e){
+	if(e.clipboardData == false) return false; 
+  var imgs = e.clipboardData.items;
+  if(imgs == undefined) return false;
+    for (var i = 0; i < imgs.length; i++) {
+        if (imgs[i].type.indexOf("image") == -1) continue;
+          var imgObj = imgs[i].getAsFile();
+          var url = window.URL || window.webkitURL;
+          var src = url.createObjectURL(imgObj);
+          ctx.clearRect(0,0,c.width,c.height);
+          loadImage(src);
+        }
+	  });
+
+function loadImage(src){
+  var img = new Image();
+  img.onload = function(e) {
+    c.width = img.width;
+    c.height = img.height;
+    ctx.drawImage(img,0,0);
+    //c.width = img.width;
+    //c.height = img.height;
+    for(let d=0; d< 10; d++) {
+      digitStart[d] = Math.floor(img.width/10*d);
+      digitEnd[d] = Math.floor(img.width/10*(d+1));
+    }
+    update();
+  };
+  img.src = src;
+}
+
+function process() {
+  let options = {}, imgstr = "function getDigit(d) {\n return [";
+  for(let d=0; d<10; d++) {
+    //imgstr += `return `;
+    gebi('idx').value = d;
+    update();
+    var imageData = ctx2.getImageData(0, 0,  c2.width, c2.height);
+
+    var rgba = imageData.data;
+    options.rgbaOut = rgba;
+    options.width = c2.width;
+    options.height = c2.height;
+    options.inverted = true;
+	options.compression = true;
+    options.mode = 'opt4bit'; //'1bit'; //opt4bit';
+    let res = imageconverter.RGBAtoString(rgba, options)+",\n";
+    // bug in Espruino
+    res = res.replace('(atob','atob');
+    imgstr += res;
+  }
+  imgstr += "][d];\n}"
+  gebi('resdata').value = imgstr;
+}
+
+gebi('idx').addEventListener('change', () => {
+  gebi('lblidx').innerHTML = gebi('idx').value;
+  update();
+});
+gebi('imgStart').addEventListener('change', () => {
+  let idx=gebi('idx').value;
+  digitStart[idx] = gebi('imgStart').value;
+  update();
+})
+gebi('imgEnd').addEventListener('change', () => {
+  let idx=gebi('idx').value;
+  digitEnd[idx] = gebi('imgEnd').value;
+  update();
+})
+
+console.log('Code With ❤ Always, @tmrDevelops');
+
+
+ </script>
+</body>
+</html>
