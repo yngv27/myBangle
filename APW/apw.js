@@ -140,7 +140,7 @@ setTimeout(nextScreen, 500);
 let ival1 = 0; 
 let ival2 = 0;
 
-// for rgular LCD
+// for regular LCD
 // wOS.on("wake", clock);
 // for always-on
 setInterval(()=>{clock(); g.flip();}, 60000);
