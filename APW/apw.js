@@ -1,6 +1,6 @@
 // boards that deviate from our program outline
 _C = {
-    alwaysOn: ["CV16"]
+    alwaysOn: ["CV16", "QY03X"]
 };
 
 /*
@@ -15,7 +15,6 @@ Graphics.prototype.setFontOmnigo = function() {
     this.setFontCustom(atob('AAAAAAAAB/QAAcAAAHAAAAKAPgCgD4AoAAAZASQf8EkBMAAAQwUwKwC0A1AygwgAAM4JmE5BnAGQAAcAAAA4BjBAQAAQEGMA4AAAqAOAHAFQAAAQAIAfACABAAAABoA4AACABAAgAQAAAAYAMAAAHAcBwAAAP4ISERCQg/gAAIAP+AAAAAgwgoQkIiDhAAAgggISEJCDeAAAHAMgIQP+AEAAB4gkISEJCEeAAA/gkISEJCAeAABAAgYQwJgHAAAA3gkISEJCDeAAA8AhIQkISD+AAAAAMwGYAAAAAzQZwAAAAAgA4A2AxgQQAABQAoAUAKAAAIIGMBsAcAEAAAIAIAENCIA4AAAHwEEEBCchRQooXkEYDEA8AAAB4HQOIBkAOABwAAf8IiERCIg8QDwAAH8EBCAhAQgIIIAAH/CAhAQgIIED8AAD/hEQiIREICAAD/hEAiARAIAAAB/BAQgIREIiCeAAB/wCABAAgAQD/gAAAAf8AAAAABAAQAIf4AAH/AYASAQgQIACAAD/gAQAIAEACAAD/gwAGAAwBgDAD/gAA/4IADAAYACB/wAAP4ICEBCAhAQfwAAP+EICEBCAhAPAAAD+CAhAQgoQIH6AAAAB/whAQgIoESBwgAAYQSEIiEJBDAAAgAQAP+EACAAAA/wAEACABABB/wAAeAA4ADAGAMA4AAAPAAYADgOAA4BgDAGAAABgwIgDgBwBEDBgAA4ACAA+AQAwBgAAAQMIKEJCIhIQ4IAAP+EBAABwAGAA8AAEBD/gAAIAIAIAEABAAQAAAAEACABAAgAQAIAAMABAAAADgKIFECiA/AAB/wEIEECCA+AAAPgIIEECCAiAAAPgIIEEBCH/AAAPgJIEkCSA4AAAIAf4SAIAAAAfAQUIKELD/AAD/gIAIAEAB+AAC/gAAACABL/AAD/gGAEgEIACAAD/gAAP4CACAA/AgAQAH4AAD+AgAgAQAH4AAB8BBAggQQHwAAD/hCAggQQHwAAB8BBAggQgP+AAD+AgAgAAAEIFECSBGAAAQA/wEEAAB+AAgAQAQH8AABwAGAAwBgHAAABwAGAAwDgAMAYBwAAAYwCgAgAoBjAAAfgAIAFAFB/AAAQwJoFEDCAAAIA7ggIAAP+AACAg7gCAAACACABAAQAIAIAAAAAAAAAAAA=='), 32, atob('AwIEBgYIBgIEBAUGAwUDBAYEBgYGBgYGBgYEBQYFBgYLBwcHBwcGBwcEBQcGCAcHBwcHBgYHBwkHBwcDBAMHBwMGBgYGBgUGBgIEBgIIBgYGBgQFBAYGCAYGBQQCBAc='), 256 + 13);
 };
 g.setFontOmnigo();
-
 g.setFontAlign(0,-1);
 
 let logD = (msg) => { console.log(msg); };
@@ -54,7 +53,7 @@ let alarmTOs = [];
 function showAlarm(msg) {
     console.log(`alarming w ${msg}`);
     inAlarm = true;
-    showMsg({text:msg});
+    showMsg({title: "ALARM", text:msg});
     alarm();
 }
 
@@ -79,7 +78,7 @@ let scheduleAlarms = (als) => {
 
 let showNotes = () => {
     if((_tidBits.length > 0) && (_tidBits[0].length > 0)) {
-      showMsg({text:_tidBits[0]});
+      showMsg({title: "Note", text:_tidBits[0]});
       return true;
     }
     return false;
@@ -105,10 +104,12 @@ function clock() {
     let dt= {
         niceDate: Date().toString().substring(0,10),
         tm: d[4].substring(0,5),
-        hr: d[4].substring(0,2),
-        min: d[4].substring(3,5),
+        hr: d[4].substring(0,2) ,
+        hr24: d[4].substring(0,2),
+        min: parseInt(d[4].substring(3,5)),
         sec: d[4].substring(6,8),
     }
+    //logD(`tm = ${dt.tm}; lastTime = ${lastTime}`);
     if (dt.tm == lastTime) {
         logD(`clock unchanged - returning`);
         return;
@@ -120,12 +121,10 @@ function clock() {
         lastDate = d[2];
     }
 
-    logD(`tm = ${dt.tm}; lastTime = ${lastTime}`);
-        
-    dt.isPM = dt.hr > 11;
-    dt.hr %= 12;
-    if (dt.hr === 0) dt.hr = 12;
-    dt.min = parseInt(dt.min);
+    dt.isPM = dt.hr24 > 11;
+    if (!(dt.hr %= 12)) dt.hr = 12;
+//    if (dt.hr === 0) dt.hr = 12;
+    //dt.min = parseInt(dt.min);
 
     W.drawClock(dt);
     W.drawData(dt);
@@ -153,8 +152,10 @@ setTimeout(nextScreen, 500);
 let ival1 = 0; 
 let ival2 = 0;
 
-// for always-on
-if(_C.alwaysOn.includes(process.env.BOARD))
+// for always-on, pull the name from current advertising
+let dv = E.toString(NRF.getAdvertisingData());
+dv=dv.slice(5,dv.indexOf(' '))
+if(_C.alwaysOn.includes(dv))
     ival1 = setInterval(()=>{clock(); g.flip();}, 60000);
 // for regular LCD
 else

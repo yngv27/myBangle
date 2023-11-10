@@ -187,6 +187,8 @@ function drawData(d) {
   g.setBgColor(bgc);
   g.setFontAlign(1,-1);
   g.drawString(' '+Math.floor(E.getBattery())+'% ', wX-1, dy, true);
+  g.setFontAlign(-1,-1);
+  g.drawString(' '+('00000'+wOS.getStepCount()).slice(-5)+' ', 0, dy, true);
    g.setBgColor(bgc3);
   g.setFontAlign(0,0);
   g.drawString(' '+d.niceDate+' ', 120, 120, true);
@@ -195,11 +197,11 @@ function drawData(d) {
   g.setFontAlign(0,-1); // center X, top Y
   g.setBgColor(bgc2);
   g.setColor('#303030');
-  g.drawString(' '+('0000'+calcCalories(d.steps)).slice(-4)+' ', relX(0.21), relY(0.8), true);
+  //g.drawString(' '+('0000'+calcCalories(d.steps)).slice(-4)+' ', relX(0.21), relY(0.8), true);
   //g.drawString(' '+('00000'+d.steps).slice(-5)+' ', relX(0.5), relY(0.9), true);
-  g.drawString(' '+d.batt+' ', relX(0.5), relY(0.9), true);
+  //g.drawString(' '+d.batt+' ', relX(0.5), relY(0.9), true);
   //g.setColor(fgc);
-  g.drawString(' '+('000'+d.hrm).slice(-3)+' ', relX(0.8), relY(0.8), true);
+  //g.drawString(' '+('000'+d.hrm).slice(-3)+' ', relX(0.8), relY(0.8), true);
   g.setBgColor(bgc);
   
 }
