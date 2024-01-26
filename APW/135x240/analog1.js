@@ -22,7 +22,7 @@ function init() {
       /***********
       Shared bits
       ************/
-      let drawBkgd = () => {
+      let start = () => {
         g.setBgColor(_C.BKGD);
         let img = _S.read("wbkgd.png");
         if(img) g.drawImage(img, 0, 0);
@@ -74,7 +74,7 @@ function init() {
     
       return { 
         drawClock: drawClock,
-        start: drawBkgd,
+        start: start,
         drawData: drawData,
         showMsg: showMsg,
       };

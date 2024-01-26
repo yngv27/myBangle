@@ -132,7 +132,7 @@ function ST7789() {
     //var spi = new SPI();
     SPI1.setup({sck:D2, mosi:D3, baud: 8000000});
 
-    return connect({spi:SPI1, dc:D18, cs:D25, rst:D26});
+    return connect({spi:SPI1, dc:D18, cs:D25, rst:D26});  
 }
 
 //screen brightness function
