@@ -1,6 +1,6 @@
 // boards that deviate from our program outline
 _C = {
-    alwaysOn: ["CV16", "QY03X"]
+    alwaysOn: ["CV16", "QY03X", "F07X", "DT28X", "MagicX"]
 };
 
 /*
@@ -170,7 +170,7 @@ ival2 = setInterval(()=> {
       showBits();
     }
   }
-}, 1.1*3600*1000);
+}, 51*60*1000);
 
 /* use for CV16: BTN1 doesn't need double tap
 

@@ -1,3 +1,6 @@
+/* 
+waste of space
+*/
 exports.connect = function(opts, callback) {
   const WF_PARTIAL = new Uint8Array(
     [
