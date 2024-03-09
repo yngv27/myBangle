@@ -1,6 +1,6 @@
 // boards that deviate from our program outline
 _C = {
-    alwaysOn: ["CV16", "QY03X", "F07X", "DT28X", "MagicX"]
+    alwaysOn: ["CV16", "QY03X", "F07X", "DT28X", "MagicX","TK78G"]
 };
 
 /*

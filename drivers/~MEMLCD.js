@@ -1,14 +1,9 @@
-let exports = {};
 
-Graphics.prototype.setFontOmnigo = function() {
-    this.setFontCustom(atob('AAAAAAAAB/QAAcAAAHAAAAKAPgCgD4AoAAAZASQf8EkBMAAAQwUwKwC0A1AygwgAAM4JmE5BnAGQAAcAAAA4BjBAQAAQEGMA4AAAqAOAHAFQAAAQAIAfACABAAAABoA4AACABAAgAQAAAAYAMAAAHAcBwAAAP4ISERCQg/gAAIAP+AAAAAgwgoQkIiDhAAAgggISEJCDeAAAHAMgIQP+AEAAB4gkISEJCEeAAA/gkISEJCAeAABAAgYQwJgHAAAA3gkISEJCDeAAA8AhIQkISD+AAAAAMwGYAAAAAzQZwAAAAAgA4A2AxgQQAABQAoAUAKAAAIIGMBsAcAEAAAIAIAENCIA4AAAHwEEEBCchRQooXkEYDEA8AAAB4HQOIBkAOABwAAf8IiERCIg8QDwAAH8EBCAhAQgIIIAAH/CAhAQgIIED8AAD/hEQiIREICAAD/hEAiARAIAAAB/BAQgIREIiCeAAB/wCABAAgAQD/gAAAAf8AAAAABAAQAIf4AAH/AYASAQgQIACAAD/gAQAIAEACAAD/gwAGAAwBgDAD/gAA/4IADAAYACB/wAAP4ICEBCAhAQfwAAP+EICEBCAhAPAAAD+CAhAQgoQIH6AAAAB/whAQgIoESBwgAAYQSEIiEJBDAAAgAQAP+EACAAAA/wAEACABABB/wAAeAA4ADAGAMA4AAAPAAYADgOAA4BgDAGAAABgwIgDgBwBEDBgAA4ACAA+AQAwBgAAAQMIKEJCIhIQ4IAAP+EBAABwAGAA8AAEBD/gAAIAIAIAEABAAQAAAAEACABAAgAQAIAAMABAAAADgKIFECiA/AAB/wEIEECCA+AAAPgIIEECCAiAAAPgIIEEBCH/AAAPgJIEkCSA4AAAIAf4SAIAAAAfAQUIKELD/AAD/gIAIAEAB+AAC/gAAACABL/AAD/gGAEgEIACAAD/gAAP4CACAA/AgAQAH4AAD+AgAgAQAH4AAB8BBAggQQHwAAD/hCAggQQHwAAB8BBAggQgP+AAD+AgAgAAAEIFECSBGAAAQA/wEEAAB+AAgAQAQH8AABwAGAAwBgHAAABwAGAAwDgAMAYBwAAAYwCgAgAoBjAAAfgAIAFAFB/AAAQwJoFEDCAAAIA7ggIAAP+AACAg7gCAAACACABAAQAIAIAAAAAAAAAAAA=='), 32, atob('AwIEBgYIBgIEBAUGAwUDBAYEBgYGBgYGBgYEBQYFBgYLBwcHBwcGBwcEBQcGCAcHBwcHBgYHBwkHBwcDBAMHBwMGBgYGBgUGBgIEBgIIBgYGBgQFBAYGCAYGBQQCBAc='), 256 + 13);
-};
-
-exports.connect = function(/*=SPI*/_spi, /*=PIN*/_cs, /*=PIN*/_vcom, width, height, callback) {
-  var g = Graphics.createArrayBuffer(width,height,1);
-  var spi = _spi;
-  var cs = _cs;
-  var vcom = _vcom;
+exports.connect = function(opts, callback) {
+  var g = Graphics.createArrayBuffer(opts.width,opts.height,1);
+  var spi = opts.spi;
+  var cs = opts.cs;
+  var vcom = opts.vcom;
   var vcomstate = false;
 
   digitalWrite(cs,1); // CS on
@@ -43,9 +38,11 @@ exports.connect = function(/*=SPI*/_spi, /*=PIN*/_cs, /*=PIN*/_vcom, width, heig
   return g;
 };
 
+/*
+
 SPI1.setup({ sck:D2, mosi:D44, order: "lsb", baud: 4000000 });
 
-var g = exports.connect(SPI1, D3/*SCS*/, 0/*EXTCOMIN*/, 144/*width*/, 168/*height*/, function() {
+var g = exports.connect(SPI1, D3/*SCS* /, 0/*EXTCOMIN* /, 144/*width* /, 168/*height* /, function() {
   g.clear();
   g.setRotation(2);
   g.setFontOmnigo();
@@ -55,25 +52,4 @@ var g = exports.connect(SPI1, D3/*SCS*/, 0/*EXTCOMIN*/, 144/*width*/, 168/*heigh
   g.flip();
   g.setFontAlign(0,-1);
 });
-
-_S=require("Storage");
-
-let drawClock = (d) => {
-  g.setBgColor(1).setColor(0);
-    g.clear(); //.fillRect(0,138,143, 149);
-    let hrAngle = (d.hr * 60 + d.min) * Math.PI / 360;
-    let minAngle = d.min / 30 * Math.PI;
-
-    g.drawImage(_S.read("minute.png"), 72, 70, { rotate: minAngle, scale: 0.5625 });
-    g.drawImage(_S.read("hour.png"), 72, 70, { rotate: hrAngle, scale: 0.5625 });
-    //g.setColor("#FFFFFF").fillCircle(72, 70, 5);
-    g.fillCircle(72, 70, 3);
-  g.drawCircle(72, 70, 70);
-  g.drawCircle(72, 71, 70);
-    g.drawString(`The time is ${d.hr}:${d.min}`, 72, 152);
-    g.flip();
-  };
-
-setInterval(()=> {
-  let d = Date();  drawClock({hr: d.getHours(), min: d.getMinutes()});
-}, 60000);
+*/
