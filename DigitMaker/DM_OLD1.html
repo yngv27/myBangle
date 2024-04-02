@@ -1,7 +1,7 @@
-  <html>
+<html>
 <head>
-  <script src="heatshrink.js"></script>
-  <script src="imageconverter.js"></script>
+  <script src="http://espruino.com/js/heatshrink.js"></script>
+  <script src="http://espruino.com/js/imageconverter.js"></script>
   <style>
   body {
   background-color: #e0e0e0;
@@ -20,11 +20,10 @@ table {
     Img end:<br/><INPUT TYPE="NUMBER" MIN="0" MAX="840" STEP="1" VALUE="0" SIZE="32"  id="imgEnd"><br/>
     <canvas id="digit"></canvas><br/>
       <input type="button" onclick="process()" value="Process"/><br/>
-	  <input type="button" onclick="process_binary()" value="Process2"/><br/>
     </td>
   </tr>
 </table>
-<textarea id="resdata" cols=80 rows=16></textarea>
+<textarea id="resdata" cols=80 rows=24></textarea>
  
  <script>
  function gebi(id) {
@@ -85,48 +84,31 @@ function loadImage(src){
   img.src = src;
 }
 
-function process_binary() {
-  let options = {}, imgstr = `let WRITE = false;
-let offset=0;
-let cnt=0;
-let filename = "mmmmm";
-let filesize = ????;
-let offstr = "";
-let lenstr = "";
-let 
-`;
-  for(let d=0; d<10; d++) {
-    imgstr += `digit = `;
-    gebi('idx').value = d;
-    update();
-    var imageData = ctx2.getImageData(0, 0,  c2.width, c2.height);
-
-    var rgba = imageData.data;
-    options.rgbaOut = rgba;
-    options.width = c2.width;
-    options.height = c2.height;
-    // we expect black on white text, but need white on black
-    options.inverted = true;
-    options.compression = false;
-    options.output = "string";
-    options.transparent = true;
-    options.mode = 'opt4bit'; //'1bit'; //opt4bit';
-    let res = imageconverter.RGBAtoString(rgba, options);
-    imgstr += res+";\n";
-    imgstr += "if(WRITE)_S.write(filename, digit, offset" + (d ? ");\n" : ", filesize);\n");
-    imgstr += "print(`_S.read('${filename}', ${offset}, ${digit.length}); //${cnt++}`);\n";
-    imgstr += "offstr += `${offset}, `;";
-    imgstr += "lenstr += `${digit.length}, `;";
-    imgstr += "offset += digit.length;\n";
-  }
-  imgstr += "print(`Filesize: ${offset}`);\n";
-  imgstr += "print(`Offsets: [${offstr}]`);\n";
-  imgstr += "print(`Lengths: [${lenstr}]`);\n";
-  gebi('resdata').value = imgstr;
+const extraCode = `
+let wids=new Uint16Array(10); // this is 20
+let offs=new Uint16Array(10); // and this
+// therefore, we start with...
+let offset=40;
+for(let d=0; d<10; d++) {
+  let s = getDigit(d).length;
+  offs[d]=offset;
+  wids[d]=s;
+  offset += s;
 }
-	 
+size = offset;
+print("need to create: "+size);
+// first write is special to set the size
+_S.write(filename, offs.buffer, 0, size);
+_S.write(filename, wids.buffer, 20);
+offset = 40;
+for(let d=0; d<10; d++) {
+  let str=getDigit(d);
+  _S.write(filename, str, offset);
+  offset += str.length;
+}
+`;
 function process() {
-  let options = {}, imgstr = "function getDigit(d) {\n return [";
+  let options = {}, imgstr = "let filename = 'CHANGEME.fnt';\n\nfunction getDigit(d) {\n return [";
   for(let d=0; d<10; d++) {
     //imgstr += `return `;
     gebi('idx').value = d;
@@ -138,16 +120,15 @@ function process() {
     options.width = c2.width;
     options.height = c2.height;
     options.inverted = true;
-    options.compression = false;
-    options.output = "object";
-    options.transparent = true;
+	options.compression = true;
     options.mode = 'opt4bit'; //'1bit'; //opt4bit';
+	options.output = "string";
     let res = imageconverter.RGBAtoString(rgba, options)+",\n";
     // bug in Espruino
     //res = res.replace('(atob','atob');
     imgstr += res;
   }
-  imgstr += "][d];\n}"
+  imgstr += "][d];\n}"+extraCode;
   gebi('resdata').value = imgstr;
 }
 
@@ -167,6 +148,8 @@ gebi('imgEnd').addEventListener('change', () => {
 })
 
 console.log('Code With ❤ Always, @tmrDevelops');
-</script>
+
+
+ </script>
 </body>
 </html>
