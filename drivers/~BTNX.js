@@ -54,7 +54,7 @@
       //logD(`lpto=${BUTTON.tapTO}`);
     }
     BUTTON.lastUp = b.time;
-    setWatch(btnDown, btnSrc, BUTTON.downOpts);
+    setWatch(btnDown, btnSrc, BUTTON.dnOpts);
   };
   
-  setWatch(btnDown, btnSrc, BUTTON.downOpts);
+  setWatch(btnDown, btnSrc, BUTTON.dnOpts);

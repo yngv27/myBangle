@@ -1,3 +1,4 @@
+/*
 function getTZOff() {
     let dt=Date();
     let m = dt.getMonth(), d=dt.getDate(), dow=dt.getDay();
@@ -12,3 +13,15 @@ function getTZOff() {
     }
      return(-1);
   }
+*/
+  ()=> {
+    let dz=Date();
+    let m = dz.getMonth(), d=dz.getDate(), dow=dz.getDay();
+    //if(m<2 || m>10) dz=-5;
+    dz=-5;
+    if(m>2 && m<10) dz=-4;
+    if((m == 2) && (d-dow > 7)) dz=-4;
+    if ((m == 10) && (d-dow <= 0)) dz=-4;
+    E.setTimeZone(dz);
+  }();
+  
