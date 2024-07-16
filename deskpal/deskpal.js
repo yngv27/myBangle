@@ -2,12 +2,12 @@ let exports = {};
 
 /*
 ** THANKS:
-** github.com/fm92/e-Paper42lib
+** github.com/jfm92/e-Paper42lib
 */
 let debug = print; //()=>{}; //print;
 
 exports.connect = (opts) => {
-  var g = Graphics.createArrayBuffer(opts.width, opts.height, 1,{msb:true});
+  var g = {}; //Graphics.createArrayBuffer(opts.width, opts.height, 1,{msb:true});
   
   function delay(ms) {
     digitalPulse(opts.delay, 0, ms);
@@ -32,7 +32,7 @@ exports.connect = (opts) => {
     opts.dc.set();
     opts.spi.write(d, opts.cs); 
   }
-  function init() { 
+  function reset() { 
     debug("reset");
     if(opts.rst) 
       digitalPulse(opts.rst, 0, [50]);
@@ -71,49 +71,11 @@ exports.connect = (opts) => {
     cmd(0x24 ,LUT);
     //*/
   }
-  function round2a() {
-    debug("round2a");
-    //let LUT = 
-    let Ateen0s = new Uint8Array([0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0]);
-    cmd(0x00, 0x3f);		//KW-3f   KWR-2F	BWROTP 0f	BWOTP 1f
-    cmd(0x30,0x3c);      	//100hz 
-    cmd(0x61,[0x01,0x90,0x01,0x2c]);
-    cmd(0x82,0x12);
-    cmd(0X50,0x97);
 
-    cmd(0x20 ,new Uint8Array([0,0x0A,0,0,0,1,0x60,0x14,0x14,0,0,1,0,0x14,0,0,0,1,0,0x13,0x0A,1,0,1]));
-    data(Ateen0s);
-    cmd(0x21 , new Uint8Array([0x40	,0x0A	,0x00	,0x00	,0x00	,0x01,
-0x90	,0x14	,0x14	,0x00	,0x00	,0x01,
-0x10	,0x14	,0x0A	,0x00	,0x00	,0x01,
-0xA0	,0x13	,0x01	,0x00	,0x00	,0x01]));
-    data(Ateen0s);
-    cmd(0x22 ,new Uint8Array([0x40	,0x0A	,0x00	,0x00	,0x00	,0x01,
-0x90	,0x14	,0x14	,0x00	,0x00	,0x01,
-0x00	,0x14	,0x0A	,0x00	,0x00	,0x01,
-0x99	,0x0C	,0x01	,0x03	,0x04	,0x01
-      ]));
-    data(Ateen0s);
-    cmd(0x23 ,new Uint8Array([0x40	,0x0A	,0x00	,0x00	,0x00	,0x01,
-0x90	,0x14	,0x14	,0x00	,0x00	,0x01,
-0x00	,0x14	,0x0A	,0x00	,0x00	,0x01,
-0x99	,0x0B	,0x04	,0x04	,0x01	,0x01,
-      ]));
-    data(Ateen0s);
-    cmd(0x24 ,new Uint8Array([0x80	,0x0A	,0x00	,0x00	,0x00	,0x01,
-0x90	,0x14	,0x14	,0x00	,0x00	,0x01,
-0x20	,0x14	,0x0A	,0x00	,0x00	,0x01,
-0x50	,0x13	,0x01	,0x00	,0x00	,0x01,
-    ]));
-    data(Ateen0s);
-    cmd(0x25 , new Uint8Array([0x40	,0x0A	,0x00	,0x00	,0x00	,0x01,
-0x90	,0x14	,0x14	,0x00	,0x00	,0x01,
-0x10	,0x14	,0x0A	,0x00	,0x00	,0x01,
-0xA0	,0x13	,0x01	,0x00	,0x00	,0x01]));
-    data(Ateen0s);
-
-  }
-  function round2b() {
+  /* quick version: does a flashy thing for fun (LUT) then the fast update (LUT2)
+  */
+  function round2q() {
+    // we modify these on the fly below, since the LUTs share most of the data
     let LUT = new Uint8Array([0x0,0x4,0x4,0,0,4]);
     let LUT2 = new Uint8Array([0x0,0xa,0,0,0,5]);
     let Ateen0s = new Uint8Array([0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0]);
@@ -124,6 +86,7 @@ exports.connect = (opts) => {
     cmd(0x61 ,[1,0x90,1,0x2c]);
     cmd(0x82 ,[0x28]);  //0x12]);
     cmd(0x50 ,[0x97]);
+    //VCOM
     LUT[0]=0x0;
     LUT2[0]=0x0; 
     cmd(0x20 ,LUT);
@@ -131,6 +94,7 @@ exports.connect = (opts) => {
     data(Ateen0s);
     data(Ateen0s);
     data([0,0]);
+    // W->W and W->B  0x60 == b01100000, so first 01, then 10 (flash)
     LUT[0]=0x60; //a0;
     LUT2[0]=0xa0; 
     cmd(0x21 ,LUT); 
@@ -141,6 +105,7 @@ exports.connect = (opts) => {
     data(LUT2);
     data(Ateen0s);
     data(Ateen0s);
+    // B->W, B->B 0x90 == b10010000, first 10, then 10 (flash)
     LUT[0]=0x90; //50;
     LUT2[0]=0x50; 
     cmd(0x23 ,LUT); 
@@ -152,24 +117,19 @@ exports.connect = (opts) => {
     data(Ateen0s);
     data(Ateen0s);
   }
-
+  // full refresh, slow but thorough
   function wake() {
     debug("wake");
-    init();
+    reset();
     setTimeout(round1, 100);
     setTimeout(()=>{round2(); }, 200);
   }
+  // fast refresh, but *some* ghosting
   function wake2() {
     debug("wake2");
-    init();
+    reset();
     setTimeout(round1, 100);
-    setTimeout(()=>{round2a(); }, 200);
-  }
-  function wake2b() {
-    debug("wake2b");
-    init();
-    setTimeout(round1, 100);
-    setTimeout(()=>{round2b();}, 200);
+    setTimeout(()=>{round2q();}, 200);
   }
 
   function sleep() {
@@ -187,23 +147,10 @@ exports.connect = (opts) => {
     g.update(0,0,g);
   };
   
-  /*
-  g3=Graphics.createArrayBuffer(280, 30, 1, {msb:true});
-  //g3.setColor(0).setBgColor(-1).clear();
-  g3.setFontBlocky();
-  for(let y=0; y<7; y++) { 
-    setTimeout((y)=>{
-      g.busy=false;g3.clear(); 
-      g3.drawString(y,0,0);
-      g.update(128,y*30,g3);
-    }, (y)*2500, y);
-  }
-
-*/
   g.update = (X_start,Y_start, gfx, full) => {
     if(g.busy) return;
     g.busy = true;
-    if(full) wake(); else wake2b();
+    if(full) wake(); else wake2();
     setTimeout(()=>{
       let Width = (opts.width % 8 == 0)? (opts.width / 8 ): (opts.width / 8 + 1);
       let Height = opts.height;
@@ -237,29 +184,15 @@ exports.connect = (opts) => {
   g.delay=delay;
   g.round1=round1;
   g.round2=round2;
-  g.init=init;
+  g.init=reset;
   g.cmd=cmd;
-  g.sleep=sleep;
   return g;
 };
 
 let spi1=new SPI();
-/* Dk832
-spi1.setup({sck: D23, mosi: D22, baud: 2000000});
-let CS=D24, RST=D26, BUSY=D0, DC=D25, DELAY=D31;
-*/
 //* ProMicro
 spi1.setup({sck: D45, mosi: D47, baud: 2000000});
 let CS=D43, RST=D9, BUSY=D2, DC=D10, DELAY=D31;
-//*/
-/* QY03
-spi1.setup({sck: D45, mosi: D2, baud: 2000000});
-DC = D44;
-RST=D47;
-CS = D0;
-BUSY=D3;
-DELAY=D40;
-//*/
 opts={
   spi: spi1,
   cs: CS,
@@ -271,10 +204,7 @@ opts={
   delay: DELAY,
 };
 g = exports.connect(opts);
-
-
-g.setColor(0).setBgColor(-1).clear();
-//g.setRotation(2);
+//g.setColor(0).setBgColor(-1).clear();
 
 let wakeupTime="2024-06-18T09:00";
 function gnite(){
@@ -299,47 +229,22 @@ function gnite(){
   },  later);
 
 }
-/*
-function yay() {
-  let min=59-(new Date()).getMinutes();
-  let sec=59-(new Date()).getSeconds();
-  g.clear();
-  g.drawString(min+":"+('0'+sec).slice(-2),200,150).flip();
-}
-*/
+
+// Our clock
 let g2=Graphics.createArrayBuffer(104,48,1,{msb:true});
 g2.setBgColor(0).setColor(-1);
-lastSpot = 0;
+
 function clock(h1,m1) {
   let h=(new Date()).getHours();
   let m = (new Date()).getMinutes();
-  let delay = 500;
-  g.setColor(-1).setBgColor(0);
-  
-  setTimeout(()=>{
-    //if(h1) {h=h1; m=m1;}
-    let dt=h+":"+('0'+m).slice(-2);
-    let y1 = 20, y2 = 270;
-    //let spot = y1+Math.floor((y2-y1)/8)*(h-9);
-    let spot = y1+Math.floor((y2-y1)/8)*((h-9)+(m/60));
-    if(spot < y1) spot = y1;
-    if(spot > y2) spot = y2;
-    //g?.fillPoly(new Uint8Array([0,8, 4,0, 50,0, 50,16, 4,16]));
-    g2.setFontAlign(1,-1);
-    g2.setColor(-1).setBgColor(0);
-    g2.clear();
-    g2.drawString(dt, g2.getWidth()-4, 6);
-    //g2.drawString(dt, 30, 0);
-    //g.update(Math.random()*45*8, Math.random()*250, g2);
-    lastSpot = spot;
-    g2.fillPoly(new Uint8Array([0,42, 6,48, 0,48  ]));
-//    if(m % 15)
-      g.update(400-g2.getWidth(), 0, g2);
-//    else {    
-//      g.drawImage(g2, 304, 0);
-//      g.flip();
-//    }
-  }, delay, h, m);
+  if(h1) {h=h1; m=m1;}
+  let dt=h+":"+('0'+m).slice(-2);
+  g2.setFontAlign(1,-1);
+  g2.setColor(-1).setBgColor(0);
+  g2.clear();
+  g2.drawString(dt, g2.getWidth()-4, 6);
+  g2.fillPoly(new Uint8Array([0,42, 6,48, 0,48  ]));
+  g.update(400-g2.getWidth(), 0, g2);
 }
 
 let agenda = [
@@ -362,27 +267,14 @@ let todos=[
 function today()  { return (new Date().toString().substring(0,15)); }
 let motd = "I didn't catch that frequency, could you put it in the form of a spatula?";
 function status() {
-  g.setFontAlign(-1,-1);
-  g.setColor(0).setBgColor(-1).clear();
-  //g.fillRect(0,280,399,299);
-  g.drawRect(0,20,120,280);
-  //g.fillRect(0,0,399,20);
-  g.drawString(agenda, 6, 24);
-  //g.drawString(agenda, 7, 24);
-  g.drawString(todos, 128, 40);
-  /*
-  g.setColor(-1);
-  g.drawString((new Date()).toString().substring(0,15), 4,4);
-  g.drawString("This would be something like your scrolling feed...", 4,280);
-  g.setColor(0);
-  */
-  g.flip();
+  msgline(motd, 280);
   setTimeout(()=>{
-    msgline((new Date()).toString().substring(0,15), 0);
-  }, 6000);
+    msgline(today(), 0);
+  }, 2000);
   setTimeout(()=>{
-    msgline(motd, 280);
-  }, 12000);
+    cal();
+    todo();
+  }, 4000);
 }
 
 
@@ -458,9 +350,7 @@ Graphics.prototype.setFontBlocky = function(scale)
 {this.setFontCustom(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8wAAAAAAAAAAAAAAAAeAAAAAAAeAAAAAAAAAAEQB/wBEAEQB/wBEAAAAAAAAAGIAkgOTgJIAjAAAAAAAwgEkASgA1gApAEkAhgAAAc4CMQIxAckABgAGABkAAAAAAAAHgAAAAAAAAAAAAAAAAAAAAH4BgYIAQAAAAAAAAAACAEGBgH4AAAAAAAAAAAAQAFQAOAA4AFQAEAAAAAAAEAAQABAA/gAQABAAEAAAAAAAAAADIAPAAAAAAAAAAAAQABAAEAAQABAAEAAAAAAAAAAAAAMAAwAAAAAAAAAAAADAAwAMADAAwAMAAAAAAAD+AQkBEQEhAUEA/gAAAAAAAABBAIEB/wABAAEAAAAAAIEBAwEFAQkBEQDhAAAAAAECAQEBIQFhAaEBHgAAAAAAGAAoAEgAiAH/AAgAAAAAAeIBIQEhASEBIQEeAAAAAAB+AJEBEQERAREADgAAAAABAAEAAQcBGAFgAYAAAAAAAO4BEQERAREBEQDuAAAAAADgAREBEQERARIA/AAAAAAAAAAAAGMAYwAAAAAAAAAAAAAAAABjIGPAAAAAAAAAAAAQACgARACCAQEAAAAAAAAAJAAkACQAJAAkACQAAAAAAAABAQCCAEQAKAAQAAAAAAEAAgACEwIgAkABgAAAAAAA/wEAgjxCQkJCQURA/kAAAH8AiAEIAQgAiAB/AAAAAAH/AREBEQERAREA7gAAAAAAfACCAQEBAQEBAQEAAAAAAf8BAQEBAQEAggB8AAAAAAH/AREBEQERAREBAQAAAAAB/wEQARABEAEQAQAAAAAAAHwAggEBAQEBEQEfAAAAAAH/ABAAEAAQABAB/wAAAAAAAAEBAQEB/wEBAQEAAAAAAAYAAQABAAEAAQH+AAAAAAH/ABAAKABEAIIBAQAAAAAB/wABAAEAAQABAAEAAAAAAf8AgABAADAAQACAAf8AAAH/AIAAQAAgABAB/wAAAAAA/gEBAQEBAQEBAP4AAAAAAf8BEAEQARABEADgAAAAAAD+AQEBAQEBAQGA/oAAgAAB/wEQARABGAEUAOMAAAAAAMEBIQERAREBCQEGAAAAAAEAAQABAAH/AQABAAEAAAAB/gABAAEAAQABAf4AAAAAAfAADAADAAMADAHwAAAAAAH/AAEAAgAcAAIAAQH/AAABgwBEACgAEAAoAEQBgwAAAYAAQAAgAB8AIABAAYAAAAEBAQcBGQFhAYEBAQAAAAAAAAAAA//CAEIAQgBAAAAAAwAAwAAwAAwAAwAAwAAAAAIAQgBCAEP/wAAAAAAAAAAAgAEAAgABAACAAAAAAAAAQABAAEAAQABAAEAAQABAAAAABAACAAEAAIAAAAAAAAAABgBJAEkASQBKAD8AAAAAA/8AIgBBAEEAQQA+AAAAAAA+AEEAQQBBAEEAIgAAAAAAPgBBAEEAQQAiA/8AAAAAAD4ASQBJAEkASQA5AAAAAABAAEAB/wJAAkACQAAAAAAAOsBFIEUgRSB5IEDAAAAAA/8AIABAAEAAQAA/AAAAAAAAAEEAQQN/AAEAAQAAAAAAAAAAIEAgQCN/wAAAAAAAA/8ACAAYACQAQgABAAAAAAIAAgAD/gABAAEAAQAAAAAAfwBAAEAAPwBAAEAAPwAAAH8AIABAAEAAQAA/AAAAAAA+AEEAQQBBAEEAPgAAAAAAf+AiAEEAQQBBAD4AAAAAAD4AQQBBAEEAIgB/4AAAAAB/ACAAQABAAEAAIAAAAAAAIQBRAEkASQBFAEIAAAAAAEAAQAH+AEEAQQBBAAAAAAB+AAEAAQABAAIAfwAAAAAAcAAMAAMAAwAMAHAAAAAAAH4AAQABAD4AAQABAH4AAABBACIAFAAIABQAIgBBAAAAfgABIAEgASACIH/AAAAAAEMARQBJAFEAYQBBAAAAEAAQABAD74QARABEAEAAAAAAAAAAAAAH/8AAAAAAAAAABABEAEQAQ++AEAAQABAAAAGAAgACAAEAAIAAgAMAA="), 32, 8, 16 + (scale << 8) | 256);};
 */
 
-g.setFontBlocky();
-
-g2.setFont("Blocky",2);
+g2.setFont("Blocky",3);
 g3.setFontBlocky();
 g4.setFontBlocky();
 
@@ -470,17 +360,6 @@ function getNextIval() {
 }
 
 /*
-let later = getNextIval();
-let clockIval=0;
-
-print('Will set intvl in '+later);
-setTimeout(()=>{
-  status();
-  clockIval = setInterval(clock, 5*60*1000);
-  setTimeout(clock, 18000);
-},  later);
-//*/
-//*
 setWatch(()=>{debug((getTime() % 1000).toFixed(3)+" --- BUSY FREE");}, BUSY, {edge: "rising", repeat: true});
 setWatch(()=>{debug((getTime() % 1000).toFixed(3)+" --- BUSY BUSY");}, BUSY, {edge: "falling", repeat: true});
 //*/
