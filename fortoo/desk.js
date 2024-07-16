@@ -1,10 +1,5 @@
 let exports = {};
-
-/*
-** THANKS:
-** github.com/fm92/e-Paper42lib
-*/
-let debug = print; //()=>{}; //print;
+let logD = print; //()=>{}; //print;
 
 exports.connect = (opts) => {
   var g = Graphics.createArrayBuffer(opts.width, opts.height, 1,{msb:true});
@@ -33,7 +28,7 @@ exports.connect = (opts) => {
     opts.spi.write(d, opts.cs); 
   }
   function init() { 
-    debug("reset");
+    logD("reset");
     if(opts.rst) 
       digitalPulse(opts.rst, 0, [50]);
   }
@@ -42,22 +37,22 @@ exports.connect = (opts) => {
     return(opts.busy.read());
   }
   function round1() {
-    debug("round1");
+    logD("round1");
     cmd(1 ,[3,0,0x2f,0x2f,0]); // trying low power for R pixel : 0xff]);
     cmd(6 ,[0x17,0x17,0x17]);
     cmd(4); //Wait for idle
   }
   function round2() {
     let LUT = new Uint8Array([0,0x8,0,0,0,2, 0,0x8,0x8,0,0,2, 0,0xa,1,0,0,1, 0,0xe,0xe,0,0,2, 0,0,0,0,0,0]);
-    debug("round2");
+    logD("round2");
     cmd(0 ,0x3f); //[0xf,0xd]); //0xb]);
     cmd(0x30 ,[0x3c]);
     cmd(0x61 ,[1,0x90,1,0x2c]);
     cmd(0x82 ,[0x28]);  //0x12]);
     cmd(0x50 ,[0x97]);
-    //* pure evil...
-    //LUT[5]=8; LUT[11]=8; LUT[17]=8; LUT[23]=8;
-    //LUT[0]=0; LUT[6]=0; LUT[12]=0; LUT[18]=0;
+    /* pure evil...
+    LUT[5]=8; LUT[11]=8; LUT[17]=8; LUT[23]=8;
+    LUT[0]=0; LUT[6]=0; LUT[12]=0; LUT[18]=0;
     
     cmd(0x20 ,LUT);
     data([0,0]);
@@ -72,7 +67,7 @@ exports.connect = (opts) => {
     //*/
   }
   function round2a() {
-    debug("round2a");
+    logD("round2a");
     //let LUT = 
     let Ateen0s = new Uint8Array([0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0]);
     cmd(0x00, 0x3f);		//KW-3f   KWR-2F	BWROTP 0f	BWOTP 1f
@@ -114,11 +109,11 @@ exports.connect = (opts) => {
 
   }
   function round2b() {
-    let LUT = new Uint8Array([0x0,0x4,0x4,0,0,4]);
-    let LUT2 = new Uint8Array([0x0,0xa,0,0,0,5]);
+    let LUT = new Uint8Array([0x0,0x4,0x4,0,0,3]);
+    let LUT2 = new Uint8Array([0x0,0xa,0,0,0,6]);
     let Ateen0s = new Uint8Array([0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0]);
 
-    debug("round2");
+    logD("round2");
     cmd(0 ,[0xbf,0xd]); //0xb]);
     cmd(0x30 ,[0x3c]);
     cmd(0x61 ,[1,0x90,1,0x2c]);
@@ -154,26 +149,26 @@ exports.connect = (opts) => {
   }
 
   function wake() {
-    debug("wake");
+    logD("wake");
     init();
     setTimeout(round1, 100);
     setTimeout(()=>{round2(); }, 200);
   }
   function wake2() {
-    debug("wake2");
+    logD("wake2");
     init();
     setTimeout(round1, 100);
     setTimeout(()=>{round2a(); }, 200);
   }
   function wake2b() {
-    debug("wake2b");
+    logD("wake2b");
     init();
     setTimeout(round1, 100);
     setTimeout(()=>{round2b();}, 200);
   }
 
   function sleep() {
-    debug("Sleep");
+    logD("Sleep");
     cmd(0x02); // POWER_OFF
     delay(100);
     cmd(0x07, 0xa5); // DEEP_SLEEP
@@ -184,7 +179,7 @@ exports.connect = (opts) => {
   }
 
   g.flip = function (addr) {
-    g.update(0,0,g);
+    g.partial(0,0,g);
   };
   
   /*
@@ -195,15 +190,15 @@ exports.connect = (opts) => {
     setTimeout((y)=>{
       g.busy=false;g3.clear(); 
       g3.drawString(y,0,0);
-      g.update(128,y*30,g3);
+      g.partial(128,y*30,g3);
     }, (y)*2500, y);
   }
 
 */
-  g.update = (X_start,Y_start, gfx, full) => {
+  g.partial = (X_start,Y_start, gfx) => {
     if(g.busy) return;
     g.busy = true;
-    if(full) wake(); else wake2b();
+    wake2b();
     setTimeout(()=>{
       let Width = (opts.width % 8 == 0)? (opts.width / 8 ): (opts.width / 8 + 1);
       let Height = opts.height;
@@ -330,11 +325,11 @@ function clock(h1,m1) {
     g2.clear();
     g2.drawString(dt, g2.getWidth()-4, 6);
     //g2.drawString(dt, 30, 0);
-    //g.update(Math.random()*45*8, Math.random()*250, g2);
+    //g.partial(Math.random()*45*8, Math.random()*250, g2);
     lastSpot = spot;
     g2.fillPoly(new Uint8Array([0,42, 6,48, 0,48  ]));
 //    if(m % 15)
-      g.update(400-g2.getWidth(), 0, g2);
+      g.partial(400-g2.getWidth(), 0, g2);
 //    else {    
 //      g.drawImage(g2, 304, 0);
 //      g.flip();
@@ -343,23 +338,25 @@ function clock(h1,m1) {
 }
 
 let agenda = [
- "",
-  "10 \n10:30 Check pool",
-  "11 UX/SW Touchbase",
-  "12 ",
-  "13 SEY X-func",
-  "14 \n14:30 Check pool",
-  "15 Squish talk w Tom M",
-  ""
+"09 Eat frosting",
+"10 Eat frosting",
+"11 UX Weekly",
+"12 Eat frosting",
+"13 Eat frosting",
+"14 Eat frosting",
+"15 Eat frosting",
+"16 Eat frosting",
 ];
 
-let todos=[
-  "_ Top 5 skills",
-  "_ Jen: LEGAL page content",
-  "_ Fill out VGI form for disbursement",
- ];
+let todos=["_ Matt: screen door count",
+"_ Synchronization failure msg",
+"_ Jen: LEGAL page content",
+"_ Schedule UIS checkin",
+"_ Schedule VGI call",
+"_ Bottom out anonymous ID",
+"X The done things",
+];
 
-function today()  { return (new Date().toString().substring(0,15)); }
 let motd = "I didn't catch that frequency, could you put it in the form of a spatula?";
 function status() {
   g.setFontAlign(-1,-1);
@@ -388,7 +385,7 @@ function status() {
 
 let flist = [];
 function ifFree(f) {
-  debug("BUSY: "+g.busy+" "+getTime().toFixed(3));
+  print("BUSY: "+g.busy+" "+getTime().toFixed(3));
   if(typeof(f) != "object") f=null;
   if(!g.busy) {
     if(flist.length) {
@@ -411,21 +408,17 @@ g.on("free", ifFree);
 let g3 = Graphics.createArrayBuffer(280, 30, 1, {msb: true});
 g3.setColor(0).setBgColor(-1);
 function updTodo(i) {
-  let msg = (i < todos.length)?todos[i]:"";
+  let msg = todos[i];
   let done=msg[0];
-  debug(`msg: ${msg}`);
   msg = msg.substring(2);
-  g3.clear();
-  if(msg.length) {
-    g3.drawString(msg, 20, 0);
-    g3.drawRect(4,0,16,12);
-    if(done == "X") { g3.drawLine(4,0,16,12); g3.drawLine(16,0,4,12);}
-  }
-  g.update(128, i*30+50, g3);
-  debug("I got "+i);
+  g3.clear().drawString(msg, 20, 0);
+  g3.drawRect(4,0,16,12);
+  if(done == "X") { g3.drawLine(4,0,16,12); g3.drawLine(16,0,4,12);}
+  g.partial(128, i*30+50, g3);
+  print("I got "+i);
 }
 function todo() {
-  for(let i=0; i<7; i++) {
+  for(let i=0; i<todos.length; i++) {
     ifFree({func: updTodo, parm: i});
   }
 }
@@ -436,8 +429,7 @@ function updAgenda(i) {
   let time=msg.substring(0,2);
   msg = msg.substring(3);
   g4.clear().drawString(time+": "+msg, 0, 0).drawLine(119,0,119,31);
-  for(let x=0; x < 120; x+=2) g4.setPixel(x,30);
-  g.update(6, i*32+24, g4);
+  g.partial(6, i*32+24, g4);
   print("I got "+i);
 }
 function cal() {
@@ -445,22 +437,16 @@ function cal() {
     ifFree({func: updAgenda, parm: i});
   }
 }
-//* Agency
-Graphics.prototype.setFontBlocky=function(scale){this.setFontCustom(atob("AAAAAAAAAAD/kAAAAADwAAAA8AAAAAAAEIB/4BCAEIB/4BCAAAB4cIQQ//iCEOHgAAD8AIQw/EABgAYAGAAj8MIQA/AAAPHwihCEEIAQ5/AEEAAAAADwAAAAB4A4cMAMAAAAAMAMOHAHgAAAUAAgAPgAIABQAAAAAgACAA+AAgACAAAAAAAAOAAAAQABAAEAAQAAAAAwAAAAAABwAYAGABgA4AAAAP/wgBCAEIAQ//AAAP/wAADx8IIQhBCIEPAQAADw8IAQhBCKEPHwAAD/gACAAIAf8ACAAAD48IgQiBCIEI/wAAD/8IQQhBCEEOfwAADAAIAAh/CIAPAAAAD78IQQhBCEEPvwAAD+cIIQghCCEP/wAAAGMAAAAAAGOAAAAAAGABmAYGAAAASABIAEgASABIAAAGBgGYAGAAAA8ACAAIewiADwAAAA//CAEL+QoJCgkL+QgJD/kAAA//CEAIQAhAD/8AAA//CEEIQQhBD78AAA//CAEIAQgBDg8AAA//CAEIAQgBB/4AAA//CEEIQQhBCAEAAA//CEAIQAhACAAAAA//CAEIQQhBDn8AAA//AEAAQABAD/8AAA//AAAADwABAAEAAQ//AAAP/wCAAUACIAwfAAAP/wABAAEAAQAAD/8DAADAAwAP/wAAD/8DAADAADAP/wAAB/4IAQgBCAEH/gAAD/8IIAggCCAP4AAAB/4IAQgFCAMH/wAAD/8IIAgwCCgP5wAADw8IgQhBCCEPHwAACAAIAA//CAAIAAAAD/8AAQABAAEP/wAAD/AADAADAAwP8AAAD/AADwBwAA8P8AAADg8BsABAAbAODwAADgABgAB/AYAOAAAACAcIGQhhCYEOAQAAD//IAEgAQAAOAAGAAGAAGAAHAAAIAEgAT//AAAMADAADAAAAAAAgACAAIAAgAAwABgAAAADfAJEAkQD/AAAP/wCBAIEA/wAAAP8AgQCBAOcAAAD/AIEAgQ//AAAA/wCRAJEA8wAAAIAP/wiAAAAA/2CBIIEg/+AAD/8AgACAAP8AAAb/AAAAACb/4AAP/wAYAGYAgQAAD/8AAAD/AIAA/wCAAP8AAAD/AIAAgAD/AAAA/wCBAIEA/wAAAP/ggQCBAP8AAAD/AIEAgQD/4AAA/wCAAIAA4AAAAOcAkQCJAMcAAACAB/8AgQAAAP8AAQABAP8AAADAADwAAwA8AMAAAAD8AAcAHAAHAPwAAADnABgAGADnAAAA/gACIAIg/+AAAMcAiQCRAOMAAAAgB9+IAEgAQAAP/+AACABIAEffgCAAAAAAAAAAAAgAD/8AAAAAA="), 32, atob("AwMFCAYKBwMFBAYGAwUDBgYCBgYGBgYGBgYDAwQGBAYJBgYGBgYGBgYCBgYFBgYGBgYGBgYGBgYGBgYEBgQEBQMFBQUFBQQFBQIDBQIGBQUFBQUFBAUGBgUFBQUCBQYB"), 16+(scale << 8)+(1 << 16));};
-//*/
-/* Blocky
+/*
+Graphics.prototype.setFontAgency=function(scale){this.setFontCustom(atob("AAAAAAAAAAD/kAAAAADwAAAA8AAAAAAAEIB/4BCAEIB/4BCAAAB4cIQQ//iCEOHgAAD8AIQw/EABgAYAGAAj8MIQA/AAAPHwihCEEIAQ5/AEEAAAAADwAAAAB4A4cMAMAAAAAMAMOHAHgAAAUAAgAPgAIABQAAAAAgACAA+AAgACAAAAAAAAOAAAAQABAAEAAQAAAAAwAAAAAABwAYAGABgA4AAAAP/wgBCAEIAQ//AAAP/wAADx8IIQhBCIEPAQAADw8IAQhBCKEPHwAAD/gACAAIAf8ACAAAD48IgQiBCIEI/wAAD/8IQQhBCEEOfwAADAAIAAh/CIAPAAAAD78IQQhBCEEPvwAAD+cIIQghCCEP/wAAAGMAAAAAAGOAAAAAAGABmAYGAAAASABIAEgASABIAAAGBgGYAGAAAA8ACAAIewiADwAAAA//CAEL+QoJCgkL+QgJD/kAAA//CEAIQAhAD/8AAA//CEEIQQhBD78AAA//CAEIAQgBDg8AAA//CAEIAQgBB/4AAA//CEEIQQhBCAEAAA//CEAIQAhACAAAAA//CAEIQQhBDn8AAA//AEAAQABAD/8AAA//AAAADwABAAEAAQ//AAAP/wCAAUACIAwfAAAP/wABAAEAAQAAD/8DAADAAwAP/wAAD/8DAADAADAP/wAAB/4IAQgBCAEH/gAAD/8IIAggCCAP4AAAB/4IAQgFCAMH/wAAD/8IIAgwCCgP5wAADw8IgQhBCCEPHwAACAAIAA//CAAIAAAAD/8AAQABAAEP/wAAD/AADAADAAwP8AAAD/AADwBwAA8P8AAADg8BsABAAbAODwAADgABgAB/AYAOAAAACAcIGQhhCYEOAQAAD//IAEgAQAAOAAGAAGAAGAAHAAAIAEgAT//AAAMADAADAAAAAAAgACAAIAAgAAwABgAAAADfAJEAkQD/AAAP/wCBAIEA/wAAAP8AgQCBAOcAAAD/AIEAgQ//AAAA/wCRAJEA8wAAAIAP/wiAAAAA/2CBIIEg/+AAD/8AgACAAP8AAAb/AAAAACb/4AAP/wAYAGYAgQAAD/8AAAD/AIAA/wCAAP8AAAD/AIAAgAD/AAAA/wCBAIEA/wAAAP/ggQCBAP8AAAD/AIEAgQD/4AAA/wCAAIAA4AAAAOcAkQCJAMcAAACAB/8AgQAAAP8AAQABAP8AAADAADwAAwA8AMAAAAD8AAcAHAAHAPwAAADnABgAGADnAAAA/gACIAIg/+AAAMcAiQCRAOMAAAAgB9+IAEgAQAAP/+AACABIAEffgCAAAAAAAAAAAAgAD/8AAAAAA="), 32, atob("AwMFCAYKBwMFBAYGAwUDBgYCBgYGBgYGBgYDAwQGBAYJBgYGBgYGBgYCBgYFBgYGBgYGBgYGBgYGBgYEBgQEBQMFBQUFBQQFBQIDBQIGBQUFBQUFBAUGBgUFBQUCBQYB"), 16+(scale << 8)+(1 << 16));};
+*/
 Graphics.prototype.setFontBlocky=function(scale){this.setFontCustom(atob("AAAAAAAD+QfyAAAAADgAcAAAAcADgAAAACACeAfwfwDzwD+D+AeQAQAAABwQZCH/4RCCHwAcAAAOAD4ARCD4wOcAGADABzgY+CEQA+ADgAAB3gf+CIQRiD+wOeABgAeACQAADQAcAAAAP8D/wwDEAIAAEAIwDD/wP8AAANgA4AfwA4ANgAAAAgAEAD4AfAAgAEAAAAAAAGgA4AAAEAAgAEAAgAAAAGAAwAAAAAADAB4B8A+AeADAAAAB/gf+CAQQCCAQf+B/gAACAAf+D/wAAAAAA8CPwRCCIQRCD4QOAAAAQCCIQRCCIQf+B3gAAAMADgA0AMgD/wf+AEAAAD4AfCCIQRCCIQR+AHgAAB/gf+CIQRCCIQR+AHgAACAAQACBwQ+CeAfADgAAAB3gf+CIQRCCIQf+B3gAAB4AfiCEQQiCEQf+B/gAAAxgGMAAAGNAxwAAAEABwAbAGMAggAAASACQASACQASAAAAggGMAbABwAEAAABAAYACGQRyD4AOAAAAH4B/gYGGeQn6EhQn6EeQwaDDAPwAAAP+D/wQQCCAQQD/wP+AAAf+D/wRCCIQRCD/wO8AAAP8D/wQCCAQQCDAwIEAAAf+D/wQCCAQQCD/wP8AAAf+D/wRCCIQRCAAAf+D/wRACIARAAAAP8D/wQCCAQQiDHwI+AAAf+D/wBAAIABAD/wf+AAAf+D/wAAAAgAGAAQACAAQf+D/gAAD/wf+AeAGYBhgYGCAQAAD/wf+AAQACAAQACAAAf+D/wGAAcADgAwAf+D/wAAD/wf+BgAGAAYAf+D/wAAB/gf+CAQQCCAQf+B/gAAD/wf+CIARACIAfABwAAAB/gf+CAQQCCBwf/B/oAAD/wf+CIARACIAf+B3wAABxgfOCIQRCCIQd+BngAACAAQAD/wf+CAAQAAAAf8D/wACAAQACD/wf8AAAfgD/AAeAAwAeD/AfgAAAfgD/AAeABwf0D/AAeAAwf8D/AAADAweeA/ABgA/AeeDAwAADwAfAAPwB+D4AeAAAAQeCHwRiCIQTCDwQcCAAA//H/4gBAAAYADwAHwAPgAPAAYAAEAI//H/4AAAYAPADgAwADgAPAAYAAAAAIABAAIABAAIABAAAcABgAAAAJgDeASQCSAfwB+AAAf+D/wCCAQQD+APgAAAPgD+AQQCCAQQAAAPgD+AQQCCD/wf+AAAB8AfwCSASQDyAOAAAAQAP+D/wSAAAAB8AfyCCQQSD/wf8AAD/wf+AQACAAfwB+AAAT+CfwAAAACAASf+T/gAAf+D/wAgAOAHeAxwAAD/wf+AAAD+AfwCAAfwD+AQAD+APwAAAfwD+AQACAAfwB+AAAB8AfwCCAQQD+APgAAAf+D/wQQCCAfwB8AAAB8AfwCCAQQD/wf+AAAfwD+AQACAAYABAAAABkAewCSASQDeAJgAAAQAH8A/wCCAAAD8AfwACAAQD+AfwAAAfAD8AAwAGAfgD4AAAD4AfgAGAfwD8AAwD+AfAAAAYwDuAHAA4AdwDGAAADwAfAAMAAiD/wf8AAAQwCOATQCyAcQDCAAAAwB/4fPiAEAAH/+//wAAQAj58P/AGAAAAgAMABAAMAAwACAAwAEAAAAAAAAAAAAAA"), 32, 
 atob("AwQGCAgNCgMFBQYHBAUEBwgFCAcICAgICAgDAwYGBgcMCAgICAYGCAgDCAgHCQgICAgICAcICAsIBwgEBwQIBwMHBwYHBwUHBwMFBwMJBwcHBwcHBQcHCQcHBwUDBQk="), 15+(scale << 8)+(1 << 16));};
 //atob("AwQGCAgNCgMFBQYHBAUEBwgFCAgICAgICAgDAwYGBgcMCAgICAYGCAgDCAgHCQgICAgICAcICAsIBwgEBwQIBwMHBwYHBwUHBwMFBwMJBwcHBwcHBQcHCQcHBwUDBQk="), 15+(scale << 8)+(1 << 16));};
-//*/
-/* Tamzen
-Graphics.prototype.setFontBlocky = function(scale) 
-{this.setFontCustom(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8wAAAAAAAAAAAAAAAAeAAAAAAAeAAAAAAAAAAEQB/wBEAEQB/wBEAAAAAAAAAGIAkgOTgJIAjAAAAAAAwgEkASgA1gApAEkAhgAAAc4CMQIxAckABgAGABkAAAAAAAAHgAAAAAAAAAAAAAAAAAAAAH4BgYIAQAAAAAAAAAACAEGBgH4AAAAAAAAAAAAQAFQAOAA4AFQAEAAAAAAAEAAQABAA/gAQABAAEAAAAAAAAAADIAPAAAAAAAAAAAAQABAAEAAQABAAEAAAAAAAAAAAAAMAAwAAAAAAAAAAAADAAwAMADAAwAMAAAAAAAD+AQkBEQEhAUEA/gAAAAAAAABBAIEB/wABAAEAAAAAAIEBAwEFAQkBEQDhAAAAAAECAQEBIQFhAaEBHgAAAAAAGAAoAEgAiAH/AAgAAAAAAeIBIQEhASEBIQEeAAAAAAB+AJEBEQERAREADgAAAAABAAEAAQcBGAFgAYAAAAAAAO4BEQERAREBEQDuAAAAAADgAREBEQERARIA/AAAAAAAAAAAAGMAYwAAAAAAAAAAAAAAAABjIGPAAAAAAAAAAAAQACgARACCAQEAAAAAAAAAJAAkACQAJAAkACQAAAAAAAABAQCCAEQAKAAQAAAAAAEAAgACEwIgAkABgAAAAAAA/wEAgjxCQkJCQURA/kAAAH8AiAEIAQgAiAB/AAAAAAH/AREBEQERAREA7gAAAAAAfACCAQEBAQEBAQEAAAAAAf8BAQEBAQEAggB8AAAAAAH/AREBEQERAREBAQAAAAAB/wEQARABEAEQAQAAAAAAAHwAggEBAQEBEQEfAAAAAAH/ABAAEAAQABAB/wAAAAAAAAEBAQEB/wEBAQEAAAAAAAYAAQABAAEAAQH+AAAAAAH/ABAAKABEAIIBAQAAAAAB/wABAAEAAQABAAEAAAAAAf8AgABAADAAQACAAf8AAAH/AIAAQAAgABAB/wAAAAAA/gEBAQEBAQEBAP4AAAAAAf8BEAEQARABEADgAAAAAAD+AQEBAQEBAQGA/oAAgAAB/wEQARABGAEUAOMAAAAAAMEBIQERAREBCQEGAAAAAAEAAQABAAH/AQABAAEAAAAB/gABAAEAAQABAf4AAAAAAfAADAADAAMADAHwAAAAAAH/AAEAAgAcAAIAAQH/AAABgwBEACgAEAAoAEQBgwAAAYAAQAAgAB8AIABAAYAAAAEBAQcBGQFhAYEBAQAAAAAAAAAAA//CAEIAQgBAAAAAAwAAwAAwAAwAAwAAwAAAAAIAQgBCAEP/wAAAAAAAAAAAgAEAAgABAACAAAAAAAAAQABAAEAAQABAAEAAQABAAAAABAACAAEAAIAAAAAAAAAABgBJAEkASQBKAD8AAAAAA/8AIgBBAEEAQQA+AAAAAAA+AEEAQQBBAEEAIgAAAAAAPgBBAEEAQQAiA/8AAAAAAD4ASQBJAEkASQA5AAAAAABAAEAB/wJAAkACQAAAAAAAOsBFIEUgRSB5IEDAAAAAA/8AIABAAEAAQAA/AAAAAAAAAEEAQQN/AAEAAQAAAAAAAAAAIEAgQCN/wAAAAAAAA/8ACAAYACQAQgABAAAAAAIAAgAD/gABAAEAAQAAAAAAfwBAAEAAPwBAAEAAPwAAAH8AIABAAEAAQAA/AAAAAAA+AEEAQQBBAEEAPgAAAAAAf+AiAEEAQQBBAD4AAAAAAD4AQQBBAEEAIgB/4AAAAAB/ACAAQABAAEAAIAAAAAAAIQBRAEkASQBFAEIAAAAAAEAAQAH+AEEAQQBBAAAAAAB+AAEAAQABAAIAfwAAAAAAcAAMAAMAAwAMAHAAAAAAAH4AAQABAD4AAQABAH4AAABBACIAFAAIABQAIgBBAAAAfgABIAEgASACIH/AAAAAAEMARQBJAFEAYQBBAAAAEAAQABAD74QARABEAEAAAAAAAAAAAAAH/8AAAAAAAAAABABEAEQAQ++AEAAQABAAAAGAAgACAAEAAIAAgAMAA="), 32, 8, 16 + (scale << 8) | 256);};
-*/
 
 g.setFontBlocky();
 
-g2.setFont("Blocky",2);
+g2.setFont("Blocky",3);
 g3.setFontBlocky();
 g4.setFontBlocky();
 
@@ -481,51 +467,27 @@ setTimeout(()=>{
 },  later);
 //*/
 //*
-setWatch(()=>{debug((getTime() % 1000).toFixed(3)+" --- BUSY FREE");}, BUSY, {edge: "rising", repeat: true});
-setWatch(()=>{debug((getTime() % 1000).toFixed(3)+" --- BUSY BUSY");}, BUSY, {edge: "falling", repeat: true});
+setWatch(()=>{logD((getTime() % 1000).toFixed(3)+" --- BUSY FREE");}, BUSY, {edge: "rising", repeat: true});
+setWatch(()=>{logD((getTime() % 1000).toFixed(3)+" --- BUSY BUSY");}, BUSY, {edge: "falling", repeat: true});
 //*/
 function bold(s) {
-  debug(getTime().toFixed(3));
+  print(getTime().toFixed(3));
   let bs = '';
   for(let c=0; c<s.length; c++) {
-    bs += s.charAt(c);
-    if(s.charAt(c) != ' ') bs+=String.fromCharCode(127);
+    bs += s.charAt(c)+String.fromCharCode(127);
   }
-  debug(getTime().toFixed(3));
+  print(getTime().toFixed(3));
   return bs;
 
 }
 
-let gM=Graphics.createArrayBuffer(400,20,1,{msb:true});
-gM.setFontBlocky();
-gM.setColor(-1).setBgColor(0).clear();
-
 function msgline(msg, y) {
-  gM.clear();
+  let gM=Graphics.createArrayBuffer(400,20,1,{msb:true});
+  gM.setFontBlocky();
+  gM.setColor(-1).setBgColor(0).clear();
   //msg = bold(msg);
   gM.drawString(msg, 4, 3);
   //gM.drawString(msg, 5, 3);
-  g.update(0, y, gM);
+  g.partial(0, y, gM);
 }
 
-var GB = (msg) => {
-  debug("GB!"+JSON.stringify(msg));
-  //msgline("GB! "+JSON.stringify(msg),0);
-  // filter
-  if(msg.t != "notify" && msg.t != "call") return;
-  if(msg.body == "undefined") return;
-  // let's get pickier; ignore the annoyances
-  if(msg.src === "Gmail") return;
-  let str = "";
-  if(msg.title) str = msg.title +": ";
-  str += msg.body;
-  msgline(str,280);
-  
-};
-
-function clear() {
-  gM.fillRect(0,0,399,19);
-  for(let y1=0; y1<300; y1+=gM.getHeight()) {
-    ifFree({func:(y)=>{g.update(0, y, gM, true);}, parm: y1});
-  }
-}
