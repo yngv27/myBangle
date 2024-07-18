@@ -180,6 +180,29 @@ exports.connect = (opts) => {
       setWatch(()=>{g.busy=false; sleep();} ,opts.busy, {edge: "rising"});
     }, 300);
   };
+  g.cls = (c) => {
+    if(g.busy) return;
+    g.busy = true;
+    if(typeof(c) === "undefined") c=-1;
+    wake(); // full
+    setTimeout(()=>{
+      let buf = new Uint8Array(opts.width>>3);
+      for(let x=0; x<buf.length; x++) buf[x] = c;
+      cmd(0x10); //write old
+      opts.dc.set();
+      for (let y=0;y<opts.height;y++) {
+        opts.spi.write(buf, opts.cs);
+      }
+      cmd(0x13); //write old
+      opts.dc.set();
+      for (let y=0;y<opts.height;y++) {
+        opts.spi.write(buf, opts.cs);
+      }
+      cmd(0x12);
+      setWatch(()=>{g.busy=false; sleep();} ,opts.busy, {edge: "rising"});   
+    }, 300);
+  };
+  
   g.wake=wake;
   g.delay=delay;
   g.round1=round1;
@@ -204,8 +227,8 @@ opts={
   delay: DELAY,
 };
 g = exports.connect(opts);
-//g.setColor(0).setBgColor(-1).clear();
 
+/*
 let wakeupTime="2024-06-18T09:00";
 function gnite(){
   g.clear();
@@ -229,52 +252,69 @@ function gnite(){
   },  later);
 
 }
-
-// Our clock
+//*/
+/*
+// CLOCK
+*/
 let g2=Graphics.createArrayBuffer(104,48,1,{msb:true});
 g2.setBgColor(0).setColor(-1);
+let sleepy = false;
 
 function clock(h1,m1) {
   let h=(new Date()).getHours();
   let m = (new Date()).getMinutes();
   if(h1) {h=h1; m=m1;}
   let dt=h+":"+('0'+m).slice(-2);
-  g2.setFontAlign(1,-1);
-  g2.setColor(-1).setBgColor(0);
-  g2.clear();
-  g2.drawString(dt, g2.getWidth()-4, 6);
-  g2.fillPoly(new Uint8Array([0,42, 6,48, 0,48  ]));
-  g.update(400-g2.getWidth(), 0, g2);
+  
+  // done for the day?
+  if((h == 17) && (m == 0)) {
+    clearInterval(clockIval);
+    clockIval = setInterval(clock, 30*60*1000);
+    g.cls();
+    sleepy=true;
+  } else if ((h == 9) && (m == 0)) {
+    clearInterval(clockIval);
+    clockIval = setInterval(clock, 60*1000);
+    newday();
+    sleepy=false;
+  }
+  if(sleepy) {
+    g2.setFontAlign(0,0);
+    g2.setColor(0).setBgColor(-1);
+    g2.clear();
+    g2.drawString(dt, g2.getWidth()/2, g2.getHeight()/2);
+    ifFree({func:() => {
+      g.update(144, 150-g2.getHeight()/2, g2);
+    }, parm: 0});
+  } else {
+    g2.setFontAlign(1,-1);
+    g2.setColor(-1).setBgColor(0);
+    g2.clear();
+    g2.drawString(dt, g2.getWidth()-4, 6);
+    g2.fillPoly(new Uint8Array([0,42, 6,48, 0,48  ]));
+    ifFree({func:() => {
+      g.update(400-g2.getWidth(), 0, g2);
+    }, parm: 0});
+    // erase any old agenda items
+    if((m == 0) && (h > 9)) {
+      agenda[h-10]="";
+      ifFree({func:updAgenda, parm: h-10});
+    }
+  }
 }
 
-let agenda = [
- "",
-  "10 \n10:30 Check pool",
-  "11 UX/SW Touchbase",
-  "12 ",
-  "13 SEY X-func",
-  "14 \n14:30 Check pool",
-  "15 Squish talk w Tom M",
-  ""
-];
 
-let todos=[
-  "_ Top 5 skills",
-  "_ Jen: LEGAL page content",
-  "_ Fill out VGI form for disbursement",
- ];
-
-function today()  { return (new Date().toString().substring(0,15)); }
-let motd = "I didn't catch that frequency, could you put it in the form of a spatula?";
-function status() {
-  msgline(motd, 280);
-  setTimeout(()=>{
-    msgline(today(), 0);
-  }, 2000);
-  setTimeout(()=>{
-    cal();
-    todo();
-  }, 4000);
+let motd = "Now with 15% less polonium than our standard recipe";
+function newday() {
+  g.cls();
+  ifFree({func:()=>{
+    msgline(motd, 280);
+  }, parm: 0});
+  ifFree({func:()=>{
+    msgline((new Date().toString().substring(0,15)), 0);
+  }, parm:0});
+  cal();
+  todo();
 }
 
 
@@ -300,6 +340,13 @@ function ifFree(f) {
 }
 g.on("free", ifFree);
 
+// TODO
+let todos=[
+  "_ Top 5 skills",
+  "_ Jen: LEGAL page content",
+  "_ Fill out VGI form for disbursement",
+ ];
+
 let g3 = Graphics.createArrayBuffer(280, 30, 1, {msb: true});
 g3.setColor(0).setBgColor(-1);
 function updTodo(i) {
@@ -321,16 +368,28 @@ function todo() {
     ifFree({func: updTodo, parm: i});
   }
 }
+
+// AGENDA
+let agenda = [
+ "",
+  "10 \n10:30 Check pool",
+  "11 UX/SW Touchbase",
+  "12 ",
+  "13 SEY X-func",
+  "14 \n14:30 Check pool",
+  "15 Squish talk w Tom M",
+  ""
+];
 let g4 = Graphics.createArrayBuffer(120, 32, 1, {msb: true});
 g4.setColor(0).setBgColor(-1);
 function updAgenda(i) {
   let msg = agenda[i];
-  let time=msg.substring(0,2);
-  msg = msg.substring(3);
-  g4.clear().drawString(time+": "+msg, 0, 0).drawLine(119,0,119,31);
+  //let time=msg.substring(0,2);
+  //msg = msg.substring(3);
+  g4.clear().drawString(msg, 0, 0).drawLine(119,0,119,31);
   for(let x=0; x < 120; x+=2) g4.setPixel(x,30);
   g.update(6, i*32+24, g4);
-  print("I got "+i);
+  //debug("I got "+i);
 }
 function cal() {
   for(let i=0; i<agenda.length; i++) {
@@ -384,27 +443,45 @@ function msgline(msg, y) {
   //msg = bold(msg);
   gM.drawString(msg, 4, 3);
   //gM.drawString(msg, 5, 3);
-  g.update(0, y, gM);
+  ifFree({func:(l)=>{g.update(0, l, gM);}, parm: y});
 }
 
+function fanoush(msg) {
+  if(typeof(msg.cal) === "number") {
+    let idx = msg.cal - 9;
+    agenda[idx] = (msg.cal)+": "+msg.txt;
+    ifFree({func: updAgenda, parm: idx});
+  } else if (typeof(msg.todo) === "number") {
+    agenda[msg.todo] = msg.txt;
+    ifFree({func: updTodo, parm: msg.todo});    
+  } else if (msg.motd) {
+    motd = msg.motd;
+    msgline(motd, 280);
+  }
+}
+
+let DELME = "";
 var GB = (msg) => {
   debug("GB!"+JSON.stringify(msg));
   //msgline("GB! "+JSON.stringify(msg),0);
   // filter
+  if(msg.t == "jv") {fanoush(msg); return; }
   if(msg.t != "notify" && msg.t != "call") return;
   if(msg.body == "undefined") return;
   // let's get pickier; ignore the annoyances
   if(msg.src === "Gmail") return;
+  // {"t":"notify","id":1721228504,"src":"Messages","title":"John Vann","subject":"","body":"{motd:\"You totally win!\"}","sender":"","reply":true}
+  // {"t":"notify","id":1721228509,"src":"SMS Message","title":"","subject":"","body":"{\"cal\":12,\"txt\":\"LUNCH 2\"}","sender":"John Vann","tel":"+13156008266"}
+  if(msg.title == "John Vann" || msg.sender == "John Vann") {
+    print("Fanoushing...");
+    fanoush(JSON.parse(msg.body)); 
+    return; 
+  }
+  print("NOT fanoush...");
   let str = "";
   if(msg.title) str = msg.title +": ";
   str += msg.body;
+  DELME=JSON.stringify(msg);
   msgline(str,280);
   
 };
-
-function clear() {
-  gM.fillRect(0,0,399,19);
-  for(let y1=0; y1<300; y1+=gM.getHeight()) {
-    ifFree({func:(y)=>{g.update(0, y, gM, true);}, parm: y1});
-  }
-}
