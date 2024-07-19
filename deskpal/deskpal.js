@@ -193,7 +193,7 @@ exports.connect = (opts) => {
       for (let y=0;y<opts.height;y++) {
         opts.spi.write(buf, opts.cs);
       }
-      cmd(0x13); //write old
+      cmd(0x13); //write new
       opts.dc.set();
       for (let y=0;y<opts.height;y++) {
         opts.spi.write(buf, opts.cs);
@@ -452,7 +452,7 @@ function fanoush(msg) {
     agenda[idx] = (msg.cal)+": "+msg.txt;
     ifFree({func: updAgenda, parm: idx});
   } else if (typeof(msg.todo) === "number") {
-    agenda[msg.todo] = msg.txt;
+    todos[msg.todo] = msg.txt;
     ifFree({func: updTodo, parm: msg.todo});    
   } else if (msg.motd) {
     motd = msg.motd;
@@ -463,9 +463,7 @@ function fanoush(msg) {
 let DELME = "";
 var GB = (msg) => {
   debug("GB!"+JSON.stringify(msg));
-  //msgline("GB! "+JSON.stringify(msg),0);
   // filter
-  if(msg.t == "jv") {fanoush(msg); return; }
   if(msg.t != "notify" && msg.t != "call") return;
   if(msg.body == "undefined") return;
   // let's get pickier; ignore the annoyances
