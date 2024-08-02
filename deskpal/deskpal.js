@@ -152,12 +152,12 @@ exports.connect = (opts) => {
     g.busy = true;
     if(full) wake(); else wake2();
     setTimeout(()=>{
-      let Width = (opts.width % 8 == 0)? (opts.width / 8 ): (opts.width / 8 + 1);
-      let Height = opts.height;
+      //let Width = (opts.width % 8 == 0)? (opts.width / 8 ): (opts.width / 8 + 1);
+      //let Height = opts.height;
 
       X_start = (X_start % 8 == 0)? X_start: (X_start|7)+1;
-      X_end = X_start + gfx.getWidth();
-      Y_end = Y_start + gfx.getHeight();
+      let X_end = X_start + gfx.getWidth();
+      let Y_end = Y_start + gfx.getHeight();
       //print(`XS: ${X_start}; Xe: ${X_end}`);
 
       cmd(0x91);		//This command makes the display enter partial mode
@@ -193,7 +193,7 @@ exports.connect = (opts) => {
       for (let y=0;y<opts.height;y++) {
         opts.spi.write(buf, opts.cs);
       }
-      cmd(0x13); //write new
+      cmd(0x13); //write NEW
       opts.dc.set();
       for (let y=0;y<opts.height;y++) {
         opts.spi.write(buf, opts.cs);
@@ -259,7 +259,7 @@ function gnite(){
 let g2=Graphics.createArrayBuffer(104,48,1,{msb:true});
 g2.setBgColor(0).setColor(-1);
 let sleepy = false;
-
+clockIval = 0;
 function clock(h1,m1) {
   let h=(new Date()).getHours();
   let m = (new Date()).getMinutes();
@@ -342,9 +342,10 @@ g.on("free", ifFree);
 
 // TODO
 let todos=[
-  "_ Top 5 skills",
-  "_ Jen: LEGAL page content",
   "_ Fill out VGI form for disbursement",
+  "_ Top 5 skills",
+  "_ Legal page content",
+  "_ FIND THAT CASE"
  ];
 
 let g3 = Graphics.createArrayBuffer(280, 30, 1, {msb: true});
@@ -481,5 +482,18 @@ var GB = (msg) => {
   str += msg.body;
   DELME=JSON.stringify(msg);
   msgline(str,280);
+  blink(5);
   
 };
+function LEDon() {
+  D38.set(); D11.reset();
+}
+function LEDoff() {
+  D11.set(); D38.reset();
+}
+function blink(n) {
+  while(n--) {
+    setTimeout(LEDon, n*1000);
+    setTimeout(LEDoff,n*1000 + 500);
+  }
+}
