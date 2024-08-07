@@ -1,3 +1,4 @@
+
 debug=print;
 let opts = {};
 if(process.env.BOARD == "QY03") {
@@ -50,6 +51,19 @@ r=require("~CC1101.js").connect(opts);
 
 r.init();
 
+function flush() {
+  // set to IDLE first
+  r.cmd(0x36); r.delay(20);
+  // flush buffers
+  r.cmd(0x3b); r.delay(20);
+  r.cmd(0x3a); r.delay(20);
+  setTimeout(()=>{
+    //r.init();
+    r.listen();
+  }, 100);
+}
+
+
 let pollInt = 0;
 
 debug(`Status: ${r.status()}`);
@@ -58,7 +72,9 @@ function start() {
   D8.set();
   D41.set();
   if(pollInt) clearInterval(pollInt);
-  pollInt = setInterval(poll, 1500);
+  pollInt = setInterval(poll, 2000);
+  // no more than 10 sec please!
+  setTimeout((i)=>{if(i) clearInterval(i);}, 10000, pollInt);
   poll();
 }
 
@@ -76,20 +92,31 @@ function challenge() {
   debug(`GOT [${msg}] pf ${msg.length}`);
   // check preamble bytes too
   if(msg.length == 24 && buf[1] == 59) {
-    if(pollInt) clearInterval(pollInt);
-    pollInt=0;
     let tmp = decode(E.toUint8Array(atob(msg)), mastKey1);
     debug("TMP: "+btoa(tmp));
     debug("Sending: "+btoa(encode(tmp, mastKey2)));
-    r.send(btoa(encode(tmp, mastKey2)));
+    r.send( btoa(encode(tmp, mastKey2)));
     // another check? feedback?
+  } else if (msg == "STAGE4") {
+    // close up shop
     if(pollInt) clearInterval(pollInt);
+    pollInt=0;
   }
+  flush();
 }
 
 let gd0Int = 0;
+/*
 function setInt() { if(!gd0Int) gd0Int = setWatch(challenge, opts.gd0, {edge: "rising", repeat: true});}
 function clearInt() { if(gd0Int) {clearWatch(gd0Int); gd0Int=0;}}
+*/
+function setInt() {
+  gd0Int = setInterval(()=>{
+    if(r.readReg(0xfb) > 0) challenge();
+  }, 50);
+}
+//function clearInt() { if(gd0Int) {clearWatch(gd0Int); gd0Int=0;}}
+function clearInt() { if(gd0Int) {clearInterval(gd0Int); gd0Int=0;}}
 
 setInt();
 

@@ -497,3 +497,6 @@ function blink(n) {
     setTimeout(LEDoff,n*1000 + 500);
   }
 }
+/*
+agenda=["09","~0","~~","~2\n:30 UI update requests -TDo","~3 CCB","~4","~5",""]
+*/

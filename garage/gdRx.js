@@ -75,9 +75,16 @@ function nextResponse(str) {
 
 
 let gd0Int = 0;
-function setInt() { if(!gd0Int) gd0Int = setWatch(challenge, opts.gd0, {edge: "rising", repeat: true});}
+/*function setInt() { if(!gd0Int) gd0Int = setWatch(challenge, opts.gd0, {edge: "rising", repeat: true});}
 function clearInt() { if(gd0Int) {clearWatch(gd0Int); gd0Int=0;}}
-
+*/
+function setInt() {
+  gd0Int = setInterval(()=>{
+    if(r.readReg(0xfb) > 0) challenge();
+  }, 50);
+}
+//function clearInt() { if(gd0Int) {clearWatch(gd0Int); gd0Int=0;}}
+function clearInt() { if(gd0Int) {clearInterval(gd0Int); gd0Int=0;}}
 setInt();
 r.listen();
 
