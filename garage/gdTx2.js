@@ -6,8 +6,8 @@ var busy=false;
 var gatt;
 debug = print;
 addr = //"e4:91:54:34:59:67 random";
-  // "e2:35:4e:be:ea:3d random"; // GD
-"ca:f6:59:bd:e3:5e random"; // little nrfy
+  "e2:35:4e:be:ea:3d random"; // GD
+//"ca:f6:59:bd:e3:5e random"; // little nrfy
 
 function encode(tgt, key) {
   let len=tgt.length;
@@ -27,6 +27,7 @@ let mastKey2 = E.toUint8Array(atob("CXDpA6GJFFZJqQzoGxl83A=="));
 function sendIt() {
   busy = true;
 
+  NRF.setTxPower(8);
   NRF.connect(addr, {minInterval:7.5, maxInterval:7.5}).then( function (gt) {
     gatt = gt;
     debug("finding SVC");
@@ -57,14 +58,18 @@ function sendIt() {
     debug("ERROR",e);
     blink(2);
     busy=false;
+    NRF.setTxPower(0);
   }); // end NRF.requestDevice
 }
 
 function blink(n, fast) {
   let delay = fast ? 200 : 500;
   while(n--) {
-    setTimeout(()=>{LED1.set();}, n*delay*2);
-    setTimeout(()=>{LED1.reset();}, n*delay*2+delay);
+//    setTimeout(()=>{LED1.reset();}, n*delay*2);
+//    setTimeout(()=>{LED1.set();}, n*delay*2+delay);
+    // BANGLE
+    setTimeout(()=>{g.fillRect(60,60,99,99);}, n*delay*2);
+    setTimeout(()=>{g.clearRect(60,60,99,99);}, n*delay*2+delay);
   }
 }
 function challenge(str) {
@@ -82,7 +87,7 @@ function challenge(str) {
     if(gatt) { gatt.disconnect(); gatt="";}
     blink(3,1); 
     print("Completed");
-
+    NRF.setTxPower(0);
   }
 
 }
@@ -91,4 +96,5 @@ function scan(off) {
   if(off) NRF.setScan();
   else NRF.setScan((d)=>{if(d.name != "undefined") print(d.name);}) ;
 }
-setWatch(sendIt, BTN1, {repeat: true, edge: "rising"});
+//setWatch(sendIt, BTN1, {repeat: true, edge: "rising"});
+swipeLR = sendIt;

@@ -6,6 +6,7 @@
 let konsole = "";
 debug = (msg) => { konsole += msg + "\n";};
 
+NRF.setTxPower(8);
 NRF.setServices({
   "13152001-face-f00d-d00f-729184728473": {
     "13152002-face-f00d-d00f-729184728473": {
@@ -51,8 +52,8 @@ let tempKey = "";
 
 function blink(n) {
   while(n--) {
-    //setTimeout(()=>{LED1.reset();}, n*500);
-    //setTimeout(()=>{LED1.set();}, n*500 + 250);
+    //setTimeout(()=>{D15.set();}, n*500);
+    //setTimeout(()=>{D15.reset();}, n*500 + 250);
   }
 }
 
@@ -78,13 +79,13 @@ function challenge(evt) {
       // open the door DELAY?
       blink(4);
       setTimeout(()=>{
-        //D13.set();
-        //D24.reset();
+        D13.set();
+        D24.reset();
         debug("CLICK\n");
       }, 450);
       setTimeout(()=>{
-        //D13.reset();
-        //D24.set();
+        D13.reset();
+        D24.set();
       }, 900);
 
     }
@@ -101,11 +102,17 @@ function challenge(evt) {
     }
   });
 }
+var whitelist = [
+  "c5:1a:13:66:27:a3 random",  //puck
+  "c0:1e:1f:a6:90:02 random", // id205l
+  "c3:77:1f:e2:bc:e6 random", // Bangle2
+  "dc:71:96:ea:a0:46 public" // Dell
+];
 
-var connectee = [];
-NRF.on("connect",(addr)=>{connectee.push(addr);});
+NRF.on("connect",(addr)=>{
+  if( ! whitelist.includes(addr) ) {
+    NRF.disconnect();
+    return;
+  }
+});
 
-const whitelist = [
-      "c5:1a:13:66:27:a3 random",  //puck
-    "dc:71:96:ea:a0:46 public" // Dell
-  ];
