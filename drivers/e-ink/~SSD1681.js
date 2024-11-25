@@ -1,4 +1,4 @@
-//exports = {};
+exports = {};
 
 exports.connect = function(opts, callback) {
   const WF_PARTIAL = new Uint8Array(
@@ -40,8 +40,7 @@ exports.connect = function(opts, callback) {
   }
   function init() { 
     if(opts.rst) {
-      //digitalPulse(RST, 0, [100,100]);
-      opts.rst.reset(); setTimeout(()=>{opts.rst.set();},50);
+      digitalPulse(opts.rst, 0, [50]);
     }
     setTimeout(()=>{cmd(0x12);}, 100);
     g.partial = false;
@@ -64,15 +63,15 @@ exports.connect = function(opts, callback) {
   g.setPartial = function () {
     let to = 0;
     setTimeout(init, to); to+=delays[0];
-    setTimeout(loadLUT1, to); to+=delays[0];
-    setTimeout(loadLUT2, to); to+=delays[0];
+    setTimeout(loadLUT1, to); to+=delays[1];
+    setTimeout(loadLUT2, to); to+=delays[2];
     setTimeout(()=>{ g.partial = true; g.flip();}, to);
   };
 
   g.flip = function () {
     cmd(0x24); //write B/W
     opts.dc.set();
-    opts.spi.write(new Uint8Array(g.buffer));
+    opts.spi.write(new Uint8Array(g.buffer), opts.cs);
     if(g.partial) cmd(0x22, 0xCF); 
     cmd(0x20); // update
     return g;
@@ -84,7 +83,7 @@ exports.connect = function(opts, callback) {
     var w = g.getWidth()>>3;
     for (var y=0;y<g.getHeight();y++) {
       //for( var x=0; x < g.getWidth()>>3; x++)
-      opts.spi.write(new Uint8Array(g.buffer,y*w,w));//, opts.cs);
+      opts.spi.write(new Uint8Array(g.buffer,y*w,w), opts.cs);
     }
     opts.dc.reset(); 
     if(g.partial) cmd(0x22, 0xCF); 
@@ -92,7 +91,7 @@ exports.connect = function(opts, callback) {
     return g;
 
   };
-  g.reset = init;
+  g.init = init;
 
   g.sleep = function () { cmd(0x10, 1);};
   
@@ -100,12 +99,16 @@ exports.connect = function(opts, callback) {
   if(callback) setTimeout(callback, 250);
   return g;
 };
+
 /*
-g = exports.connect({spi: spi1, cs: 0, dc: D28, rst: D14, width: 200, height: 200}, ()=>{
-  g.setRotation(2,1);
+spi1 = new SPI();
+spi1.setup({sck: D29, mosi: D31, baud:2000000});
+g = exports.connect({spi: spi1, cs: D2, dc: D47, rst: D45, busy:D43, width: 128, height: 250}, ()=>{
+  g.setRotation(3,1);
+  g.getWidth=()=>{return 122;};
   g.setBgColor(1).setColor(0);
   g.clear();
   g.flip();
   
 });
-*/
+//*/
