@@ -1,0 +1,149 @@
+/*
+** Simple analog with polygon hands, date and rotated triangle ticks on gray bkgd
+*/ 
+function init() {
+    const _C = {
+      CYAN: "#80FFFF",
+      WHITE: "#FFFFFF",
+      YHT: g.getHeight(),
+      XWID: g.getWidth(),
+      XMID: g.getWidth() / 2,
+      YMID: g.getHeight() * 3 / 8 - 1,
+      fgColor: "#fff5d9",
+      BKGD: "#181818",
+    };
+  
+  /*g.setFontDefault = function () {
+   this.setFontCustom(atob("AAAAAAAAAAAAAAAAAAAAAAAD/mAAAAAAADAAAAAAMAAAAAAAAAASAAEgAP/AASAA/8ABIAASAAAAAAAADggBEEAgggf/8CCCAQRACDgAAAAAAAAAAAwGASGADGAAGMAGEgGAwAAAAAAAADgBzEAjAgI4IBxkAAGAAGYAAAAAAACAADAAAAAAAAAAfwA4DgQAEAAAAAAAQAEDgOAH8AAAAAAAAAQAAkgAFQAA4AAVAAJIAAQAAAAAAAAAQAAEAABAAD+AAEAABAAAQAAAAAAAAAAQAAYAAAAAAAAAAABAAAQAAEAABAAAQAAEAABAAAAAAAAAAGAAAAAAAAAGAAGAAGAAGAAGAAGAAAAAAAAAD/gBAkAgQgIIICECASBAD/gAAAAAAABAAAgAAQAAP/4AAAAAAADAYBAKAgEgICICBCAQggDwIAAAAAAACAgBAEAgggIIICCCARRADjgAAAAAAAADgADIADCADAgDAIAA/gAAgAAAAAAAPwgCEEAhAgIQICECAghAIHgAAAAAAAA/gAyEARAgIQICECAghAAHgAAAAAAAIAACAAAgAAIA4CBwAjgAPAAAAAAAAADjgBFEAgggIIICCCARRADjgAAAAAAADwABCCAgQgIEICBEAQmAD+AAAAAAAAAwYAAAAAAAAAEAMGAAAAAAAABAAAoAARAAIIAEBAAAAAAAABEAARAAEQABEAARAAEQABEAAAAAAAAEBAAggAEQAAoAAEAAAAAAAADAABAAAgAAIHYCCAARAADgAAAAAAAAB/gAgEAR4gEhIBISAJIgB/QAAAAAAAAB4AHwAOEAMBAA4QAB8AAB4AAAAAAAP/4CECAhAgIQICECAShADHgAAAAAAAD/gBAEAgAgIAICACAQBACAgAAAAAAAP/4CACAgAgIAICACAQBAD/gAAAAAAAP/4CCCAgggIIICCCAgAgIAIAAAAAAAP/4CCAAggAIIACCAAgAAIAAAAAAAAAD/gBAEAgAgIAICBCAQRACH4AAAAAAAP/4ACAAAgAAIAACAAAgAP/4AAAAAAAIAID/+AgAgAAAAAAAACAAAQAACAAAgAAIAAEA/+AAAAAAAA//gAIAAFAACIABBAAgIAwBgAAAAAAA//gAAIAACAAAgAAIAACAAAgAAAAAAA//gDAAAMAAAwAAwAAwAA//gAAAAAAA//gDAAAMAAAwAADAAAMA//gAAAAAAAP+AEAQCACAgAgIAIBAEAP+AAAAAAAA//gIEACBAAgQAIEABCAAPAAAAAAAAAP+AEAQCACAgAgIAoBAEAP+gAAAAAAA//gIEACBAAgQAIGABCYAPBgAAAAAAAOCAEQQCCCAgggIIIBBEAIOAAAAAAAAgAAIAACAAA//gIAACAAAgAAAAAAAAA/+AAAQAACAAAgAAIAAEA/+AAAAAAAA8AAA8AAA4AABgADgAPAA8AAAAAAAAA+AAAeAAAeAB4APgAAHgAAHgAeAD4AAAAAAAADAGAMGAA2AACAADYADBgDAGAAAAAAADAAAMAAAwAAD+ADAADAADAAAAAAAAACAeAgIgIEICCCAhAgIgIDwCAAAAAAAH//BAAQQAEAAAAAAAMAAAwAADAAAMAAAwAADAAAAAAABAAQQAEH//AAAAAAAAQAAIAAEAACAAAQAACAAAQAAAAAAAAAACAAAgAAIAACAAAgAAIAACAAAAAAADAAAIAAAAAAAAAAGAASQAJCACQgAkIAJEAB/gAAAAAAA//gAQQAICACAgAgIAEEAA+AAAAAAAAA+AAQQAICACAgAgIAICABBAAAAAAAAA+AAQQAICACAgAgIAEEA//gAAAAAAAA+AASQAIiACIgAiIAEiAA5AAAAAAAACAAAgAB/+AiAAIgACAAAAAAAAAAD4QBBCAgIgICICAiAQRAP/gAAAAAAD/+ABAAAgAAIAACAAAQAAD+AAAAAAAAIAAb/gAAAAAAAAAIAABAAAQb/4AAAAAAA//gACAAAgAAUAAIgAEEACAgAAAAAAAgAAP/wAACAAAgAAAAAAAD/gAgAAIAAB/gAgAAIAAB/gAAAAAAAD/gAQAAIAACAAAgAAEAAA/gAAAAAAAA+AAQQAICACAgAgIAEEAA+AAAAAAAAD/8AQQAICACAgAgIAEEAA+AAAAAAAAA+AAQQAICACAgAgIAEEAD/8AAAAAAAD/gAIAAEAACAAAgAAIAABAAAAAAAAABxAAiIAIiACIgAiIAIiABHAAAAAAAACAAAgAA/8ACAgAgIAACAAAAAAAAP4AABAAAIAACAAAgAAQAP+AAAAAAAAOAAAYAABgAAGAAGAAGAAOAAAAAAAAAPwAADgADAAHAAAMAAA4APwAAAAAAAAMGAAiAAFAAAgAAUAAIgAMGAAAAAAAAOAQAYEABmAAGAAGAAGAAOAAAAAAAAAIGACCgAhIAIiACQgAoIAMCAAAAAAAACAA/fgQAEAAAAAAAAAAD/+AAAAAAAAAABAAQP34ACAAAAAAAAAgAAQAAEAAAgAAEAABAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="), 32, atob("BgMFCQkJCQQFBQkJBAkDCQoGCQkJCQkJCQkDBAcJBwkJCQkJCQkJCQkFCQkJCQkJCQkJCQkJCQkJCQkFCAUJCQQJCQkJCQgJCQQGCQYJCQkJCQkJCAkJCQkJCQUFBQk="), 256 + 20);
+  
+  };
+  */
+     g.setFontDefault = function () {
+      this.setFontCustom(atob("AAAAAAAAB/QAAcAAAHAAAAKAPgCgD4AoAAAZgWQf8E0DMAAAQwUwKwC0A1AygwgAAM4LmE5BnAGwAAcAAAB8DjhAQAAQEOOB8AAAqAOAHAFQAAAQAIAfACABAAAABoA4AACABAAgAQAAAAYAMAAAHAeB4AAAP4MWERDRg/gAAIAP+AAAAAhwxoRkNiDhAAAggwYRENmDeAAAHAOgMQP+AEAAB4gkYSEJmEeAAA/g2YSEJmAeAABAAg4RwLgHAAAA3g2YRENmDeAAA8AzIQkM2D+AAAAAMwGYAAAAAzQZwAAAAAgA4A2AxgQQAABQAoAUAKAAAIIGMBsAcAEAAAIAMAEdDYA4AAAHwGMGDCchbQooXkEYDEA8AAAB4HwOIB0AOABwAAf8IiERCYg8wDwAAH8GDCAhAQwYIIAAH/CAhAQwIMMD8AAD/hEQiIREICAAD/hEAiARAIAAAB/BgwgIREMmCeAAB/wCABAAgAQD/gAAAAf8AAAAABAAwAIf4AAH/AYAeAZgYYIGAAD/gAQAIAEACAAD/gwAGABwBgDAD/gAA/4MABgAYADB/wAAP4MGEBCAhgwfwAAP+EICEBCAzAPAAAD+DBhBQg4YMH+AAAAB/wjARwIsGzBwgAAYQWMJiGbBHAAAgAQAP+EACAAAA/wAMACADADB/wAAeAB4AHAOAcA4AAAPAA4AHgeADAAcB4HgAABgwYwDgBwDGDBgAA4AHAA+AwBwBgAAAQcIaEZCYhYQ4IAAP+EBAAB4AHAA8AAEBD/gAAIAMAMAGABgAQAAAAEACABAAgAQAIAAMADAAAADgLYFEDiA/AAB/wEIGEDGA+AAAPgMYEEDGAiAAAPgMYGEBCH/AAAPgNYEkDSA4AAAIAf4aAIAAAAfAY0ISEbD/AAD/gMAMAGAB+AAC/gAAACADL/AAD/gGAHgGYCGAAD/gAAP4GACAA/AwAQAH4AAD+AgAwAYAH4AAB8BjAggYwHwAAD/hCAhgYwHwAAB8BjAhgQgP+AAD+AwAwAAAGIFkCaBGAAAQA/wEMAAB+ABgAwAQH8AABwAOABwDgHAAABwAOABwDgAcA4BwAAAYwGwBwBsBjAAAfgAaAJANh/gAARwJoFkDiAAAIA7ggIAAP+AACAg7gCAAACACABAAQAIAIAAAAAAAAAAAA==")
+        , 32, atob("AwIEBgYIBgIEBAUGAwUDBAYEBgYGBgYGBgYEBQYFBgYLBwcHBwcGBwcEBQcGCAcHBwcHBgYHBwkHBwcDBAMHBwMGBgYGBgUGBgIEBgIIBgYGBgQFBAYGCAYGBQQCBAc="), 256 + 13);
+    };
+  
+  
+  
+    g.setFont("Default");
+  let pRad = Math.PI / 180;
+    //if(!_C) let _C = {};
+  let rotatePoly = (pArr, angle, xoff, yoff) => {
+    let newArr = [];
+    let a = angle;// * pRad;
+    for(let i=0; i<pArr.length ; i+= 2) {
+      newArr[i] = xoff + Math.cos(a)*pArr[i] + Math.sin(a)*pArr[i+1];
+      newArr[i+1] = yoff + Math.sin(a)*pArr[i] - Math.cos(a)*pArr[i+1];
+    }
+    return newArr;
+  };
+  let r0 = 9, r1 = 4, r2 = 3, r3 = 64, r4 = 104;
+  let hrHand = [ -1,r0, 0-r1,r0+r1*2, 0,r3, r1,r0+r1*2, 1,r0 ];
+  let minHand = [ -1,r0, 0-r2,r0+r2+r1, 0,r4, r2,r0+r2+r1, 1,r0];
+    minHand = [-1, r0,  -1,r4, 0,r4+1, 1,r4, 1,r0];
+    hrHand = [-1, r0,  -1,r3, 0,r3+1, 1,r3, 1,r0];
+    
+  /*
+  g.setBgColor(_C.BKGD);
+  g.clear();
+  g.setColor(0);
+  g.fillPolyAA(rotatePoly(minHand, 30, 120, 122));
+  g.fillPolyAA(rotatePoly(hrHand, 47, 120, 122)); 
+  g.setColor(0.7,0.7,0.7);
+  g.fillPolyAA(rotatePoly(minHand, 30, 120, 119));
+  g.fillPolyAA(rotatePoly(hrHand, 47, 120, 119)); 
+  g.setColor(0).fillCircle(120,120,r2);
+  g.setColor(0.7,0.7,0.7);
+  for(let r= 8; r> 5; r--)
+    g.drawCircleAA(120,120,r);
+  g.setColor("#608060");
+  let tic = [ -8,120, 8,120, 0,112];
+  for(let t=0; t<12; t++) g.fillPolyAA(rotatePoly(tic, t*30, 120,120));
+  wOS.wake();
+  */
+  
+  let start = () => {
+    g.setBgColor(_C.BKGD);
+    g.clear();
+    g.setColor("#202020").fillCircle(120,11,10);
+    g.setColor(_C.fgColor).drawCircleAA(120,10,10);
+    g.setColor(0).drawCircleAA(120,12,10);
+  };
+  
+  let drawClock = (d) => {
+    start();
+    drawData2(d);
+    let hrAngle = (d.hr * 60 + d.min) * Math.PI / 360;
+    let minAngle = d.min / 30 * Math.PI;
+    g.setColor(0);
+    g.fillPolyAA(rotatePoly(minHand, minAngle, 120, 122));
+    g.fillPolyAA(rotatePoly(hrHand, hrAngle, 120, 122)); 
+    g.setColor("#202020").fillCircle(120,119,7);
+    g.setColor( _C.fgColor);
+    g.fillPolyAA(rotatePoly(minHand, minAngle, 120, 119));
+    g.fillPolyAA(rotatePoly(hrHand, hrAngle, 120, 119)); 
+    g.drawCircleAA(120,119,7);
+  
+  };
+  
+  let drawData = (d) => {};
+  let drawData2 = (d) => {
+    // STATUS
+  
+    g.setFontAlign(0, -1).setColor(_C.fgColor);
+    let batt = E.getBattery(); //process.env.VERSION; //battInfo();
+    for (let x = 0; x < 5; x++) {
+      if (batt < x * 20) g.setColor("#d6825e");
+      //g.fillRect(24-x*4,  165- x * 7, 35-x*5, 170-x * 7 );
+    }
+    //g.clearRect(30, 133, 100, 146);
+    let dow = d.niceDate.substring(0,3);
+    let dt = d.niceDate.substring(7);
+    g.setColor( _C.fgColor).setFontAlign(1, 0);
+    //g.drawString(` ${dow} `, _C.XWID-12, 150, true);
+    g.drawString(` ${dt} `, _C.XWID-12, 120, true);
+  };
+  
+  let showMsg = (msgobj) => {
+    g.setColor("#c0c0c0");
+    g.setFont("Default"); //"6x8");
+    g.setFontAlign(0,0);
+    g.drawString(g.wrapString(msgobj.text, 96).join("\n"),120, 192);
+  };
+  
+  return {
+    start: start,
+    drawClock: drawClock,
+    drawData: drawData,
+    showMsg: showMsg,
+  };
+  }
+  exports = init();
+  /*
+  const _C = {
+    CYAN: "#80FFFF",
+    WHITE: "#FFFFFF",
+    YHT: g.getHeight(),
+    XWID: 130,
+    XMID: 130 / 2,
+    YMID: g.getHeight() / 2,
+  };
+  */
+  if(process.env.BOARD != "EMSCRIPTEN") {
+    wOS.BKL.reset();
+  }
+  exports.start();
+  let dt = { hr: 10, min: 10, niceDate: "Sun Jul 12" };
+  exports.drawClock(dt);
+  exports.drawData(dt);
+  exports.showMsg({title:"Title", text:"This would be message 1"});
+  
+  
+  if(typeof(TC) != "undefined") {
+    TC.on("touch", (p) => {
+      if(p.x > 80 && p.x < 160 && p.y > 140) {
+        showBits();
+        //setTimeout(start, 60*1000);
+      }
+    });
+  }

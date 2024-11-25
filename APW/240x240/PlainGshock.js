@@ -65,7 +65,7 @@ let lastSecs = '';
 
 //g.setBgColor(BGCOLOR).setColor(FGCOLOR).fillCircle(78,112,2).fillCircle(78,140,2);
 require("FontDylex7x13").add(Graphics);
-g.setFont("Dylex7x13",1).setFontAlign(0,0);
+g.setFont("Dylex7x13",1).setFontAlign(0,-1);
 
 let tikint = 0;
 let lastDigs = new Uint8Array([11,11,11,11]);
@@ -99,7 +99,7 @@ function tick() {
   let digs = [Math.floor(s / 10), s % 10];
   let ldigs = [Math.floor(lastSecs / 10), lastSecs % 10];
   for(let d = 0; d < digs.length; d++) {
-    if(digs[d] != ldigs[d])
+    //if(digs[d] != ldigs[d])
       drawDigitMini(digs[d], [156,173] [d], 54);
   }
   lastSecs = s;
@@ -127,6 +127,9 @@ exports.drawData = function (dt) {
     }
     drawDOW(dt.getDay());
     //drawBattery(E.getBattery());
+    let b = E.getBattery();
+    g.drawString(b+" %", 208, 20, true);
+    g.drawString(b+" %", 209, 20,false);
   //}
 };
 
@@ -148,9 +151,9 @@ function drawBattery(b) {
 
 function drawAmPm(isPM) {
   g.setColor(C.FGCOLOR);
-  let v = isPM ? "PM " : "AM ";
-  g.drawString(v, 208, isPM ? 78 : 59, true);
-  g.drawString(v, 209, isPM ? 78 : 59, false);
+  let v = isPM ? "     \nPM " : "AM\n     ";
+  g.drawString(v, 208, 59, true);
+  g.drawString(v, 209, 59, false);
 }
 function drawDOW(dow) {
   let v = "SUNMONTUEWEDTHUFRISAT".substring(dow*3,(dow+1)*3);
