@@ -98,3 +98,9 @@ function scan(off) {
 }
 //setWatch(sendIt, BTN1, {repeat: true, edge: "rising"});
 swipeLR = sendIt;
+
+function clock() {
+  g.clearRect(0,0,175,88);
+  g.setFont("12x20",2);
+  g.drawString(Date().toString().substring(16,21), 88, 44);
+}

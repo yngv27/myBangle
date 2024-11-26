@@ -2,6 +2,7 @@ function SC7A20(opts)  {
     this.i2c = opts.i2c;
     this.intr = opts.intr;
     this.addr = 0x18;
+    //this.useInt = opts.useInt;
   }
   SC7A20.prototype.writeByte = function(a,d) { 
     this.i2c.writeTo(this.addr,a,d);
@@ -12,16 +13,23 @@ function SC7A20(opts)  {
   };
   SC7A20.prototype.init = function () {
     this.id = this.readBytes(0x0F,1)[0];
-    // datarate: 4 = 50Hz; 0 for LPen (no low power); 0b111 = enable all axes
-    this.writeByte(0x20,0x47);
     this.writeByte(0x21,0x00); //highpass filter disabled
+    this.writeByte(0x24,0x00); //latched interrupt off
+    if(!this.intr) {
+      // low power, no built-in wakeup
+      this.writeByte(0x20,0x2F); // 10Mhz
+      this.writeByte(0x22,0x00); //no interrupt to INT1
+      this.writeByte(0x23,0x80); //BDU,MSB at high addr, NO HighRes
+      this.writeByte(0x30,0x00); //no XH interrupt 
+      return this.id;
+    }
+    // use built-in wakeup
+    this.writeByte(0x20,0x47); // datarate: 4 = 50Hz; 0 for LPen (no low power); 0b111 = enable all axes
     this.writeByte(0x22,0x40); //interrupt to INT1
     this.writeByte(0x23,0x88); //BDU,MSB at high addr, HR
-    this.writeByte(0x24,0x00); //latched interrupt off
     this.writeByte(0x32,0x10); //threshold = 250 milli g's
     this.writeByte(0x33,0x01); //duration = 1 * 20ms
     this.writeByte(0x30,0x02); //XH interrupt 
-    if(!this.intr) return this.id;
     pinMode(this.intr,"input",false);
     setWatch(()=>{
       //print("EEK: "+JSON.stringify(this));
