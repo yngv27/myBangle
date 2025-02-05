@@ -1,4 +1,4 @@
-exports.connect = (spi1, opts) => {
+exports.connect = (opts) => {
 
   let lut_full_mono = new Uint8Array(
   [
@@ -13,31 +13,30 @@ exports.connect = (spi1, opts) => {
 
   function cmd(c, d) {
       opts.dc.reset();
-      spi1.write(c, opts.cs);
+      opts.spi.write(c, opts.cs);
       if (d !== undefined) {
           opts.dc.set();
-          spi1.write(d, opts.cs);
+          opts.spi.write(d, opts.cs);
       }
   }
   
   var g = Graphics.createArrayBuffer(opts.width, opts.height ,1,{msb:true});
-
+  g.flipCnt = 0;
   g.flip = function (partial) {
     //setRefreshArea();
     cmd(0x24); //write B/W
     opts.dc.set();
-    /*
-    var w = g.getWidth()>>3;
-    for (var y=0;y<g.getHeight();y++) {
-      spi1.write(new Uint8Array(g.buffer,y*w,w), opts.cs);
-    }
-    digitalWrite(opts.dc,0); 
-    */
-    spi1.write(new Uint8Array(g.buffer), opts.cs);
+    opts.spi.write(new Uint8Array(g.buffer), opts.cs);
     cmd(0x22, 0xc4);
     cmd(0x20);
     cmd(0xff);
     setTimeout(powerOff, 150);
+    /*
+    if(++g.flipCnt == 1) 
+      setTimeout(()=>{g.init(true);}, 2000);
+    else if(g.flipCnt >= 6)
+      setTimeout(()=>{g.init(false);}, 1000);
+      */
     return g;
   };
 
@@ -46,10 +45,13 @@ exports.connect = (spi1, opts) => {
 
   function setRefreshArea() {
     let a={ x1:0, y1:0, x2:199, y2:199};
-    if(g) g.getModified(true);
+    /*let a;
+    if(g) a=g.getModified(true);
+    if(!a) a=def;
+    a.x1 &= 0xf8;*/
     // not "true" widths/heights: one less is what we use
-    a.w=a.x2-a.x1; a.h=a.y2-a.y1;
-    print(`mod area: ${JSON.stringify(a)}`);
+    a.w=(a.x2-a.x1)|7; a.h=a.y2-a.y1;
+    //print(`mod area: ${JSON.stringify(a)}`);
     cmd(0x44, [(a.x1 >> 3), (a.w >> 3)]);//SET_RAM_X_ADDRESS_START_END_POSITION: LO(x >> 3), LO((w-1) >> 3)
     // cheat: we're less than 256
     cmd(0x45, [a.y1, 0, a.h, 0]);//SET_RAM_Y_ADDRESS_START_END_POSITION: LO(y), HI(y), LO(h - 1), HI(h - 1)
@@ -63,10 +65,7 @@ exports.connect = (spi1, opts) => {
 */
   }
 
-  function powerOn() { cmd(0x22); cmd(0xc0); cmd(0x20); }
-  function powerOff() { cmd(0x22); cmd(0xc3); cmd(0x20); }
-  
-  function init() {
+  function init(partial) {
     opts.rst.reset(); 
     setTimeout(()=>{opts.rst.set();},200);
     setTimeout(() => {
@@ -78,15 +77,22 @@ exports.connect = (spi1, opts) => {
     cmd(0x3B, 0x08);//SET_GATE_TIME: 2us per line
     cmd(0x11, 0x03);//DATA_ENTRY_MODE_SETTING: X increment; Y increment
 
-    cmd(0x32, lut_full_mono);
+    //if(partial)
+      //cmd(0x32, lut_partial); 
+    //else { 
+      cmd(0x32, lut_full_mono); 
+      g.flipCnt = 0;
+    //}
 
     setRefreshArea();
     }, 400);
   }
-  
+  powerOn = init;
+  function powerOff() { cmd(0x10,1);}
+    
   init();
   g.cmd = cmd;
-  g.reset = init;
+  g.init = init;
   g.powerOff = powerOff;
   g.powerOn = powerOn;
   return g;
@@ -97,9 +103,10 @@ exports.connect = (spi1, opts) => {
 var spi1 = new SPI();
 spi1.setup({sck: D18, mosi: D19, baud: 2000000});
 opts = {
+  spi: spi1,
   cs: D9, //dummy
   dc: D28,
   rst: D11,
 };
-g=exports.connect(spi1, opts);
+g=require("IL3829.js").connect(opts);
 */
