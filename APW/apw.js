@@ -1,6 +1,6 @@
 // boards that deviate from our program outline
 _C = {
-    alwaysOn: ["CV16", "QY03X", "F07X", "DT28X", "MagicX","Bangle.js"]
+    alwaysOn: ["CV16", "QY03X", "F07X", "DT28X", "MagicX", "BT100X", "Bangle.js"]
 };
 
 // Omnigo font
@@ -95,7 +95,7 @@ function clock() {
     let d=Date().toString().split(' ');
 
     let dt= {
-        niceDate: Date().toString().substring(0,10),
+        niceDate: `${d[0]} ${d[1]} ${d[2]}`, //Date().toString().substring(0,10),
         tm: d[4].substring(0,5),
         hr: d[4].substring(0,2) ,
         hr24: d[4].substring(0,2),
