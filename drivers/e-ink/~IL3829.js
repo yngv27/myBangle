@@ -78,9 +78,9 @@ exports.connect = (opts) => {
     cmd(0x11, 0x03);//DATA_ENTRY_MODE_SETTING: X increment; Y increment
 
     //if(partial)
-      //cmd(0x32, lut_partial); 
+      //cmd(0x32, lut_partial); //lut_partial); //lut_full_mono);
     //else { 
-      cmd(0x32, lut_full_mono); 
+      cmd(0x32, lut_full_mono); //lut_partial); //lut_full_mono);
       g.flipCnt = 0;
     //}
 

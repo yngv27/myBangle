@@ -222,4 +222,12 @@ wOS.UI.on("tap", () => {
 // NOT CV16
 wOS.UI.on("dbltap", nextScreen);
 
-
+_tidBits = 
+ [
+    "",
+    "Envelope someone in\nwhite light",
+    "SO MANY beings are grateful for our endurance",
+    "Slow down 50%",
+    "Stop thinking, feel your body",
+    "That ego... ignore it.."
+   ];   
