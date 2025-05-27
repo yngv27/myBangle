@@ -25,17 +25,18 @@ function calendar() { //x0, y0, w, h) {
   let d=new Date();
   //g.clear();
   let daysInMonth=31;
-  if(new Uint8Array([1,3,4,8,10]).includes(d.getMonth())) daysInMonth=30;
+  // months are ZERO based...
+  if(new Uint8Array([3,5,8,10]).includes(d.getMonth())) daysInMonth=30;
   if(d.getMonth() == 1) daysInMonth = 28;
   let today=d.getDate();
   let start = d.getDay() - ((today-1)%7);
   if(start < 0) start += 7;
   let date=1-start;
-  print(`start is ${start}, date is ${date}`);
+  debug(`start is ${start}, date is ${date}, DIM:${daysInMonth}`);
   for(let r =0; r<5;r++) {
     for(let c=0; c<7; c++) {
       if(date > 0 && date <= daysInMonth) {
-        debug(date);
+        debug(`${r}:${c}: ${date}`);
         ifFree( {func: updCal, parm:{buf:buf,num:date, today:today, x:x0+c*bw, y:y0+r*bh}});
       }
       date++;
