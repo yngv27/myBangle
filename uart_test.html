@@ -2,16 +2,35 @@
  <head>
  <script src="https://www.espruino.com/js/uart.js"></script>
  <script>
+    var bigCon;
+    function connect() {
+        UART.ports = ["Web Bluetooth"];
+        //console.log(cmd);
+        UART.connectAsync().then(function(connection) {
+            if (!connection) throw "Error!";
+            bigCon = connection;
+            connection.on('data', function(d) { alert(d); });
+            connection.on('close', function() { console.log("CLOSE"); });
+            connection.on('error', function() { console.log("Err"); });
+        });
+    }
  function exec() {
-	let cmd = document.getElementById("cmds").value + "\n";
-	console.log(cmd);
-	UART.write(cmd);
+    let cmd = document.getElementById("cmds").value + "\n";
+    bigCon.write(cmd, function() {
+      //connection.close();
+    });
  }
+ function done() {
+    bigCon.close();
+}
+
  </script>
  </head>
  <body>
-  <!-- button onclick="UART.write('notify();\n');">NOTIFY!</button -->
+  <button onclick="connect()">CONNECT!</button>
   <button onclick="exec()">EXEC!</button><br/>
-  <textarea id="cmds" cols=64 rows=32></textarea>
+  <button onclick="done()">CLOSE!</button><br/>
+
+  <textarea id="cmds" cols="64" rows="32"></textarea>
  </body>
 </html>

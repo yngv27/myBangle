@@ -3,7 +3,8 @@ exports.setDtTz=()=> {
     let gatt, _svc, _chr;
     let debug=print;
 
-    const server = "e1:6b:57:49:c3:c7 random"; //qyx
+    const server = "ce:b2:b9:65:81:6e random"; //ethel
+    //const server = "e1:6b:57:49:c3:c7 random"; //qyx
     //c16 = "e4:c5:7d:a1:4d:10 random";
   
     function setDT(str) {
