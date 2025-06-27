@@ -117,10 +117,10 @@ function clock() {
   W.drawClock(dt);
   W.drawData(dt);
   g.flip();
-  /*
-  if(dt.min > 55) setTimeout(()=>{g.reset(false);}, 5000); // full refresh on hour
-  if(dt.min == 0) setTimeout(()=>{g.reset(true);}, 5000); // back to partial
-  */
+  //*
+  if(dt.min > 55) setTimeout(()=>{g.init();}, 5000); // full refresh on hour
+  if(dt.min == 0) setTimeout(()=>{g.setPartial();}, 5000); // back to partial
+  //*/
   // adjust between night and day
   //debug(JSON.stringify(dt));
   if(dt.hr24 == 21 && dt.min == 0) {

@@ -1,21 +1,41 @@
 <html>
  <head>
+    <style>
+        * {
+            font-size: 24px;
+            
+        }
+        body {
+            max-width: 800px;
+        }
+    </style>
  <script src="https://www.espruino.com/js/uart.js"></script>
  <script>
     var bigCon;
+    const gebi = (e)=>{return document.getElementById(e); };
     function connect() {
         UART.ports = ["Web Bluetooth"];
         //console.log(cmd);
         UART.connectAsync().then(function(connection) {
             if (!connection) throw "Error!";
             bigCon = connection;
-            connection.on('data', function(d) { alert(d); });
-            connection.on('close', function() { console.log("CLOSE"); });
+            gebi("cmds").disabled = false;
+            connection.on('data', function(d) { 
+                //alert(d); 
+                let buf = gebi("console");
+                buf.value += d;
+            });
+            connection.on('close', function() { 
+                gebi("cmds").disabled = true;
+                console.log("CLOSE"); 
+            });
             connection.on('error', function() { console.log("Err"); });
         });
     }
- function exec() {
-    let cmd = document.getElementById("cmds").value + "\n";
+ function exec(cmd) {
+    if(!cmd) cmd = gebi("cmds").value;
+    cmd += "\n";
+    gebi("console").value = '';
     bigCon.write(cmd, function() {
       //connection.close();
     });
@@ -27,10 +47,23 @@
  </script>
  </head>
  <body>
-  <button onclick="connect()">CONNECT!</button>
-  <button onclick="exec()">EXEC!</button><br/>
-  <button onclick="done()">CLOSE!</button><br/>
+  <p><button onclick="connect()">CONNECT!</button></p>
+  <p>
+    <button onclick="exec('handle({data: 0})')"> FREE </button>
+  </p>
+  <textarea id="cmds" cols="32" rows="2" disabled></textarea>
+  <p><button onclick="exec()">EXEC!</button></p>
+  <p>
+    <button onclick="exec('AG.list()')">LIST</button>
+  </p>
+  <textarea id="console" cols="32" rows="8"></textarea>
+  <div>
 
-  <textarea id="cmds" cols="64" rows="32"></textarea>
+
+  <p>
+    <button onclick="gebi('cmds').value = 'AG.items.splice(  ,1)'">DELETE</button>
+  </p>
+  </div>
+  <p><button onclick="done()">CLOSE!</button></p>
  </body>
 </html>
