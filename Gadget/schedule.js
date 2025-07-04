@@ -90,6 +90,7 @@ let UI = {
   },
   nextUpdate: 0,
   setNextUpdate: (tm)=>{
+    print("Setting next upd to "+tm);
     if(UI.nextUpdate) clearTimeout(UI.nextUpdate); // catches undefined AND 0
     if(tm) UI.nextUpdate = E.at(tm, go);
     else UI.nextUpdate = 0;
@@ -146,7 +147,10 @@ let AG = {
   },
   save: ()=> {_S.writeJSON(AG.filename,AG.items);},
   load: ()=> {AG.items = _S.readJSON(AG.filename);},
+  niceDate: (d)=>{ return d.toISOString().substring(0,10); },
+  nextDay: (d)=>{ d.setTime(d.getTime()+24*60*60*1000); },
 };
+
 AG.push= AG.add;
 
 function go() {
@@ -170,7 +174,8 @@ function go() {
         UI.runningLong = false; // this meeting resets last long mtg
         UI.invert();
         g.clearRect(0, UI.cursor-2 ,399, UI.cursor-2+g.getFontHeight());
-        UI.runningLong = true; // pre-emptively; need to clear manually
+        // for week of 7/6-12 - no auto long
+//        UI.runningLong = true; // pre-emptively; need to clear manually
       }
       UI.println(`${UI.niceHHMM(t)} - ${UI.niceHHMM(e)}${spacer}${a.text}`);
       if(inSession) { 
@@ -200,28 +205,23 @@ let free = function() {
   UI.runningLong = false; 
   go(); 
 };
-/*
-let long = function() { 
-  UI.runningLong = true; 
-  let isClear = true;
-  AG.items.forEach((a) =>  {
-    if(isIn(a) ) isClear = false;
-  });
-  if(isClear) go(); 
-};
-*/
+
 function doneForDay() {
   UI.offDuty();
-  setTimeout(()=>{E.at("19:00", doneForDay);}, 1000);
+  setTimeout(()=>{E.at("18:25", doneForDay);}, 1000);
 }
-//E.at("19:00", doneForDay);
+E.at("18:25", doneForDay);
+function beginDay() {
+  go();
+  setTimeout(()=>{E.at("07:55", beginDay);}, 1000);
+}
+E.at("07:55", doneForDay);
 
 setTimeout(()=>{
   AG.load();
   AG.add((new Date()).toLocalISOString().substring(0,16), 0, "Fresh Start");
   go();
 }, 2500);
-
 
 NRF.setServices({
     0xF000: {
