@@ -45,7 +45,7 @@ exports.connect = function(options, callback) {
     /* Write to the screen */
     g.flip = function () {  
       CS.reset();
-      for (var y=2;y<6;y++) {      
+      for (var y=0;y<8;y++) {      
         spi.write([0xB0|y/* page */,0x00/* col lower*/,0x10/* col upper*/], DC); 
         spi.write(new Uint8Array(this.buffer, w*y, w));
       }
