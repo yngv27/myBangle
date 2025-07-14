@@ -156,9 +156,10 @@ AG.push= AG.add;
 function go() {
   UI.cls();g.setFontRoboto20().setFontAlign(-1,-1); 
   UI.setBanner();
+  UI.setNextUpdate();
   let now = toLocalISOString((new Date()));
   let today = now.substring(0,10);
-  let next = '';
+  let next = '', empty = true;
   
   AG.items.forEach((a) =>  {
     let t = a.start.substring(11,16).split(':');
@@ -167,6 +168,7 @@ function go() {
     let e =[t[0],t[1],t[2]]; e[1]+=a.dur; while(e[1] >= 60) { e[1] -= 60; e[0]++; e[2]++;}
     if(e[0] > 12) e[0] -= 12;
     if(today == a.start.substring(0,10)) { // && compare(a) >= 0) {
+      empty = false; // there's at least one mtg today
       let inSession = isIn(a);
       let spacer = "     ";
       if(!UI.endedEarly && inSession) { //spacer = " ** "; 
@@ -186,6 +188,8 @@ function go() {
     }
     if(! next.length && now < a.start) next = UI.nextHHMM(t); 
   });
+  if(empty) { UI.offDuty(); return;}
+  
   // should catch just after a mtg ended; auto "run long"
   if(UI.runningLong && !UI.bannerMsg.length) { UI.setBanner("MEETING RUNNING LONG!"); }
   UI.drawBanner();
@@ -215,7 +219,7 @@ function beginDay() {
   go();
   setTimeout(()=>{E.at("07:55", beginDay);}, 1000);
 }
-E.at("07:55", doneForDay);
+E.at("07:55", beginDay);
 
 setTimeout(()=>{
   AG.load();
