@@ -130,6 +130,7 @@ let UI = {
     g.drawString(str, g.midx, g.midy);
     g.flip(true);
     UI.setNextUpdate(); // clear it
+    UI.runningLong = false; // we're DONE
   }
 };
 
@@ -168,7 +169,7 @@ let AG = {
     let today = toLocalISOString((new Date())).substring(0,11);
     if(timeStr.indexOf("T") < 0) { timeStr = today+timeStr;}
     AG.items.push( { start: timeStr, dur: dur, text: txt});
-    AG.items.sort((a,b) => { return (b.start > a.start ? -1 : b.start < a.start ? 1 : 0);});
+    AG.sort();
     // purge from the top
     while(AG.items.length && AG.items[0].start.substring(0,11) < today)
       AG.items.shift();
@@ -181,7 +182,8 @@ let AG = {
 };
 
 AG.push= AG.add;
-
+AG.sort= ()=>{AG.items.sort((a,b) => { return (b.start > a.start ? -1 : b.start < a.start ? 1 : 0);});};
+  
 function go() {
   UI.cls();g.setFontRoboto20();g.setFontAlign(-1,-1); 
   UI.setBanner();
@@ -190,6 +192,7 @@ function go() {
   let today = now.substring(0,10);
   let next = '', empty = true;
   
+  AG.sort();
   AG.items.forEach((a) =>  {
     let t = a.start.substring(11,16).split(':');
     t[0] *= 1; t[1] *= 1; t[2] = t[0];  // [ 12hr, min, 24hr]
