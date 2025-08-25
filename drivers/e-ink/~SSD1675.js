@@ -140,6 +140,33 @@ exports.connect = function(opts, callback) {
     //setWatch(()=>{stamp("FREER: ");}, opts.busy, {edge: "falling", repeat: false});
     return g;
     */
+   /* write a buffer at 0, clear the rest
+    let zero = new Uint8Array(opts.width / 8); // blank line
+    //init();
+    g.cmd (0x4E, 0);//Set RAM X address counter
+    g.cmd (0x4F,[eink_y,(eink_y >> 8)]);//Set RAM Y address counter
+    g.cmd(0x26); //write RED
+    opts.dc.set();
+    for(let y= Math.floor(opts.height/g.redbuf.getHeight())-1; y>=0; y--) {
+      //print(`y = ${y} and banner is ${g.bannerMsg}`);
+      if(y == 0)
+        opts.spi.write(new Uint8Array(g.redbuf.buffer), opts.cs);
+      else
+        for(let y=0; y<g.redbuf.getHeight(); y++)  opts.spi.write(zero, opts.cs);
+    }
+  // cmd(0x22, 0xC7); 
+    //cmd(0x20); // update
+    //setTimeout(g.sleep, 30*1000);
+    //setWatch(()=>{stamp("FREER: ");}, opts.busy, {edge: "falling", repeat: false});
+    return g;
+  };
+
+
+  if(callback) setTimeout(callback, 250);
+  g.cmd = cmd;
+  g.init = init;
+  return g;
+  */
   };
 
 
