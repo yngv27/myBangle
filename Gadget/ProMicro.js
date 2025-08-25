@@ -1,6 +1,6 @@
 // Custom for Gadget with a SSD1675
 
-NRF.setAdvertising({},{name: "Schedule", interval: 750});
+NRF.setAdvertising({},{name: "Schedule", interval: 750, phy: "coded"});
 
 //*
 spi1 = new SPI();
