@@ -16,3 +16,23 @@ opts={
 };
 g = require("~WFT0420CZ15.js").connect(opts);
 let debug = print; //()=>{}; //print;
+
+const LED2 = {
+  state: false,
+  set: function() {
+    D38.set(); D11.reset();
+    this.state = true;
+  },
+  reset: function() {
+    D11.set(); D38.reset();
+    this.state = false;
+  },
+  toggle: function() {
+    if(this.state) this.reset(); else this.set();
+  },
+  blink: function(n) {
+    while(n--) {
+      setTimeout(()=>{this.set();}, n*1000);
+      setTimeout(()=>{this.reset();},n*1000 + 500);
+    }
+  }};
