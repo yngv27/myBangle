@@ -109,10 +109,9 @@ function chime() {
   if(h<10 || h > 16) return;
   _agenda[h-10]=''; ifFree({func:updAgenda, parm:h-10});
   E.at(('0'+(h+1)).slice(-2)+':00',chime);
-  blink(3);
+  LED2.blink(3);
 }
 
-let motd = "With3,sit,fork!";
 function newday() {
   g.cls();
   //  msgline(motd, 272);
@@ -314,18 +313,5 @@ var GB = (msg) => {
   str += msg.body;
   //DELME=JSON.stringify(msg);
   msgline(str,272);
-  blink(5);
+  LED2.blink(5);
 };
-
-function LEDon() {
-  D38.set(); D11.reset();
-}
-function LEDoff() {
-  D11.set(); D38.reset();
-}
-function blink(n) {
-  while(n--) {
-    setTimeout(LEDon, n*1000);
-    setTimeout(LEDoff,n*1000 + 500);
-  }
-}
