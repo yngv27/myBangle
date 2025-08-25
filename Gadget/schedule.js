@@ -204,6 +204,7 @@ function go() {
       let inSession = isIn(a);
       if(!UI.endedEarly && inSession) { //spacer = " ** "; 
         UI.setBanner("MEETING IN PROGRESS"); 
+        if(LED2) LED2.blink(3);
         UI.runningLong = false; // this meeting resets last long mtg
         UI.invert();
         let bkgdHt = UI.spacer.indexOf("\n") > -1 ? 2 : 1;
@@ -249,9 +250,9 @@ function doneForDay() {
 E.at("18:25", doneForDay);
 function beginDay() {
   go();
-  setTimeout(()=>{E.at("07:55", beginDay);}, 1000);
+  setTimeout(()=>{E.at("07:25", beginDay);}, 1000);
 }
-E.at("07:55", beginDay);
+E.at("07:25", beginDay);
 
 setTimeout(()=>{
   AG.load();
