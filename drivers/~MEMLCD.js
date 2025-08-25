@@ -74,7 +74,7 @@ exports.connect = function(opts, callback) {
 
 /* set up your own SPI; make sure you have order: "lsb"
 let spi1 = new SPI();
-spi1.setup( {sda: D1, scl: D1, order: "lsb", baud: 2000000})
+spi1.setup( {mosi: D1, sck: D1, order: "lsb", baud: 2000000})
 let opts = {
   cs: D1,
   vcom: D1,  // optional; for flipping the bias
