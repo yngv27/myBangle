@@ -108,7 +108,7 @@ var SWBtn = function(b,f,d) {
   
   SWBtn.prototype.init = function(btn) {
     this.f = function(k){
-      console.log("BTN1 detected " + k); // log key press pattern
+      //console.log("BTN1 detected " + k); // log key press pattern
       if        (k === "L"  ) { wOS.UI.emit("longpress");
       } else if (k === "S" )  { wOS.UI.emit("tap");
       } else if (k === "SS" ) { wOS.UI.emit("dbltap");

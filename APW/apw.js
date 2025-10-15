@@ -19,10 +19,10 @@ let lastDate = '';
 //console.log(myName);
 
 function alarm() {
-    [400,800,1200,2000,2400].forEach((t) => {setTimeout(Bangle.buzz, t, 175);});
+    [400,800,1200,2000,2400].forEach((t) => {setTimeout(wOS.buzz, t, 175);});
 }
 function notify() {
-    [300,800].forEach((t) => {setTimeout(Bangle.buzz, t, 250, 0.5);});
+    [300,800].forEach((t) => {setTimeout(wOS.buzz, t, 250, 0.5);});
 }
 
 
@@ -190,7 +190,7 @@ wOS.UI.on("longpress", () => {
     } else {
       //inNotes = !inNotes;
     }
-    Bangle.buzz();
+    wOS.buzz();
   }
 });
 

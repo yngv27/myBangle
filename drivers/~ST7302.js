@@ -1,19 +1,3 @@
-/*
-var SWBtn = require("https://raw.githubusercontent.com/muet/EspruinoDocs/master/modules/SWButton.js");
-var mySWBtn = new SWBtn(function(k){
-    console.log("BTN1 detected " + k); // log key press pattern
-    if        (k === "L"  ) { LED1.set();
-    } else if (k === "LS" ) { LED1.reset();
-    } else if (k === "LL" ) { LED2.set();
-    } else if (k === "LLS") { LED2.reset();
-    }
-  });
-
-//*/
-// Low power display module - j.n.magee 2023
-// for source of native code see file c-code.c
-exports={};
-eval(require("Storage").read("omnigo.js"));
 var code = (function(){
     var bin=atob("LenwTxxMfERP8AwM1PgA4E/wCAhP8AEJkEIq3ADwAQcORofwAQcCJJD79PqeQh7clvv89U/wfQsM+xVkxPELBAv7BaVH6kQEBetFBZT7+PvL8QILXUQE8AcEHvgFsAn6BPQr6gQEDvgFQAE23ucBMNLnvejwjwC/ZgEAAC3p8E8cTHxET/AMDNT4AOBP8AgIT/ABCZBCKtwA8AEHDkaH8AEHAiSQ+/T6nkIe3Jb7/PVP8H0LDPsVZMTxCwQL+wWlR+pEBAXrRQWU+/j7y/ECC11EBPAHBB74BbAJ+gT0ROoLBA74BUABNt7nATDS573o8I8Av+oAAABwtQwmAPABBJH79vUCIwb7FRGQ+/PwfSMD+wUDhPABBMHxCwFE6kEBA+tDAwggkfvw8MDxAgADRAHwBwEBIDqxCEp6RAD6AfESaNBcAUMH4AVKekQA+gHxEmjQXCDqAQHRVHC9MgAAACIAAAABS3tEGGBwRwYAAAAAAAAA");
     return {
