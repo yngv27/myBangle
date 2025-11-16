@@ -68,6 +68,7 @@ let UI = {
   endedEarly: false,
   cursor: 60,
   spacer: "     ",
+  reboot: "",
       
   cls: function () { g.clear(); UI.cursor = 60; },
   println: function(str) { 
@@ -204,7 +205,7 @@ function go() {
       let inSession = isIn(a);
       if(!UI.endedEarly && inSession) { //spacer = " ** "; 
         UI.setBanner("MEETING IN PROGRESS"); 
-        if(LED2) LED2.blink(3);
+        
         UI.runningLong = false; // this meeting resets last long mtg
         UI.invert();
         let bkgdHt = UI.spacer.indexOf("\n") > -1 ? 2 : 1;
@@ -221,7 +222,7 @@ function go() {
     }
     if(! next.length && now < a.start) next = UI.nextHHMM(t); 
   });
-  if(empty) { UI.offDuty(); return;}
+  if(empty) { UI.offDuty(UI.offDuty(trash())); return;}
   
   // should catch just after a mtg ended; auto "run long"
   if(UI.runningLong && !UI.bannerMsg.length) { UI.setBanner("MEETING RUNNING LONG!"); }
@@ -229,7 +230,8 @@ function go() {
   UI.setHeader();
   UI.cursor = 284;
   g.setFont8x12();
-  UI.println(next);
+  let bottom = next + UI.reboot;
+  UI.println(bottom);
   if(next.length) {
     UI.setNextUpdate(next);
   }
@@ -244,19 +246,20 @@ let free = function() {
 };
 
 function doneForDay() {
-  UI.offDuty();
+  UI.offDuty(trash());
   setTimeout(()=>{E.at("18:25", doneForDay);}, 1000);
 }
 E.at("18:25", doneForDay);
 function beginDay() {
   go();
-  setTimeout(()=>{E.at("07:25", beginDay);}, 1000);
+  setTimeout(()=>{E.at("07:00", beginDay);}, 1000);
 }
-E.at("07:25", beginDay);
+E.at("07:00", beginDay);
 
 setTimeout(()=>{
   AG.load();
-  AG.add((new Date()).toLocalISOString().substring(0,16), 0, "Fresh Start");
+  //AG.add((new Date()).toLocalISOString().substring(0,16), 0, "Fresh Start");
+  UI.reboot = " : "+(new Date()).toLocalISOString().substring(0,16);
   go();
 }, 2500);
 
@@ -311,4 +314,28 @@ function handle(evt) {
 
   // after 10 sec reset
   setTimeout(()=>{sendReply("IDLE");}, 10*1000);
+}
+
+function trash() {
+  let dates = _S.readJSON("trasched.json");
+  print(typeof(dates));
+  if(typeof(dates) != "object") return "";
+    
+  let dt = new Date().getTime();
+  let idx=0;
+  let fdt = 0;
+  while( idx < dates.length) {
+    fdt = new Date(dates[idx].dt).getTime();
+    if(dt < fdt) break;
+    idx++;
+  }
+  let days = Math.ceil((fdt-dt)/86400000);
+
+  str = "Next garbage pickup is\n";
+  if(days == 1) {
+    str+="** Tomorrow!! **";
+  } else {
+    str+="in "+days+" days";
+  }
+  return str;
 }
