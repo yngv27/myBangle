@@ -45,16 +45,17 @@ Modules.addCached("ble_uart",function(){
 });
 
 E.enableWatchdog(16);
-NRF.setAdvertising({}, {name:"== Relay"});
-NRF.power=8;
+NRF.power=-8;
 logD = print;
-D6.set(); // really stupid LEDs
+
+if(NRF.getAddress() == "dc:b9:53:76:6e:30") NRF.setAdvertising({},{name:"== Relay"});
 
 var CONN = null;
 
-function conn() {
+function conn(name) {
+  print("Connecting to "+name);
   NRF.setTxPower(NRF.power);
-  NRF.requestDevice({ filters: [{ namePrefix: 'Schedule' }] }).then(function(device) {
+  NRF.requestDevice({ filters: [{ namePrefix: name }] }).then(function(device) {
     return require("ble_uart").connect(device);
   }).then(function(uart) {
     uart.on('data', function(d) { 
@@ -79,7 +80,9 @@ function send(cmd) {
 }
 
 function discon() {
+  try {
   CONN.disconnect(); 
+  } catch (err) {}
   CONN = null;
   logD("Disconnected"); 
   NRF.setTxPower(NRF.power);
