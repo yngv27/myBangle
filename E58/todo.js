@@ -22,12 +22,16 @@ class todo {
   constructor() {
     this.list = [];
     this.hdr1 = `
-OOO  OO  OOO   OO
- O  O  O O  O O  O
- O   OO  OOO   OO
+
+###  ##  ###   ##
+ #  #  # #  # #  #
+ #  #  # #  # #  #
+ #   ##  ###   ##
 `;
-    this.hdr="";
+    this.hdr=this.hdr1;
     this.height = 44;
+    this.silent = false;
+    this.filename = "todo.json";
   }
   footer() {return( "\n".padStart(this.height-this.list.length,"\n"));}
   aa(task) {this.a("A", task);}
@@ -36,6 +40,7 @@ OOO  OO  OOO   OO
   p(id, pri){this.list[id].pri = pri.toUpperCase();this.ls();}
   ls(ceil) {
     this.sort();
+    if(this.silent) return;
     if(!ceil) ceil='Z'; else ceil=ceil.toUpperCase();
     let lastLevel = ' ';
     print(this.hdr); //"\n");
@@ -51,30 +56,8 @@ OOO  OO  OOO   OO
   sort() {
     this.list.sort((a,b)=>{return (a.pri >= b.pri ? 1 : -1);});
   }
+  load() { this.list = _S.readJSON(this.filename);}
+  save() {_S.writeJSON(this.filename, this.list);}
 }
   
-w = new todo();
-n = new todo();
-
-var j=JSON.stringify(w.list);
-print(`
-w.list = JSON.parse(\`${j}\`);
-`);
-j=JSON.stringify(n.list);
-print(`
-n.list = JSON.parse(\`${j}\`);
-`);
-
-//*
-g.setFont6x15().setFontAlign(-1,-1).clear();
-let y=0;
-lastLevel = ' ';
-g.clear();
-w.list.forEach((t,i)=>{
-  if(lastLevel != t.pri) { lastLevel = t.pri; g.drawLine(0,y-2,175,y-2);  }
-  g.drawString(`${i.toString().padStart(2,' ')}  (${t.pri}) ${t.task}`,0,y);
-   y+= 18;
-});
-//*/
-
-
+var DO = new todo();

@@ -102,7 +102,7 @@ var SWBtn = function(b,f,d) {
   SWBtn.prototype.C =
     { B: 20
     , L: 0.250
-    , P: 220
+    , P: 200
     , D: 10
     };
   

@@ -177,6 +177,15 @@ UC8179.prototype.sleep = function() {
   this.delay(100);
   this.cmd(0x07, 0xa5); // DEEP_SLEEP
 };
+// for blanking: { data: 0, count: 256 }
+/*
+EPD.wake();
+EPD.wait();
+EPD.cmd(0x13, [{data:0 , count:81 * 480}]);
+EPD.wait();
+EPD.cmd(0x12);
+EPD.sleep();
+*/
 UC8179.prototype.drawGfx = function(gfx, x0, y0, full) {  
   if(full) this.wake();
   else this.wake2();
