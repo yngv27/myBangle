@@ -19,10 +19,18 @@ let CAL = {
     while(CAL.items.length && CAL.items[0].start.substring(0,11) < today)
       CAL.items.shift();
   },
-  save: ()=> {_S.writeJSON(AG.filename,AG.items);},
-  load: ()=> {AG.items = _S.readJSON(AG.filename);},
+  save: ()=> {_S.writeJSON(CAL.filename,CAL.items);},
+  load: ()=> {CAL.items = _S.readJSON(CAL.filename);},
   niceDate: (d)=>{ return d.toISOString().substring(0,10); },
   nextDay: (d)=>{ d.setTime(d.getTime()+24*60*60*1000); },
-  del: (i)=>{AG.items.splice(i,1);},
-  sort: ()=>{AG.items.sort((a,b) => { return (b.start > a.start ? -1 : b.start < a.start ? 1 : 0);});},
+  del: (i)=>{CAL.items.splice(i,1);},
+  sort: ()=>{CAL.items.sort((a,b) => { return (b.start > a.start ? -1 : b.start < a.start ? 1 : 0);});},
+  isIn: (mtg) => {
+    let now = getTime();
+    let start = new Date(mtg.start).getTime()/1000;
+    //debug(`now: ${now}, start: ${start}`);
+    if (now >= start && now <= start+mtg.dur*60) { print("IN"); return true;}
+    return false;
+    },
 };
+CAL.load();

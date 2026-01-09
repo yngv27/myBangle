@@ -36,18 +36,22 @@ class todo {
   footer() {return( "\n".padStart(this.height-this.list.length,"\n"));}
   aa(task) {this.a("A", task);}
   ab(task) {this.a("B", task);}
-  a(pri,task) {this.list.push({task: task, pri: pri.toUpperCase() /*, id: this.list.length*/});this.ls();}
+  a(pri,task) {this.list.push({task: task, pri: pri.toUpperCase()});this.ls();}
   p(id, pri){this.list[id].pri = pri.toUpperCase();this.ls();}
+  formatList(ceil) {
+    let str="", lastLevel = ' ';
+    this.list.filter((x)=>{ return x.pri <= ceil; }).forEach((t,i)=>{
+      if(lastLevel != t.pri) { lastLevel = t.pri; str+="-".padStart(48,"-")+"\n"; }
+      str+=(`${i.toString().padStart(2,' ')}  (${t.pri}) ${t.task}`+"\n");
+    });
+    return(str);
+  }
   ls(ceil) {
     this.sort();
     if(this.silent) return;
     if(!ceil) ceil='Z'; else ceil=ceil.toUpperCase();
-    let lastLevel = ' ';
     print(this.hdr); //"\n");
-    this.list.filter((x)=>{ return x.pri <= ceil; }).forEach((t,i)=>{
-      if(lastLevel != t.pri) { lastLevel = t.pri; print("-".padStart(48,"-")); }
-      print(`${i.toString().padStart(2,' ')}  (${t.pri}) ${t.task}`);
-    });
+    print(this.formatList(ceil));
     print(this.footer());
   }
   d(id) {this.list.splice(id,1);this.ls();}
@@ -61,3 +65,7 @@ class todo {
 }
   
 var DO = new todo();
+DO.load();
+
+
+
