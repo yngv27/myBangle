@@ -1,6 +1,7 @@
 /*
 ** UC8179c EPD driver
 ** used in older 4.2" and 5.83" (but may need different startup sequences)
+** good info:  https://github.com/olikraus/u8g2/issues/1393
 */
 function UC8179(opts) {
   //this.opts = opts;

@@ -1,4 +1,5 @@
 
+
 /*
 ** This is for ProMicro C18A running the 5.8 EPD
 */
@@ -69,12 +70,12 @@ EPD.drawPortion = function(gfx, x0, y0) {
 EPD.flip = function()  {
   this.wakeup();
   EPD.drawPortion(gD, 320,48);
+  dH(); EPD.drawPortion(gH, 0, 0);
   dC1(); EPD.drawPortion(gC, 0, 48);
   dC2(); EPD.drawPortion(gC, 328, 48);
-  dH(); EPD.drawPortion(gH, 0, 0);
   this.cmd(0x12);  //DISPLAY REFRESH
-  this.wait();
-  setTimeout(()=>{this.sleep();}, 5000);
+  //this.wait();
+  setTimeout(()=>{this.sleep();}, 7500);
 };
 
 
