@@ -3,29 +3,46 @@ Graphics.prototype.setFont6x8r=function(scale){this.setFontCustom(
     atob("AwMEBQcGBgIDAwYGAwUCBQYEBgYGBgYGBgYCAwUFBQYGBgYGBgUFBgUEBQYFBgYGBgYGBgYGBgYGBgYDBQMEBQMFBQUFBQQFBQIDBQMGBQUFBQQFBAUFBgUFBQMCAwY="),
      10+(scale << 8)+(1 << 16));};
 g.setFont6x8r();
+Graphics.prototype.rotatePoly = (pArr, angle, xoff, yoff) => {
+      let newArr = [];
+      let a = angle;// * pRad;
+      for(let i=0; i<pArr.length ; i+= 2) {
+        newArr[i] = Math.round(xoff + Math.cos(a)*pArr[i] + Math.sin(a)*pArr[i+1]);
+        newArr[i+1] =  Math.round(yoff + Math.sin(a)*pArr[i] - Math.cos(a)*pArr[i+1]);
+      }
+      return newArr;
+    };
+    
+Clock = {
+  r1: 10, r2: 6, r3: 20, r4: 30,
+  ticks: [0,-32, 0, 32],
+  x0: 64,
+  msgAreaX0: 0,
+  BG: -1, FG: 0,
+};
+Clock.hrHand = [ -1,0, 0, Clock.r3, 1,0 ];
+Clock.minHand = [ 0,0, 0, Clock.r4];
 
-let r1 = 10, r2 = 6, r3 = 20, r4 = 30;
-let hrHand = [ -1,0, 0,r3, 1,0 ];
-let minHand = [ 0,0, 0,r4];
-let ticks = [0,-32, 0, 32];
-
-function clock  ()  {
-  g.clearRect(0,0,63,63);
-  for(let a = 0; a < Math.PI; a += Math.PI/6) g.drawPoly(g.rotatePoly(ticks, a, 31, 31));
-  g.setColor(0).fillCircle(32,32,28).setColor(-1);
-  let dt = new Date();
+Clock.update = ()=>  {
+  let _C=Clock;
+  g.clearRect(_C.x0,0,_C.x0+63,63);
+  for(let a = 0; a < Math.PI; a += Math.PI/6) g.drawPoly(g.rotatePoly(_C.ticks, a, _C.x0+31, 31));
+  g.setColor(Clock.BG).fillCircle(_C.x0+32,32,28).setColor(Clock.FG);
+  let dt = new Date(new Date().getTime()+75000);
   d = {hr: dt.getHours(), min: dt.getMinutes()};
   let hrAngle = (d.hr * 60 + d.min) * Math.PI / 360;
   let minAngle = d.min / 30 * Math.PI;
-  g.drawPoly(g.rotatePoly(minHand, minAngle, 31, 31));
-  g.fillPoly(g.rotatePoly(hrHand, hrAngle, 31, 31)); 
-  g.drawCircle(31,31, 2);
-  g.fillRect(30,30,32,32);
+  g.drawPoly(g.rotatePoly(_C.minHand, minAngle, _C.x0+31, 31));
+  g.fillPoly(g.rotatePoly(_C.hrHand, hrAngle, _C.x0+31, 31)); 
+  g.drawCircle(_C.x0+31,31, 2);
+  g.fillRect(_C.x0+30,30,_C.x0+32,32);
   g.flip();
-}
+};
 
-function msg(m) {
-  g.clearRect(64,0,127,63);
-  g.drawString(g.wrapString(m, g.getWidth()/2).join("\n"), 65, 0);
+Clock.msg = function msg(m) {
+  let _C=Clock;
+  g.clearRect(_C.msgAreaX0,0,_C.msgAreaX0+63,63);
+  g.drawString(g.wrapString(m, g.getWidth()/2).join("\n"), _C.msgAreaX0+1, 0);
   g.flip();
-}
+};
+
