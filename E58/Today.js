@@ -155,7 +155,7 @@ dC2 = ()=> {
 
 function trash() {}
 
-/*
+//*
 function doneForDay() {
   UI.offDuty(trash());
   setTimeout(()=>{E.at("18:25", doneForDay);}, 1000);
@@ -166,10 +166,11 @@ function beginDay() {
   setTimeout(()=>{E.at("07:00", beginDay);}, 1000);
 }
 E.at("07:00", beginDay);
-*/
+//*/
 
 setTimeout(()=>{
   //AG.add((new Date()).toLocalISOString().substring(0,16), 0, "Fresh Start");
   UI.reboot = " : "+(new Date()).toLocalISOString().substring(0,16);
   updateAll();
 }, 7000);
+
