@@ -13,7 +13,7 @@
 */
 exports.connect = function(opts, callback) {
   // create buffer with 2 extra bytes (0 terminator, NEXT row #)
-  var g = Graphics.createArrayBuffer(opts.width+16,opts.height,1);
+  var g = Graphics.createArrayBuffer(opts.width+16,opts.height,1,{msb:false});
   // prep each row's end with terminator 0, and the next row
   let realWid= opts.width/8+2;
   for(let y=1; y<=opts.height; y++) {
