@@ -342,7 +342,7 @@ async function connectWithRetry(maxAttempts = 3) {
 }
 async function fetchFromDevice() {
     try {
-        const c = await connectRetry();
+        const c = await connectWithRetry();
 
         // Ask device to send its stored meetings
         await new Promise(resolve => {
