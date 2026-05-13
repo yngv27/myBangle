@@ -342,19 +342,18 @@ async function connectWithRetry(maxAttempts = 3) {
 }
 async function fetchFromDevice() {
     try {
-        const c = await connectWithRetry();
+        //  MUST happen directly in click call stack
+        const c = await connectBLE();
 
-        // Ask device to send its stored meetings
+        // Then request data
         await new Promise(resolve => {
             c.write("dumpMeetings();\n", resolve);
         });
 
-        // wait a bit for data to arrive
-        setTimeout(() => {
-            c.close();
-        }, 1500);
+        setTimeout(() => c.close(), 1500);
 
     } catch (e) {
+        console.error(e);
         alert("Sync failed");
         setConnStatus(false);
     }
