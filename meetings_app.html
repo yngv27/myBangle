@@ -56,14 +56,13 @@ input#saveAfter { width:2rem; padding:10px; margin-bottom:10px; }
 <button class="danger" onclick="deleteSelected()">Delete</button>
 </div>
 <div class="controls"><button class="secondary" onclick="copyWeek()">Copy ▶</button></div>
-<div >
-<input type="checkbox" id="saveAfter"> 
-<label>Save after send</label> 
+<div class="controls">
 <button onclick="send()">Send</button>
+<button onclick="sendSave()">Send + Save</button>
+    <button onclick="fetchFromDevice()">Sync ↓</button>
 </div>
 
 <div class="controls">
-    <button onclick="fetchFromDevice()">Sync ↓</button>
 </div>
 
 <div id="toast">Shifted 1 week <button onclick="undoShift()" style="background:none;border:none;color:#03dac6;">Undo</button></div>
@@ -282,26 +281,10 @@ t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() =>
 function undoShift(){if(!lastState)return;meetings=JSON.parse(lastState);persist();render();document.getElementById('toast').style.display='none'}
 
 function persist(){localStorage.setItem('meetings',JSON.stringify(meetings))}
-function send(){UpdateList();
+function send(){ UpdateList(); }
+function sendSave(){ UpdateList(true); }
 
-if(document.getElementById('saveAfter').checked)persist()}
 
-/*
-function toLocalShortISO(iso) {
-    const d = new Date(iso);
-
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-
-    const hours = String(d.getHours()).padStart(2, '0');
-    const mins = String(d.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${mins}`;
-}
-
-function toLocalInputFromDate(d) { const offset = d.getTimezoneOffset(); return new Date(d.getTime() - offset * 60000) .toISOString() .slice(0, 16); }
-*/
 function pruneOldMeetings() {
     const now = new Date();
     const day = now.getDay() || 7;
@@ -324,7 +307,7 @@ function pruneOldMeetings() {
     }
 }
 
-async function UpdateList() {
+async function UpdateList(saveToo = false) {
     try {
         // Step 1: connect
         const connection = await connectWithRetry();
@@ -349,7 +332,7 @@ async function UpdateList() {
         let cmd = "AG.items = (" + payload + ");\n";
 
         // Step 3: optional save command
-        if (document.getElementById("saveAfter").checked) {
+        if (saveToo) {
             cmd += "AG.save();\n";
         }
 
