@@ -110,12 +110,111 @@ const day=meetings.filter( m => {
 }).sort((a,b)=>new Date(a.start)-new Date(b.start));
 if(!day.length){list.innerHTML='<div class="empty">No meetings today</div>';return}
 
-day.forEach(m=>{const div=document.createElement('div');div.className='meeting'+(m.id===selectedId?' selected':'');div.innerHTML=`<div>${formatTime(m.start)}</div><div>${m.dur}m</div><div>${m.text}</div>`;
+day.forEach(m=>{
+const div=document.createElement('div');
 
-div.addEventListener('touchstart',()=>{pressTimer=setTimeout(()=>{selectedId=m.id;render()},500)});
+let startX = 0;
+let currentX = 0;
+let swiping = false;
+let pressTimer = null;
+
+div.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+    currentX = startX;
+    swiping = false;
+
+    // long press select
+    pressTimer = setTimeout(() => {
+        selectedId = m.id;
+        render();
+    }, 500);
+});
+
+div.addEventListener("touchmove", (e) => {
+    currentX = e.touches[0].clientX;
+    const delta = currentX - startX;
+
+    // if user starts swiping, cancel long press
+    if (Math.abs(delta) > 10) {
+        clearTimeout(pressTimer);
+        swiping = true;
+    }
+
+    if (swiping && delta < 0) {
+        div.style.transform = `translateX(${delta}px)`;
+    }
+});
+
+div.addEventListener("touchend", () => {
+    clearTimeout(pressTimer);
+
+    const delta = currentX - startX;
+
+    if (swiping && delta < -100) {
+        if (confirm("Delete this meeting?")) {
+            meetings = meetings.filter(x => x.id !== m.id);
+            persist();
+            render();
+            return;
+        }
+    }
+
+    div.style.transform = "translateX(0)";
+});
+
+div.addEventListener("touchmove", (e) => {
+    if (!swiping) return;
+
+    currentX = e.touches[0].clientX;
+    const delta = currentX - startX;
+
+    // only allow left swipe
+    if (delta < 0) {
+        div.style.transform = `translateX(${delta}px)`;
+    }
+});
+
+div.addEventListener("touchend", () => {
+    if (!swiping) return;
+
+    const delta = currentX - startX;
+
+    //  threshold for delete
+    if (delta < -100) {
+        if (confirm("Delete this meeting?")) {
+            meetings = meetings.filter(x => x.id !== m.id);
+            persist();
+            render();
+            return;
+        }
+    }
+
+    // snap back
+    div.style.transform = "translateX(0)";
+    swiping = false;
+});
+div.className='meeting'+(m.id===selectedId?' selected':'');
+div.innerHTML=`<div>${formatTime(m.start)}</div><div>${m.dur}m</div><div>${m.text}</div>`;
+
 div.addEventListener('touchend',()=>clearTimeout(pressTimer));
 div.addEventListener('touchmove',()=>clearTimeout(pressTimer));
-div.addEventListener('click',()=>{selectedId=m.id;render()});
+
+div._lastTap = 0;
+
+div.addEventListener('click', () => {
+    const now = Date.now();
+
+    if (now - div._lastTap < 300) {
+        selectedId = m.id;
+        editSelected();
+        return;
+    }
+
+    selectedId = m.id;
+    render();
+
+    div._lastTap = now;
+});
 
 list.appendChild(div)})}
 
