@@ -6,7 +6,6 @@
 <title>Meetings Week</title>
 <style>
 body { font-family: Roboto, Arial; margin:0; background:#f1f3f4; }
-header { background:#6200ea; color:white; padding:16px; text-align:center; }
 .tabs { display:flex; background:white; }
 .tab { flex:1; padding:12px; text-align:center; }
 .tab.active { border-bottom:3px solid #6200ea; font-weight:bold; }
@@ -14,9 +13,13 @@ header { background:#6200ea; color:white; padding:16px; text-align:center; }
 .meeting { display:grid; grid-template-columns:70px 80px auto; padding:10px; margin-bottom:6px; background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
 .meeting.selected { background:#e8def8; }
 .controls { display:flex; justify-content:space-around; margin:10px 0; }
-button { padding:10px 14px; border:none; border-radius:6px; background:#6200ea; color:white; }
-.secondary { background:#03dac6; color:black; }
-.danger { background:#b00020; }
+header { display:flex; align-items:center; justify-content:center; gap:10px; background:#f5f5f5; color:#333; padding:10px; font-weight:500; border-bottom:1px solid #ddd; }
+button { padding:8px 12px; border:none; border-radius:6px; font-size:14px; background:#e0e0e0; color:#333; }
+button:active { background:#d5d5d5; }
+.secondary { background:#e8f5f2; color:#2c7a6b; }
+.secondary:active { background:#d9ece6; }
+.danger { background:#fbeaea; color:#a33; }
+.danger:active { background:#f3dada; }
 .empty { text-align:center; margin-top:20px; color:#666; }
 dialog { border:none; border-radius:10px; padding:20px; width:90%; }
 input { width:100%; padding:10px; margin-bottom:10px; }
@@ -84,9 +87,11 @@ let rxBuffer = "";
 function migrate(data){return data.map(m=>m.start_time?{id:m.id,start:m.start_time,dur:m.duration,text:m.title}:m)}
 
 function toLocalInputValue(iso){const d=new Date(iso);const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,16)}
+/*
 function fromLocalInput(val){return new Date(val).toISOString();}
+*/
 
-function init(){persist();renderTabs();render(); }
+function init(){pruneOldMeetings();persist();renderTabs();render(); }
 
 function renderTabs(){const t=document.getElementById('tabs');t.innerHTML='';DAYS.forEach((d,i)=>{const div=document.createElement('div');div.className='tab'+(i===currentDayIndex?' active':'');div.textContent=d;div.onclick=()=>{currentDayIndex=i;render()};t.appendChild(div)})}
 
@@ -130,13 +135,27 @@ function getWeekStart() {
 }
 
 function openDialog(edit=false){document.getElementById('dialog').showModal();document.getElementById('dialogTitle').textContent=edit?'Edit':'Add';
-if(!edit){const base=new Date(getWeekStart());base.setHours(9,0,0,0);base.setDate(base.getDate()+currentDayIndex);
-document.getElementById('start').value=toLocalInputFromDate(base);
-document.getElementById('duration').value='';document.getElementById('title').value='';editId=null}}
+if(!edit){
+	const base=new Date(getWeekStart());
+	base.setHours(9,0,0,0);
+	base.setDate(base.getDate()+currentDayIndex);
+
+	const yyyy = base.getFullYear();
+	const mm = String(base.getMonth() + 1).padStart(2, '0');
+	const dd = String(base.getDate()).padStart(2, '0');
+
+	const hh = String(base.getHours()).padStart(2, '0');
+	const min = String(base.getMinutes()).padStart(2, '0');
+
+	document.getElementById('start').value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+
+	document.getElementById('duration').value='';
+	document.getElementById('title').value='';editId=null
+}}
 
 function closeDialog(){document.getElementById('dialog').close()}
 
-function save(){const start=fromLocalInput(document.getElementById('start').value);
+function save(){const start=document.getElementById('start').value;
 const dur=document.getElementById('duration').value;
 const text=document.getElementById('title').value;
 if(editId){const m=meetings.find(x=>x.id===editId);m.start=start;m.dur=dur;m.text=text}else{meetings.push({id:Date.now(),start,dur,text})}
@@ -168,8 +187,43 @@ function send(){UpdateList();
 
 if(document.getElementById('saveAfter').checked)persist()}
 
-function toLocalInputFromDate(d) { const offset = d.getTimezoneOffset(); return new Date(d.getTime() - offset * 60000) .toISOString() .slice(0, 16); }
+/*
+function toLocalShortISO(iso) {
+    const d = new Date(iso);
 
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+
+    const hours = String(d.getHours()).padStart(2, '0');
+    const mins = String(d.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${mins}`;
+}
+
+function toLocalInputFromDate(d) { const offset = d.getTimezoneOffset(); return new Date(d.getTime() - offset * 60000) .toISOString() .slice(0, 16); }
+*/
+function pruneOldMeetings() {
+    const now = new Date();
+    const day = now.getDay() || 7;
+
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (day - 1));
+    monday.setHours(0, 0, 0, 0);
+
+    const beforeCount = meetings.length;
+
+    meetings = meetings.filter(m => {
+        return new Date(m.start) >= monday;
+    });
+
+    const removed = beforeCount - meetings.length;
+
+    if (removed > 0) {
+        console.log(`Pruned ${removed} old meetings`);
+        persist();
+    }
+}
 
 async function UpdateList() {
     try {
@@ -178,9 +232,16 @@ async function UpdateList() {
 
         // Step 2: prepare data
 
-	const clean = meetings.map(m => ({
-	    start: m.start,
-	    dur: Number(m.dur),   
+	const ws = getWeekStart();
+
+	const weekOnly = meetings.filter(m => {
+	    const d = new Date(m.start);
+	    return d >= ws && d < new Date(ws.getTime() + 7*86400000);
+	});
+
+	const clean = weekOnly.map(m => ({
+	    start: m.start,        //  already local format now
+	    dur: Number(m.dur),
 	    text: m.text
 	}));
 
