@@ -330,11 +330,11 @@ async function UpdateList(saveToo = false) {
 
 	const payload = JSON.stringify(clean);
 
-        let cmd = "AG.items = (" + payload + ");\n";
+        let cmd = "CAL.items = (" + payload + ");\n";
 
         // Step 3: optional save command
         if (saveToo) {
-            cmd += "AG.save();\n";
+            cmd += "CAL.save();\n";
         }
 
         console.log("Sending:", cmd);
