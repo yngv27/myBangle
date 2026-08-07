@@ -6,8 +6,8 @@ opts = {
   dc: D45,
   cs: D29,
   rst: D31,
-  height: 296,
-  width: 128,
+  height: 264, //296,
+  width: 176, //128,
 };
 g = require("~SSD1681.js").connect(opts, function() {
   g.setRotation(2,1);

@@ -19,22 +19,6 @@ Graphics.prototype.setFontRoboto20=function(scale){this.setFontCustom(atob("AAAA
 eval(_S.read("Omnigo.js"));
 /*
 dates = [
-  {dt: "2026-02-04", stuff: "R"},
-  {dt: "2026-02-11", stuff: "RT"},
-  {dt: "2026-02-19", stuff: "R"},
-  {dt: "2026-02-26", stuff: "RT"},
-  {dt: "2026-03-05", stuff: "R"},
-  {dt: "2026-03-12", stuff: "RT"},
-  {dt: "2026-03-19", stuff: "R"},
-  {dt: "2026-03-26", stuff: "RT"},
-  {dt: "2026-04-02", stuff: "R"},
-  {dt: "2026-04-10", stuff: "RT"},
-  {dt: "2026-04-13", stuff: "Y"},
-  {dt: "2026-04-17", stuff: "R"},
-  {dt: "2026-04-24", stuff: "RT"},
-  {dt: "2026-04-27", stuff: "Y"},
-  {dt: "2026-05-01", stuff: "R"},
-  {dt: "2026-05-08", stuff: "RT"},
   {dt: "2026-05-15", stuff: "RT"},
   {dt: "2026-05-19", stuff: "Y"},
   {dt: "2026-05-25", stuff: "RT"},
@@ -43,6 +27,18 @@ dates = [
   {dt: "2026-06-15", stuff: "RT"},
   {dt: "2026-06-22", stuff: "RY"},
   {dt: "2026-06-29", stuff: "RT"},
+  {dt: "2026-07-07", stuff: "R"},
+  {dt: "2026-07-14", stuff: "RT"},
+  {dt: "2026-07-21", stuff: "R"},
+  {dt: "2026-07-28", stuff: "RT"},
+  {dt: "2026-08-05", stuff: "R"},
+  {dt: "2026-08-12", stuff: "RT"},
+  {dt: "2026-08-19", stuff: "R"},
+  {dt: "2026-08-26", stuff: "RT"},
+  {dt: "2026-09-02", stuff: "R"},
+  {dt: "2026-09-10", stuff: "RT"},
+  {dt: "2026-09-17", stuff: "R"},
+  {dt: "2026-09-24", stuff: "RT"},
   ];
 */
 function cal() {

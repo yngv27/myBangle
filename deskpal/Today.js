@@ -8,15 +8,10 @@ if(NRF.getAddress() == "e2:96:8a:4f:49:3a") {
   g.flip = ()=> {
     if(!g.redbuf.isClear) g.drawImage(g.redbuf, 0, 0);
     g0.update(0,0,g, true); 
-    /*
-    if(!g.redbuf.isClear)
-      setTimeout(()=>{g0.update(0,0,g.redbuf);}, 4000);
-      */
   };
   g.setFont8x12 = ()=> {g.setFontVector('10');};
   g.setColor(0).setBgColor(-1);
   g.redbuf.setFontAlign(0,0); //.setColor(0).setBgColor(-1);
-  //setTimeout(()=>{g.redbuf.setFontRoboto20();}, 600);
 }
 // fun time with PocketPal
 if(NRF.getAddress() == "e1:b3:9a:94:14:31") {
@@ -39,15 +34,10 @@ if(NRF.getAddress() == "e1:b3:9a:94:14:31") {
   setTimeout(()=>{UI.spacer = "\n  ";}, 5000);
 
 } else {
-
   eval(_S.read("BarlowMC23.js"));
   g.setFontDefault = g.setFontBarlowMC23;
 }
 debug=print;
-
-// Test Pilot
-//spi1.setup({sck: D29, mosi: D31, baud:2000000});
-//g = exports.connect({spi: spi1, cs: D2, dc: D47, rst: D45, busy:D43, width: 152, height: 152});
 
 g.on("ready", ()=>{
   g.setFontBarlowMC23();
@@ -120,7 +110,7 @@ let UI = {
   },
   nextUpdate: 0,
   setNextUpdate: (tm)=>{
-    print("Setting next upd to "+tm);
+    debug("Setting next upd to "+tm);
     if(UI.nextUpdate) clearTimeout(UI.nextUpdate); // catches undefined AND 0
     if(tm) UI.nextUpdate = E.at(tm, go);
     else UI.nextUpdate = 0;
@@ -151,43 +141,11 @@ function compare(mtg) {
   let start = new Date(mtg.start).getTime()/1000;
   //debug(`now: ${now}, start: ${start}`);
   if (now < start) return 1;
-  if (now >= start && now <= start+mtg.dur*60) { print("IN"); return 0;}
-  //print("DONE"); return -1;
+  if (now >= start && now <= start+mtg.dur*60) { debug("IN"); return 0;}
+  //debug("DONE"); return -1;
 }
-/*
-let AG = {
-  filename: "schedule.json",
-  items:[ ],
-  list: ()=>{
-    for(let idx=0; idx<AG.items.length; idx++) {
-      a=AG.items[idx];
-      print(`${idx}: ${a.start}  ${a.dur}  ${a.text}`);
-    }
-  },
-  find: (str)=>{
-    return(AG.items.findIndex((a)=>{ return (a.text.indexOf(str) >= 0); }));
-  },
-  add: (timeStr, dur, txt) => {
-    let today = toLocalISOString((new Date())).substring(0,11);
-    if(timeStr.indexOf("T") < 0) { timeStr = today+timeStr;}
-    AG.items.push( { start: timeStr, dur: dur, text: txt});
-    AG.sort();
-    // purge from the top
-    while(AG.items.length && AG.items[0].start.substring(0,11) < today)
-      AG.items.shift();
-  },
-  save: ()=> {_S.writeJSON(AG.filename,AG.items);},
-  load: ()=> {AG.items = _S.readJSON(AG.filename);},
-  niceDate: (d)=>{ return d.toISOString().substring(0,10); },
-  nextDay: (d)=>{ d.setTime(d.getTime()+24*60*60*1000); },
-  del: (i)=>{AG.items.splice(i,1);},
-};
 
-AG.push= AG.add;
-AG.sort= ()=>{AG.items.sort((a,b) => { return (b.start > a.start ? -1 : b.start < a.start ? 1 : 0);});};
-*/
 eval(_S.read("calendar.js"));
-AG=CAL;
 
 function go() {
   UI.cls();g.setFontDefault();g.setFontAlign(-1,-1); 
@@ -197,8 +155,8 @@ function go() {
   let today = now.substring(0,10);
   let next = '', empty = true;
   
-  AG.sort();
-  AG.items.forEach((a) =>  {
+  CAL.sort();
+  CAL.items.forEach((a) =>  {
     let t = a.start.substring(11,16).split(':');
     t[0] *= 1; t[1] *= 1; t[2] = t[0];  // [ 12hr, min, 24hr]
     if(t[0] > 12) t[0] -= 12;
@@ -215,7 +173,7 @@ function go() {
         let bkgdHt = UI.spacer.indexOf("\n") > -1 ? 2 : 1;
         g.clearRect(0, UI.cursor-2 ,g.getWidth()-1, UI.cursor-2+g.getFontHeight()*bkgdHt);
         // for week of 7/6-12 - no auto long
-        UI.runningLong = true; // pre-emptively; need to clear manually
+        //UI.runningLong = true; // pre-emptively; need to clear manually
       }
       UI.println(`${UI.niceHHMM(t)} - ${UI.niceHHMM(e)}${UI.spacer}${a.text}`);
       if(!UI.endedEarly && inSession) { 
@@ -261,11 +219,29 @@ function beginDay() {
 E.at("07:00", beginDay);
 
 setTimeout(()=>{
-  AG.load();
-  //AG.add((new Date()).toLocalISOString().substring(0,16), 0, "Fresh Start");
+  CAL.load();
   UI.reboot = " : "+(new Date()).toLocalISOString().substring(0,16);
   go();
 }, 2500);
+
+/* for external use */
+function handleMeetings(data) {
+  global.meetings = data;
+  console.log("Loaded", data.length, "meetings");
+  print(data);
+}
+
+function saveMeetings() {
+  CAL.save();
+  console.log("Meetings saved");
+}
+
+function dumpMeetings() {
+  const data = CAL.items || [];
+
+  // send back to browser via REPL
+  print("sendMeetings(" + JSON.stringify(data) + ");");
+}
 
 NRF.setServices({
     0xF000: {
@@ -311,35 +287,11 @@ function handle(evt) {
     sendReply("1:OK");
   }
   else if(evt.data == 2) {
-    let idx = AG.items.findIndex((e)=>{return(e.text == "Fresh Start");});
-    if(idx >= 0) AG.items.splice(idx, 1);
+    let idx = CAL.items.findIndex((e)=>{return(e.text == "Fresh Start");});
+    if(idx >= 0) CAL.items.splice(idx, 1);
     sendReply("2:OK");
   }
 
   // after 10 sec reset
   setTimeout(()=>{sendReply("IDLE");}, 10*1000);
-}
-
-function trash() {
-  let dates = _S.readJSON("trasched.json");
-  print(typeof(dates));
-  if(typeof(dates) != "object") return "";
-    
-  let dt = new Date().getTime();
-  let idx=0;
-  let fdt = 0;
-  while( idx < dates.length) {
-    fdt = new Date(dates[idx].dt).getTime();
-    if(dt < fdt) break;
-    idx++;
-  }
-  let days = Math.ceil((fdt-dt)/86400000);
-
-  str = "Next garbage pickup is\n";
-  if(days == 1) {
-    str+="** Tomorrow!! **";
-  } else {
-    str+="in "+days+" days";
-  }
-  return str;
 }

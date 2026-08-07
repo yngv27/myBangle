@@ -1,15 +1,16 @@
 
 function init() {
   //g.setFont("6x8",2)
-  //require("FontDylex7x13").add(Graphics);
+  require("FontHaxorNarrow7x17").add(Graphics);
+  //eval(_S.read("Omnigo.js"));
   var _C = {
     WHITE: "#FFFFFF",
     YHT: g.getHeight(),
     XWID: g.getWidth(),
     XMID: g.getWidth() / 2,
     YMID: g.getHeight() / 2,
-    FG: -1,
-    BG: 0,
+    FG: 0,
+    BG: -1,
     MSGBG: "#202020" //#8079a0"
   };
 
@@ -71,11 +72,11 @@ function drawSegment(seg, xoff, yoff, xscale, yscale) {
     if(lastDate != d) {
       lastDate = d;
       let digs = [Math.floor(m / 10), m % 10, Math.floor(d / 10), d % 10];
-      clrDtWdw(_C.BG);
-      g.drawLine(56,250,64,210).drawLine(57,250,65,210);
+      //clrDtWdw(_C.BG);
+      //g.drawLine(56,250,64,210).drawLine(57,250,65,210);
       for(let d = 0; d < digs.length; d++) {
         if(!d && !digs[d]) continue;
-        drawDigit(digs[d], [12,34,70,92][d], 210, 0.4, 0.4);
+        drawDigit(digs[d], [0,20,40,60][d], [16,16,20,20][d], 0.2, 0.2);
       }
     }
   }
@@ -84,17 +85,19 @@ function drawSegment(seg, xoff, yoff, xscale, yscale) {
     let dt=new Date();
     t.hr = dt.getHours();
     t.min = dt.getMinutes();
-    let x0 = 40;
+    let x0 = 88;
     let digs = [Math.floor(t.hr / 10), t.hr % 10, Math.floor(t.min / 10), t.min % 10];
     for(let d = 0; d < digs.length; d++) {
       if(!d && !digs[d]) { digs[d]=10; }
-      drawDigit(digs[d], [x0,x0+46,x0,x0+46][d], [40,40,120,120][d], 0.8, 0.8);
+      drawDigit(digs[d], [x0,x0+46,x0,x0+46][d], [10,10,90,90][d], 0.8, 0.8);
     }
 
   };
   let drawData = (d) => {
-    //g.setFont("Dylex7x13",2).setFontAlign(0,0);
-    drawDate(new Date());
+    g.setFont("HaxorNarrow7x17",1).setFontAlign(-1,-1);
+    //drawDate(new Date());
+    let ds= new Date().toString().toUpperCase();
+    g.drawString(ds.substring(0, ds.indexOf("202")), 16,16);
   };
 
   return {
@@ -109,19 +112,24 @@ Clock = init();
 //g.flip();
 Clock.lastHour = 99; // for tracking hour changes
 function clock() {
+  print("clock: begin");
   let dt = new Date();
   let hr = dt.getHours();
   if(hr != Clock.lastHour) {
     print("resetting!");
-    g.init();
-    setTimeout(()=>{g.setPartial();}, 10*1000);
+    //g.init();
+    //setTimeout(()=>{g.setPartial();}, 10*1000);
     Clock.drawData();
     Clock.lastHour = hr;
   }
+  print("clock: drawClock");
   Clock.drawClock({hr: hr, min: dt.getMinutes()});
-  setTimeout(()=>{g.flip();}, 5*1000);
+  print("clock: flippin");
+  //setTimeout(()=>{g.flip();}, 2*1000);
+  g.flip();
+  
 }
-//*
+// *
 (()=>{
   let dt=new Date();
   let secs = dt.getMinutes()*60+dt.getSeconds();
