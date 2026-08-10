@@ -36,6 +36,7 @@ if(NRF.getAddress() == "e1:b3:9a:94:14:31") {
 } else {
   eval(_S.read("BarlowMC23.js"));
   g.setFontDefault = g.setFontBarlowMC23;
+  g.redbuf.setFontBarlowMC23();
 }
 debug=print;
 
@@ -125,13 +126,13 @@ let UI = {
     UI.runningLong = false; // we're DONE
   }
 };
-
+/*
 function isIn(mtg) {
   /*
   let now = getTime();
   let start = new Date(mtg.start).getTime()/1000;
   if (now >= start && now <= start+mtg.dur*60) return true;
-  */
+  * /
   if(compare(mtg) == 0) return true;
   return false;
 }
@@ -144,7 +145,7 @@ function compare(mtg) {
   if (now >= start && now <= start+mtg.dur*60) { debug("IN"); return 0;}
   //debug("DONE"); return -1;
 }
-
+*/
 eval(_S.read("calendar.js"));
 
 function go() {
@@ -164,7 +165,7 @@ function go() {
     if(e[0] > 12) e[0] -= 12;
     if(today == a.start.substring(0,10)) { // && compare(a) >= 0) {
       empty = false; // there's at least one mtg today
-      let inSession = isIn(a);
+      let inSession = CAL.isIn(a);
       if(!UI.endedEarly && inSession) { //spacer = " ** "; 
         UI.setBanner("MEETING IN PROGRESS"); 
         
@@ -184,16 +185,15 @@ function go() {
     }
     if(! next.length && now < a.start) next = UI.nextHHMM(t); 
   });
-  if(empty) { UI.offDuty(UI.offDuty(trash())); return;}
+  if(empty) { UI.offDuty(); return;}
   
   // should catch just after a mtg ended; auto "run long"
   if(UI.runningLong && !UI.bannerMsg.length) { UI.setBanner("MEETING RUNNING LONG!"); }
   UI.drawBanner();
   UI.setHeader();
-  UI.cursor = 284;
   g.setFont8x12();
-  let bottom = next + UI.reboot;
-  UI.println(bottom);
+  UI.cursor = g.getHeight()-g.getFontHeight();
+  UI.println(next + UI.reboot);
   if(next.length) {
     UI.setNextUpdate(next);
   }
@@ -208,15 +208,15 @@ let free = function() {
 };
 
 function doneForDay() {
-  UI.offDuty(trash());
+  UI.offDuty();
   setTimeout(()=>{E.at("18:25", doneForDay);}, 1000);
 }
 E.at("18:25", doneForDay);
 function beginDay() {
   go();
-  setTimeout(()=>{E.at("07:00", beginDay);}, 1000);
+  setTimeout(()=>{E.at("06:31", beginDay);}, 1000);
 }
-E.at("07:00", beginDay);
+E.at("06:30", beginDay);
 
 setTimeout(()=>{
   CAL.load();
