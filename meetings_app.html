@@ -266,7 +266,26 @@ document.getElementById('duration').value=m.dur;document.getElementById('title')
 
 function deleteSelected(){if(!selectedId||!confirm('Delete?'))return;meetings=meetings.filter(m=>m.id!==selectedId);selectedId=null;persist();render()}
 
-function copyWeek() { const ws = getWeekStart(); const weekMeetings = meetings.filter(m => { const d = new Date(m.start); return d >= ws && d < new Date(ws.getTime() + 7*86400000); }); if (!weekMeetings.length) { alert("No meetings to copy"); return; }  const newMeetings = weekMeetings.map(m => { const d = new Date(m.start); d.setDate(d.getDate() + 7); return { id: Date.now() + Math.random(),  start: d.toISOString(), dur: m.dur, text: m.text }; }); meetings.push(...newMeetings); persist(); render(); showToast("Copied to next week");
+function copyWeek() { 
+	const ws = getWeekStart(); 
+	const weekMeetings = meetings.filter(m => { 
+		const d = new Date(m.start); 
+		return d >= ws && d < new Date(ws.getTime() + 7*86400000); 
+		}); 
+		if (!weekMeetings.length) { 
+			alert("No meetings to copy"); 
+			return; 
+		}  
+		const newMeetings = weekMeetings.map(m => { 
+			const d = new Date(m.start); 
+			d.setDate(d.getDate() + 7); 
+			return { 
+			// start: new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+				id: Date.now() + Math.random(),  start: new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16), //d.toISOString(), 
+				dur: m.dur, text: m.text 
+			}; 
+		}); 
+		meetings.push(...newMeetings); persist(); render(); showToast("Copied to next week");
 }
 function shiftWeekBack(){lastState=JSON.stringify(meetings);meetings.forEach(m=>{const d=new Date(m.start);d.setDate(d.getDate()-7);m.start=d.toISOString()});persist();render();showToast()}
 

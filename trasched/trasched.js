@@ -19,29 +19,36 @@ Graphics.prototype.setFontRoboto20=function(scale){this.setFontCustom(atob("AAAA
 eval(_S.read("Omnigo.js"));
 /*
 dates = [
-  {dt: "2026-05-15", stuff: "RT"},
-  {dt: "2026-05-19", stuff: "Y"},
-  {dt: "2026-05-25", stuff: "RT"},
-  {dt: "2026-06-01", stuff: "RT"},
-  {dt: "2026-06-08", stuff: "R"},
-  {dt: "2026-06-15", stuff: "RT"},
-  {dt: "2026-06-22", stuff: "RY"},
-  {dt: "2026-06-29", stuff: "RT"},
-  {dt: "2026-07-07", stuff: "R"},
-  {dt: "2026-07-14", stuff: "RT"},
-  {dt: "2026-07-21", stuff: "R"},
-  {dt: "2026-07-28", stuff: "RT"},
-  {dt: "2026-08-05", stuff: "R"},
-  {dt: "2026-08-12", stuff: "RT"},
-  {dt: "2026-08-19", stuff: "R"},
-  {dt: "2026-08-26", stuff: "RT"},
-  {dt: "2026-09-02", stuff: "R"},
-  {dt: "2026-09-10", stuff: "RT"},
-  {dt: "2026-09-17", stuff: "R"},
-  {dt: "2026-09-24", stuff: "RT"},
+  {dt: "2026-10-02", stuff: "R"},
+  {dt: "2026-10-05", stuff: "Y"},
+  {dt: "2026-10-09", stuff: "RT"},
+  {dt: "2026-10-19", stuff: "RT"},
+  {dt: "2026-10-26", stuff: "RY"},
+  {dt: "2026-11-02", stuff: "RT"},
+  {dt: "2026-11-09", stuff: "R"},
+  {dt: "2026-11-16", stuff: "RTY"},
+  {dt: "2026-11-23", stuff: "R"},
+  {dt: "2026-11-30", stuff: "RT"},
+  {dt: "2026-12-07", stuff: "RY"},
+  {dt: "2026-12-14", stuff: "RT"},
+  {dt: "2026-12-21", stuff: "R"},
+  {dt: "2026-12-29", stuff: "RT"},
+  {dt: "2027-01-06", stuff: "R"},
+  {dt: "2027-01-13", stuff: "RT"},
+  {dt: "2027-01-20", stuff: "R"},
+  {dt: "2027-01-27", stuff: "RT"},
+  {dt: "2027-02-03", stuff: "R"},
+  {dt: "2027-02-10", stuff: "RT"},
+  {dt: "2027-02-18", stuff: "R"},
+  {dt: "2027-02-25", stuff: "RT"},
+  {dt: "2027-03-04", stuff: "R"},
+  {dt: "2027-03-11", stuff: "RT"},
+  {dt: "2027-03-18", stuff: "R"},
+  {dt: "2027-03-25", stuff: "RT"},
   ];
 */
 function cal() {
+  g.init();
   g.clear();
 
   g.setFont("Roboto20", 1);
@@ -54,33 +61,39 @@ function cal() {
     let dt = new Date().getTime();
     let idx=0;
     let fdt = 0;
-    while( true) {
+    let days = 0;
+    //while( true) {
+    for(idx=0; idx<dates.length; idx++) {
       fdt = new Date(dates[idx].dt).getTime();
-      if(dt < fdt) break;
-      idx++;
+      days = Math.ceil((fdt-dt)/86400000);
+      if(days >= 0) break;
     }
-    let days = Math.ceil((fdt-dt)/86400000);
 
     g.setFontAlign(-1,0);
     g.drawString("Next garbage day:",4, 12);
     g.setFont("Roboto20", 2);
-    if(days == 1) {
+    if(days < 0) {
+      g.drawString("Update me!", 4, 52);
+    } else if(days == 0) {
+      g.drawString("TO-DAY!", 4, 52);
+    } else if(days == 1) {
       g.drawString("Tomorrow", 4, 52);
     } else {
       g.drawString(days+" days", 4, 52);
     }
-
-    let x = 20;
-    if(dates[idx].stuff.indexOf("R")>=0) g.drawImage(_S.read("recycle.png"), x, 80);
-    if(dates[idx].stuff.indexOf("T")>=0) g.drawImage(_S.read("trash2.png"), x+44, 80);
-    if(dates[idx].stuff.indexOf("Y")>=0) g.drawImage(_S.read("yard.png"), x+80, 80);
-
+    
+    if(idx != dates.length) {
+      let x = 20;
+      if(dates[idx].stuff.indexOf("R")>=0) g.drawImage(_S.read("recycle.png"), x, 80);
+      if(dates[idx].stuff.indexOf("T")>=0) g.drawImage(_S.read("trash2.png"), x+44, 80);
+      if(dates[idx].stuff.indexOf("Y")>=0) g.drawImage(_S.read("yard.png"), x+80, 80);
+    }
     g.setFont("Omnigo", 1);
     g.setFontAlign(1,1);
     let ds = (new Date().toString());
     g.drawString(ds.substring(0,ds.indexOf("202")), 249,121);
-
     g.flip();
+    setTimeout(()=>{g.sleep();}, 5000);
   }
   setTimeout(()=>{E.at("00:01", cal);}, 1000);
 }

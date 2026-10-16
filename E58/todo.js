@@ -67,5 +67,23 @@ class todo {
 var DO = new todo();
 DO.load();
 
-
-
+// shortcuts - y'have to eval(DO.ext) to prove you want them...
+DO.ext = `
+a = function (x) {
+  if(typeof(x) == "number") DO.p(x, 'A');
+  else if(typeof(x) == "string") DO.a('A',x);
+  // fail oh so quietly
+};
+b = function (x) {
+  if(typeof(x) == "number") DO.p(x, 'B');
+  else if(typeof(x) == "string") DO.a('B',x);
+  // fail oh so quietly
+};
+c = function (x) {
+  if(typeof(x) == "number") DO.p(x, 'C');
+  else if(typeof(x) == "string") DO.a('C', x);
+  // fail oh so quietly
+};
+x = (i)=>{DO.d(i);};
+ls=(c)=>{DO.ls(c);};
+`;
