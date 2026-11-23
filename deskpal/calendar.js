@@ -1,14 +1,20 @@
 let CAL = {
   filename: "calendar.json",
   items:[ ],
+  print: (idx)=>{
+    a=CAL.items[idx];
+    print(`${idx}: ${a.start}  ${a.dur}  ${a.text}`);
+  },
   ls: ()=>{
     for(let idx=0; idx<CAL.items.length; idx++) {
-      a=CAL.items[idx];
-      print(`${idx}: ${a.start}  ${a.dur}  ${a.text}`);
+      CAL.print(idx);
     }
+    return (CAL);
   },
   find: (str)=>{
-    return(CAL.items.findIndex((a)=>{ return (a.text.indexOf(str) >= 0); }));
+    let idx = CAL.items.findIndex((a)=>{ return (a.text.indexOf(str) >= 0); });
+    if(idx >= 0) CAL.print(idx);
+    return(idx);
   },
   add: (timeStr, dur, txt) => {
     let today = new Date().toLocalISOString().substring(0,11);
@@ -24,7 +30,7 @@ let CAL = {
   niceDate: (d)=>{ return d.toISOString().substring(0,10); },
   nextDay: (d)=>{ d.setTime(d.getTime()+24*60*60*1000); },
   del: (i)=>{CAL.items.splice(i,1);},
-  sort: ()=>{CAL.items.sort((a,b) => { return (b.start > a.start ? -1 : b.start < a.start ? 1 : 0);});},
+  sort: ()=>{CAL.items.sort((a,b) => { return (b.start > a.start ? -1 : b.start < a.start ? 1 : 0);}); CAL.ls();},
   isIn: (mtg) => {
     let now = getTime();
     let start = new Date(mtg.start).getTime()/1000;

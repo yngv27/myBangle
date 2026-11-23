@@ -1,0 +1,112 @@
+if(NRF.getAddress() == "e2:dd:4f:75:e0:e3")
+  NRF.setAdvertising({},{"name":"Trasched"});
+
+spi1 = new SPI();
+spi1.setup({sck: D29, mosi: D31, baud:2000000});
+g = require("~SSD1681.js").connect({spi: spi1, cs: D2, dc: D47, rst: D45, busy:D43, width: 128, height: 250}, ()=>{
+//spi1.setup({sck: D24, mosi: D22, baud:2000000});
+//g = require("~SSD1681.js").connect({spi: spi1, cs: D32, dc: D36, rst: D38, busy:D43, width: 128, height: 250}, ()=>{
+  g.setRotation(3,1);
+  g.getWidth=()=>{return 122;};
+  g.setBgColor(1).setColor(0);
+  g.clear();
+  g.flip();
+  
+});
+
+Graphics.prototype.setFontRoboto20=function(scale){this.setFontCustom(atob("AAAAAAAAAAAAAAAAAAAAAAAAH/zA/+YAAAAAAAHwAA4AAAAAA+AAHAAAAAAAAQACDAAYbADP4B/8A/zAGYZADH4A/+A/7AHYYADCAAAAAAAQAeHgH4eBzgwMMHnhw88GGBw4wHj+AcPgAAAAAAAAAAB4AA/gAGMGAwhwGMYAfuABzgABzgAc+AOMYBhBAAMYAB/AAHwAAAAAHwD5+A/8YGPDAw8YGPzA/HYD4fAADwAB/AAOYAABAAAAHwAA4AAAAAAAAAAP/AH/+D4B84AB2AAGAAAAAAAwAA3gAOPAPg//wB/4AAAAEAABiAAGwAA8AA/AAH+AAGwAByAAEAAAAAAAMAABgAAMAABgAH/wA/+AAMAABgAAMAABgAAAAAAAIAAfAADwAAAABgAAMAABgAAMAABgAAAAAAAAAAAAADAAAYAAAAAAAAAAAAAAAADgAB8AB+AA+AA+AA/AAHAAAAAAAAAAAAAAAAAP/gD/+A4A4GADAwAYGADA4A4D/+AP/gAAAAAAAAAAAAAABgAAMAADAAA//4H//AAAAAAAAAAAAAAAOA4DwPA4D4GA7AwOYGDjA44YD+DAPgYAAAAAAABgMAcBwHAHAwwYGGDAwwYHPHAf/wB58AAAAAAAAAPAAD4AB7AA8YAPDAHgYA//4H//AADAAAAAAAAH+MA/xwGMDAxgYGMDAxwYGHPAwfwAA4AAAAAAAAD/gB/+Aew4HMDAxgYGMDAxw4AH+AAfgAAAAAAAGAAAwAAGADAwB4GB+Aw+AGfAA/gAHwAAAAAAAAAPPgD/+A544GGDAwwYGGDA544D/+APPgAAAAAAAB+AAf4AHDjAwMYGBjAwM4HDOAf/gB/wAAAAAAAADAYAYDAAAAAAAAAAAAAAYDAfAYHwAAAAAAAAIAADgAAcAAHwAA2AAO4ABjAAMcADBgAAAAAAAAMwABmAAMwABmAAMwABmAAMwABmAAEQAAAAAAAADBgAccABjAAO4AA2AAGwAAcAADgAAIAAAAAAAABgAAcAAHAAAwOYGDzAw4AH+AAfgAAwAAAAAAAAAAGAAP/AH5+BwAwcADDB+Mw/5mHDMxgZmMDMxnxmP/Mw4YDABAcAYB4OAD/gABgAAAAAAAAAAYAAfAAPwAPwAH2AH4wA8GAH4wAP2AAPwAAfwAAfAAAYAAAAAAAH//A//4GGDAwwYGGDAwwYGGDA544D/+APPgAAAAAAAADAAH/AD/+AcBwHADAwAYGADAwAYGADA4A4DweAODgAAAAAAAH//A//4GADAwAYGADAwAYGADAYAwD4+AP/gAfwAAAAAAAAAAAH//A//4GGDAwwYGGDAwwYGGDAwwYGADAwAYAAAAAAAH//A//4GGAAwwAGGAAwwAGGAAwAAGAAAAAAAAAAH/AD/8AcBwHAHAwAYGADAwYYGDDA4YYDz/AOfwAAAAAAAH//A//4ADAAAYAADAAAYAADAAAYAADAA//4H//AAAAAAAAAAAH//A//4AAAAAAAAAAAADAAAeAAA4AADAAAYAADAAAYAAHA//wH/8AAAAAAAA//4H//AA4AAPAAD8AA7wAOHADgcA4B4GAHAgAYAAAAAAAH//A//4AADAAAYAADAAAYAADAAAYAADAAAAAAAA//4H//A+AAB8AAD4AAH4AAPwAAfAAPwAH4AD8AB8AA+AAH//A//4AAAAAAAH//A//4DwAAPgAAeAAB8AADwAAHgAAeA//4H//AAAAAAAAH/AB/8AeDwHAHAwAYGADAwAYGADA4A4DweAP/gA/4AAAAAAAA//4H//AwMAGBgAwMAGBgAwMAGDgA44AD+AAHgAAAAAAAAA/4AP/gDgOA4A4GADAwAYGADAwAYHAHgeD+B/8wD+GAAAAAAAH//A//4GDAAwYAGDAAwcAGDwA4/gD+fAPg4AABAAAAAAAAADAB4eAfhwHOHAwwYGGDAw4YGDDA4c4Dx+AOHgAAAAAAAGAAAwAAGAAAwAAGAAA//4H//AwAAGAAAwAAGAAAwAAAAAAAAAH/4A//wAAPAAAYAADAAAYAADAAAYAAPA//wH/8AAAAAAAAgAAHAAA/AAB/AAD+AAD+AAD4AAfAAfwAfwAfwAH4AA4AAEAAAAAAAAAA+AAH/AAH/gAD/AAD4AD+AH+AH8AA+AAH+AAD+AAD/AAD4AH/AP/AH+AA8AAAAAAAAAGADA4A4HweAPPgA/wAB8AAfwAPvgDweA8B4GADAAAAAAAAwAAHAAA+AAB8AAD4AAH/AA/4AfAAPgAHwAA8AAGAAAAAAAAAAwAYGAPAwD4GB7AweYGPDAzwYH4DA+AYHADAwAYAAAAAAAH//+///2AAGwAAwAAAAAAGAAA+AAD8AAD8AAD4AAH4AAHgAAMAAAAAAAGAAGwAA3//+///wAAAAAAAOAAHwAD4AA8AAD8AADwAAGAAAAAAABgAAMAABgAAMAABgAAMAABgAAMAABgAAAEAAAwAADAAAIAAAAAAAAAAAAAAAAAEeABn4Ad3ADMYAZjADMYAZmAB/4AP/AAAAAAAA//4H//ABgwAYDADAYAYDADg4AP+AA/gABwAAAAAAAAA/gAP+ADg4AYDADAYAYDADAYAOOABxwAAAAAAAAH8AB/wAcHADAYAYDADAYAMGA//4H//AAAAAAAAA/gAP+ADs4AZjADMYAZjADMYAPnAA8wABgAAAAAAAABgAAMAAP/4D//A5gAGMAAxAAAAAAAAAAH8YB/zAcHMDAZgYDMDAZgcHcD//Af/wAAAAAAA//4H//ABgAAYAADAAAYAADgAAf/AB/4AAAAAAAGf/Az/4AAAAAAAAAAMz//mf/4AAAAAAA//4H//AAOAADwAA/AAOeADh4AQDAAAIAAAAAAAH//A//4AAAAAAAAf/AD/4AMAADAAAYAADAAAcAAD/4AP/ABgAAYAADAAAYAADgAAP/AA/4AAAAAAAAf/AD/4AMAADAAAYAADAAAcAAD/4AP/AAAAAAAAA/gAP+ADg4AYDADAYAYDADAYAcHAB/wAH8AAAAAAAAD//gf/8DAYAYDADAYAYDADg4AP+AA/gABwAAAAAAAAAOAAH8AB/wAcHADAYAYDADAYAYDAD//gf/8AAAAAAAD/4Af/ABgAAYAADAAAQAAAAAAAAAB5wAfnADMYAZjADGYAYzADn4AOeAAAAAAAADAAAYAAf/wD//ADAYAYDAAAAAAAAD/gAf+AAA4AADAAAYAADAAAwAf/AD/4AAAAAAAAYAAD4AAP4AAP4AAPAAH4AH4AD8AAcAAAAAAAAADwAAf4AA/4AAPAAP4AH4ADwAAfgAA/gAA/AAB4AH+AD+AAeAAAAAAAAACAYAcHADzwAH8AAfAAH8ADx4AcHACAIAAAAAAAAcAMD4BgP4MAP/AAPwAP4AP4AD4AAcAAAAAAAAADAYAYHADD4AY7ADOYAfjADwYAcDADAYAAAAAAAAAQAAHAA//4P8/jgAOYAAQAAAAAAH//+///wAAAAAACAACcAAx/n+H//AA4AACAAAAAAAAABwAAcAADAAAYAADgAAMAAAwAAGAAAwAAOAADgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),32,atob("BwQGDQ0PDQQHBgoLBAgGCwsLCwsLCwsLCwsFBQsLCwsUDwwODgwLDQ4FDA0LEQ0ODQ4NDQ4NEBMNDg0GCgYICggLDAsLDAkLCwQFCwQSCwwMDAgKCAsLEAsLCwgECA0="), 21+(scale << 8)+(1 << 16));return this;};
+eval(_S.read("Omnigo.js"));
+/*
+dates = [
+  {dt: "2026-10-02", stuff: "R"},
+  {dt: "2026-10-05", stuff: "Y"},
+  {dt: "2026-10-09", stuff: "RT"},
+  {dt: "2026-10-19", stuff: "RT"},
+  {dt: "2026-10-26", stuff: "RY"},
+  {dt: "2026-11-02", stuff: "RT"},
+  {dt: "2026-11-09", stuff: "R"},
+  {dt: "2026-11-16", stuff: "RTY"},
+  {dt: "2026-11-23", stuff: "R"},
+  {dt: "2026-11-30", stuff: "RT"},
+  {dt: "2026-12-07", stuff: "RY"},
+  {dt: "2026-12-14", stuff: "RT"},
+  {dt: "2026-12-21", stuff: "R"},
+  {dt: "2026-12-29", stuff: "RT"},
+  {dt: "2027-01-06", stuff: "R"},
+  {dt: "2027-01-13", stuff: "RT"},
+  {dt: "2027-01-20", stuff: "R"},
+  {dt: "2027-01-27", stuff: "RT"},
+  {dt: "2027-02-03", stuff: "R"},
+  {dt: "2027-02-10", stuff: "RT"},
+  {dt: "2027-02-18", stuff: "R"},
+  {dt: "2027-02-25", stuff: "RT"},
+  {dt: "2027-03-04", stuff: "R"},
+  {dt: "2027-03-11", stuff: "RT"},
+  {dt: "2027-03-18", stuff: "R"},
+  {dt: "2027-03-25", stuff: "RT"},
+  ];
+*/
+
+function trash() {
+  let dates = _S.readJSON("trasched.json");
+  if(!dates) {
+    return(null);
+  } 
+  let dt = new Date().getTime();
+  let idx=0;
+  let fdt = 0;
+  let days = 0;
+  //while( true) {
+  for(idx=0; idx<dates.length; idx++) {
+    fdt = new Date(dates[idx].dt).getTime();
+    days = Math.ceil((fdt-dt)/86400000);
+    if(days >= 0) break;
+  }
+  if(idx >= dates.length) return ({msg:"Update me!", stuff:""});
+  let rval;
+  if(days < 0) {
+    rval = "Update me!";
+  } else if(days == 0) {
+    rval = "TO-DAY!";
+  } else if(days == 1) {
+    rval = "Tomorrow";
+  } else {
+    rval = days+" days";
+  }
+  return({msg:rval, stuff: dates.stuff[idx]})
+
+}
+function cal() {
+  g.init();
+  g.clear();
+
+  g.setFont("Roboto20", 1);
+  g.setFontAlign(-1,-1);
+
+  let nextDt = trash();
+  if(!nextDt) {
+  print("No dates");
+    g.drawString("No dates!", 0, 64);
+  } else {
+    g.setFontAlign(-1,0);
+    g.drawString("Next garbage day:",4, 12);
+    g.setFont("Roboto20", 2);
+    
+    g.drawString(nextDt.msg, 4, 52);
+    
+    let x = 20;
+    if(nextDt.stuff.indexOf("R")>=0) g.drawImage(_S.read("recycle.png"), x, 80);
+    if(nextDt.stuff.indexOf("T")>=0) g.drawImage(_S.read("trash2.png"), x+44, 80);
+    if(nextDt.stuff.indexOf("Y")>=0) g.drawImage(_S.read("yard.png"), x+80, 80);
+  
+    g.setFont("Omnigo", 1);
+    g.setFontAlign(1,1);
+    let ds = (new Date().toString());
+    g.drawString(ds.substring(0,ds.indexOf("202")), 249,121);
+    g.flip();
+    setTimeout(()=>{g.sleep();}, 5000);
+  }
+  setTimeout(()=>{E.at("00:01", cal);}, 1000);
+}
+
+setTimeout('cal();', 60*1000);

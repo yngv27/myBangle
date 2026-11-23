@@ -17,7 +17,26 @@ NRF.setAdvertising({}, {name: "Sunrise"});
 
 log=print;
 
-let wake = "06:00";
+const FILE="opts.json";
+
+let opts = _S.readJSON(FILE);
+if(!opts) {
+  opts = {
+    wakeup: "05:50",
+    ramp: 20,
+    duration: 30,
+    led: false
+  };
+}
+
+function getStatus() { opts.led = LITE.ival ? true : false; return opts; }
+function update(o) {
+  if(o.wakeup) opts.wakeup = o.wakeup;
+  if(o.ramp) opts.ramp = o.ramp;
+  if(o.duration) opts.duration = o.duration;
+  _S.writeJSON(FILE, opts);
+  blink(1);
+}
 
 function blink(n) {
   for(let x=0; n > 0; n--) {
@@ -27,34 +46,57 @@ function blink(n) {
     x+=250;
   }
 }
+function delay(ms) {
+  digitalPulse(D47, 0, ms);
+  digitalPulse(D47, 0, 0);
+}
 
 let LITE = {
   cnt: 0,
   rate: 1.05,
   val: 0.9999,
+  ival: 0,
   step: function () {
-    log(this.val);
-    analogWrite(BULB, this.val);
+    this.oldVal = this.val;
+    this.val = 0.99 - Math.pow(this.cnt/opts.ramp,4);
+    if(this.val < 0) this.val = 0;
+    log(this.oldVal, this.val);
+    //analogWrite(BULB, this.val);
+    LITE.smooth(this.oldVal, this.val);
+    /*
     this.val -= this.inc;
     this.inc *= this.rate;
     if(++this.cnt % 5 == 0) this.rate += 0.05;
-    if(this.cnt >= 30) {
+    */
+    this.cnt++;
+    if(this.cnt >= opts.duration) {
       LITE.off();
     }
   },
   begin: function() {
     this.cnt = 0;
-    this.val = 0.9999;
+    this.val = 0.99;
+    /*
     this.inc = 0.0002;
     this.rate = 1.025;
+    */
     BULB.set(); POWER.set();
   },
   off: function() {
     clearInterval(LITE.ival);
+    LITE.ival = 0;
     POWER.reset();
-    BULB.reset();
+    BULB.set();
+  },
+  smooth: function(a,b) {
+    let diff = Math.abs(b-a);
+    for(let i=0; i<20; i++) {
+      let val = a-diff*Math.pow(i/20, 4);
+      print("VAL: "+val);
+      analogWrite(BULB, val);
+      delay(20);
+    }
   }
-  
 };
 
 function check() {
@@ -63,7 +105,7 @@ function check() {
 
   if(sanity >= 2025) {
     blink(1);
-    ival = E.at(wake, ()=> {
+    ival = E.at(opts.wakeup, ()=> {
       log("DOING");
       LITE.begin();
       LITE.ival = setInterval(()=>{LITE.step();}, 60*1000);
